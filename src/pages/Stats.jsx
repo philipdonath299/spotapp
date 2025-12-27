@@ -79,6 +79,7 @@ const Stats = () => {
     const fetchArtistInsights = async (artist) => {
         setArtistDetailsLoading(true);
         setSelectedArtist(artist);
+        setArtistDetails(null); // Clear stale data
         try {
             const [followingData, likedPart1, likedPart2, relatedData, topTracksData] = await Promise.all([
                 spotifyFetch(`/me/following/contains?type=artist&ids=${artist.id}`),
@@ -427,310 +428,329 @@ const Stats = () => {
                         </div>
 
                         <div className="p-10 md:p-12 overflow-y-auto custom-scrollbar flex-1 leading-none">
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-                                <div className="bg-[#181818] p-6 rounded-[2rem] border border-neutral-800 text-center group hover:border-red-500/30 transition-all">
-                                    <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
-                                        <Heart size={12} className="text-red-500" fill={artistDetails?.likedCount > 0 ? "currentColor" : "none"} /> Your Likes
-                                    </div>
-                                    <div className="text-3xl font-black text-white">{artistDetails?.likedCount || 0}</div>
-                                    <div className="text-[10px] font-bold text-gray-600 mt-1 uppercase">Saves</div>
+                            {!artistDetails ? (
+                                <div className="h-full flex flex-col items-center justify-center p-20 gap-4">
+                                    <Loader2 className="animate-spin text-green-500" size={40} />
+                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Syncing Artist Data...</p>
                                 </div>
-                                <div className="bg-[#181818] p-6 rounded-[2rem] border border-neutral-800 text-center group hover:border-green-500/30 transition-all">
-                                    <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
-                                        <TrendingUp size={12} className="text-green-500" /> In Rotation
-                                    </div>
-                                    <div className="text-3xl font-black text-white">{artistDetails?.topTracksOccurrences?.length || 0}</div>
-                                    <div className="text-[10px] font-bold text-gray-600 mt-1 uppercase">Top Charts</div>
-                                </div>
-                                <div className="bg-[#181818] p-6 rounded-[2rem] border border-neutral-800 text-center group hover:border-blue-500/30 transition-all">
-                                    <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
-                                        <Users size={12} className="text-blue-500" /> Crew
-                                    </div>
-                                    <div className="text-3xl font-black text-white">{selectedArtist.followers?.total >= 1000000 ? (selectedArtist.followers.total / 1000000).toFixed(1) + 'M' : (selectedArtist.followers?.total / 1000).toFixed(0) + 'K'}</div>
-                                    <div className="text-[10px] font-bold text-gray-600 mt-1 uppercase">Followers</div>
-                                </div>
-                                <div className="bg-[#181818] p-6 rounded-[2rem] border border-neutral-800 text-center group hover:border-yellow-500/30 transition-all">
-                                    <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
-                                        <Zap size={12} className="text-yellow-500" /> Pop Index
-                                    </div>
-                                    <div className="text-3xl font-black text-white">{selectedArtist.popularity}%</div>
-                                    <div className="text-[10px] font-bold text-gray-600 mt-1 uppercase">Global Heat</div>
-                                </div>
-                            </div>
-
-                            <div className="space-y-12">
-                                <section>
-                                    <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-6 flex items-center justify-between">
-                                        <span>Artist Spotlight</span>
-                                        <span className="text-green-500 flex items-center gap-1"><Trophy size={10} /> Global Hits</span>
-                                    </h3>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {(artistDetails?.globalTopTracks || []).map((t, i) => (
-                                            <div
-                                                key={t.id}
-                                                onClick={() => fetchTrackInsights(t)}
-                                                className="group flex items-center gap-4 p-4 rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-green-500/30 transition-all cursor-pointer"
-                                            >
-                                                <span className="text-[10px] font-mono text-gray-600 w-4">{i + 1}</span>
-                                                <img src={t.album.images[2]?.url} className="w-12 h-12 rounded-xl shadow-lg" alt="" />
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="text-sm font-bold truncate group-hover:text-green-500 transition-colors uppercase tracking-tight">{t.name}</div>
-                                                    <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{t.popularity}% Global Heat</div>
-                                                </div>
+                            ) : (
+                                <>
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+                                        <div className="bg-[#181818] p-6 rounded-[2rem] border border-neutral-800 text-center group hover:border-red-500/30 transition-all">
+                                            <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+                                                <Heart size={12} className="text-red-500" fill={artistDetails.likedCount > 0 ? "currentColor" : "none"} /> Your Likes
                                             </div>
-                                        ))}
+                                            <div className="text-3xl font-black text-white">{artistDetails.likedCount || 0}</div>
+                                            <div className="text-[10px] font-bold text-gray-600 mt-1 uppercase">Saves</div>
+                                        </div>
+                                        <div className="bg-[#181818] p-6 rounded-[2rem] border border-neutral-800 text-center group hover:border-green-500/30 transition-all">
+                                            <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+                                                <TrendingUp size={12} className="text-green-500" /> In Rotation
+                                            </div>
+                                            <div className="text-3xl font-black text-white">{artistDetails.topTracksOccurrences?.length || 0}</div>
+                                            <div className="text-[10px] font-bold text-gray-600 mt-1 uppercase">Top Charts</div>
+                                        </div>
+                                        <div className="bg-[#181818] p-6 rounded-[2rem] border border-neutral-800 text-center group hover:border-blue-500/30 transition-all">
+                                            <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+                                                <Users size={12} className="text-blue-500" /> Crew
+                                            </div>
+                                            <div className="text-3xl font-black text-white">
+                                                {selectedArtist.followers?.total >= 1000000
+                                                    ? (selectedArtist.followers.total / 1000000).toFixed(1) + 'M'
+                                                    : selectedArtist.followers?.total >= 1000
+                                                        ? (selectedArtist.followers.total / 1000).toFixed(0) + 'K'
+                                                        : selectedArtist.followers?.total || 0}
+                                            </div>
+                                            <div className="text-[10px] font-bold text-gray-600 mt-1 uppercase">Followers</div>
+                                        </div>
+                                        <div className="bg-[#181818] p-6 rounded-[2rem] border border-neutral-800 text-center group hover:border-yellow-500/30 transition-all">
+                                            <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+                                                < Zap size={12} className="text-yellow-500" /> Pop Index
+                                            </div>
+                                            <div className="text-3xl font-black text-white">{selectedArtist.popularity || 0}%</div>
+                                            <div className="text-[10px] font-bold text-gray-600 mt-1 uppercase">Global Heat</div>
+                                        </div>
                                     </div>
-                                </section>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-4">
-                                    {artistDetails?.topTracksOccurrences?.length > 0 && (
-                                        <div>
-                                            <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-8 flex items-center gap-2">
-                                                <Sparkles size={14} className="text-blue-400" /> Personal Hall of Fame
-                                            </h4>
-                                            <div className="space-y-3">
-                                                {artistDetails.topTracksOccurrences.slice(0, 5).map(t => (
+                                    <div className="space-y-12">
+                                        <section>
+                                            <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-6 flex items-center justify-between">
+                                                <span>Artist Spotlight</span>
+                                                <span className="text-green-500 flex items-center gap-1"><Trophy size={10} /> Global Hits</span>
+                                            </h3>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {(artistDetails.globalTopTracks || []).map((t, i) => (
                                                     <div
                                                         key={t.id}
                                                         onClick={() => fetchTrackInsights(t)}
-                                                        className="bg-[#181818] p-4 rounded-2xl flex items-center gap-4 border border-neutral-800 hover:border-green-500/50 hover:bg-[#282828] transition-all cursor-pointer group/track"
+                                                        className="group flex items-center gap-4 p-4 rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-green-500/30 transition-all cursor-pointer"
                                                     >
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
-                                                        <span className="font-bold text-sm group-hover/track:text-green-500 transition-colors uppercase tracking-tight truncate flex-1">{t.name}</span>
-                                                        <ArrowLeft className="rotate-180 text-gray-700 group-hover/track:text-green-500 transition-colors" size={12} />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {artistDetails?.relatedArtists?.length > 0 && (
-                                        <div>
-                                            <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-8 flex items-center gap-2">
-                                                <Disc size={14} className="text-purple-400" /> Sonic Relatives
-                                            </h4>
-                                            <div className="grid grid-cols-1 gap-4">
-                                                {artistDetails.relatedArtists.map(rel => (
-                                                    <div
-                                                        key={rel.id}
-                                                        onClick={() => fetchArtistInsights(rel)}
-                                                        className="flex items-center gap-4 p-3 rounded-2xl bg-white/5 border border-white/5 hover:border-purple-500/30 transition-all group cursor-pointer"
-                                                    >
-                                                        <img src={rel.images[2]?.url} className="w-10 h-10 rounded-full grayscale group-hover:grayscale-0 transition-all border border-neutral-800 group-hover:border-purple-500 shadow-lg" alt="" />
+                                                        <span className="text-[10px] font-mono text-gray-600 w-4">{i + 1}</span>
+                                                        <img src={t.album.images[2]?.url} className="w-12 h-12 rounded-xl shadow-lg" alt="" />
                                                         <div className="flex-1 min-w-0">
-                                                            <div className="text-sm font-bold text-gray-400 group-hover:text-white transition-colors truncate">{rel.name}</div>
-                                                            <div className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">{rel.popularity}% Pop.</div>
+                                                            <div className="text-sm font-bold truncate group-hover:text-green-500 transition-colors uppercase tracking-tight">{t.name}</div>
+                                                            <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{t.popularity || 0}% Global Heat</div>
                                                         </div>
                                                     </div>
                                                 ))}
                                             </div>
+                                        </section>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-4">
+                                            {artistDetails.topTracksOccurrences?.length > 0 && (
+                                                <div>
+                                                    <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-8 flex items-center gap-2">
+                                                        <Sparkles size={14} className="text-blue-400" /> Personal Hall of Fame
+                                                    </h4>
+                                                    <div className="space-y-3">
+                                                        {artistDetails.topTracksOccurrences.slice(0, 5).map(t => (
+                                                            <div
+                                                                key={t.id}
+                                                                onClick={() => fetchTrackInsights(t)}
+                                                                className="bg-[#181818] p-4 rounded-2xl flex items-center gap-4 border border-neutral-800 hover:border-green-500/50 hover:bg-[#282828] transition-all cursor-pointer group/track"
+                                                            >
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+                                                                <span className="font-bold text-sm group-hover/track:text-green-500 transition-colors uppercase tracking-tight truncate flex-1">{t.name}</span>
+                                                                <ArrowLeft className="rotate-180 text-gray-700 group-hover/track:text-green-500 transition-colors" size={12} />
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {artistDetails.relatedArtists?.length > 0 && (
+                                                <div>
+                                                    <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-8 flex items-center gap-2">
+                                                        <Disc size={14} className="text-purple-400" /> Sonic Relatives
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 gap-4">
+                                                        {artistDetails.relatedArtists.map(rel => (
+                                                            <div
+                                                                key={rel.id}
+                                                                onClick={() => fetchArtistInsights(rel)}
+                                                                className="flex items-center gap-4 p-3 rounded-2xl bg-white/5 border border-white/5 hover:border-purple-500/30 transition-all group cursor-pointer"
+                                                            >
+                                                                <img src={rel.images[2]?.url} className="w-10 h-10 rounded-full grayscale group-hover:grayscale-0 transition-all border border-neutral-800 group-hover:border-purple-500 shadow-lg" alt="" />
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="text-sm font-bold text-gray-400 group-hover:text-white transition-colors truncate">{rel.name}</div>
+                                                                    <div className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">{rel.popularity}% Pop.</div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                </div>
-                            </div>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
             )}
 
             {/* Album Detail Modal */}
-            {selectedAlbum && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-fade-in"
-                    onClick={() => setSelectedAlbum(null)}
-                >
+            {
+                selectedAlbum && (
                     <div
-                        className="bg-[#121212] w-full max-w-2xl rounded-[2.5rem] border border-neutral-800 overflow-hidden shadow-2xl animate-scale-up"
-                        onClick={(e) => e.stopPropagation()}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-fade-in"
+                        onClick={() => setSelectedAlbum(null)}
                     >
-                        <div className="flex flex-col md:flex-row h-[500px]">
-                            <div className="w-full md:w-1/2 relative">
-                                <img src={selectedAlbum.images[0]?.url} className="w-full h-full object-cover" alt="" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-transparent to-transparent hidden md:block" />
-                                <div className="absolute bottom-8 left-8 right-8 md:block">
-                                    <h2 className="text-3xl font-black tracking-tighter mb-2">{selectedAlbum.name}</h2>
-                                    <p className="text-green-500 font-bold text-sm tracking-widest cursor-pointer hover:underline" onClick={() => openArtistById(selectedAlbum.artists[0].id)}>
-                                        {selectedAlbum.artists[0].name}
-                                    </p>
-                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-4">
-                                        <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-1.5">
-                                            <Calendar size={12} /> {new Date(albumDetails?.releaseDate).getFullYear()}
+                        <div
+                            className="bg-[#121212] w-full max-w-2xl rounded-[2.5rem] border border-neutral-800 overflow-hidden shadow-2xl animate-scale-up"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="flex flex-col md:flex-row h-[500px]">
+                                <div className="w-full md:w-1/2 relative">
+                                    <img src={selectedAlbum.images[0]?.url} className="w-full h-full object-cover" alt="" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-transparent to-transparent hidden md:block" />
+                                    <div className="absolute bottom-8 left-8 right-8 md:block">
+                                        <h2 className="text-3xl font-black tracking-tighter mb-2">{selectedAlbum.name}</h2>
+                                        <p className="text-green-500 font-bold text-sm tracking-widest cursor-pointer hover:underline" onClick={() => openArtistById(selectedAlbum.artists[0].id)}>
+                                            {selectedAlbum.artists[0].name}
+                                        </p>
+                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-4">
+                                            <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-1.5">
+                                                <Calendar size={12} /> {new Date(albumDetails?.releaseDate).getFullYear()}
+                                            </div>
+                                            <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-1.5">
+                                                <Clock size={12} /> {albumDetails?.totalDurationMs ? Math.floor(albumDetails.totalDurationMs / 60000) + 'm' : '--'}
+                                            </div>
+                                            <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-1.5">
+                                                <Zap size={12} /> {albumDetails?.popularity}% Pop.
+                                            </div>
                                         </div>
-                                        <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-1.5">
-                                            <Clock size={12} /> {albumDetails?.totalDurationMs ? Math.floor(albumDetails.totalDurationMs / 60000) + 'm' : '--'}
+                                        <div className="mt-4 text-[10px] text-gray-600 font-bold uppercase tracking-widest bg-white/5 py-1.5 px-3 rounded-lg border border-white/5 inline-block">
+                                            {albumDetails?.label}
                                         </div>
-                                        <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-1.5">
-                                            <Zap size={12} /> {albumDetails?.popularity}% Pop.
-                                        </div>
-                                    </div>
-                                    <div className="mt-4 text-[10px] text-gray-600 font-bold uppercase tracking-widest bg-white/5 py-1.5 px-3 rounded-lg border border-white/5 inline-block">
-                                        {albumDetails?.label}
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="w-full md:w-1/2 p-8 flex flex-col relative">
-                                <button onClick={() => setSelectedAlbum(null)} className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors"><X size={24} /></button>
-                                <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-6">Full Tracklist</h3>
+                                <div className="w-full md:w-1/2 p-8 flex flex-col relative">
+                                    <button onClick={() => setSelectedAlbum(null)} className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors"><X size={24} /></button>
+                                    <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-6">Full Tracklist</h3>
 
-                                <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-2">
-                                    {albumDetailsLoading ? (
-                                        <div className="h-full flex items-center justify-center"><Loader2 className="animate-spin text-green-500" /></div>
-                                    ) : (
-                                        albumDetails?.tracks?.map((track, i) => (
-                                            <div
-                                                key={track.id}
-                                                onClick={() => fetchTrackInsights(track)}
-                                                className="group flex items-center gap-4 p-3 rounded-xl hover:bg-neutral-800/80 transition-all cursor-pointer"
-                                            >
-                                                <span className="w-4 text-[10px] font-mono text-gray-600">{i + 1}</span>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className={`text-sm font-bold truncate ${track.isTopTrack ? 'text-green-500' : 'text-gray-300'} group-hover:text-green-400`}>{track.name}</div>
+                                    <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-2">
+                                        {albumDetailsLoading ? (
+                                            <div className="h-full flex items-center justify-center"><Loader2 className="animate-spin text-green-500" /></div>
+                                        ) : (
+                                            albumDetails?.tracks?.map((track, i) => (
+                                                <div
+                                                    key={track.id}
+                                                    onClick={() => fetchTrackInsights(track)}
+                                                    className="group flex items-center gap-4 p-3 rounded-xl hover:bg-neutral-800/80 transition-all cursor-pointer"
+                                                >
+                                                    <span className="w-4 text-[10px] font-mono text-gray-600">{i + 1}</span>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className={`text-sm font-bold truncate ${track.isTopTrack ? 'text-green-500' : 'text-gray-300'} group-hover:text-green-400`}>{track.name}</div>
+                                                    </div>
+                                                    {track.isTopTrack && <CheckCircle size={14} className="text-green-500" />}
+                                                    <span className="text-[10px] font-mono text-gray-600">{formatDuration(track.duration_ms)}</span>
                                                 </div>
-                                                {track.isTopTrack && <CheckCircle size={14} className="text-green-500" />}
-                                                <span className="text-[10px] font-mono text-gray-600">{formatDuration(track.duration_ms)}</span>
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
-                                <div className="mt-6 pt-6 border-t border-neutral-800 text-[10px] text-gray-600 font-black uppercase tracking-widest flex items-center gap-2">
-                                    <PlaySquare size={14} /> {albumDetails?.tracks?.length || 0} Total Tracks
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Track Detail Modal */}
-            {selectedTrack && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-fade-in"
-                    onClick={() => setSelectedTrack(null)}
-                >
-                    <div
-                        className="bg-[#121212] w-full max-w-xl rounded-[2.5rem] border border-neutral-800 overflow-hidden shadow-2xl animate-scale-up"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="p-8">
-                            <div className="flex items-center gap-6 mb-8">
-                                <img
-                                    src={selectedTrack.album?.images[0]?.url || selectedAlbum?.images[0]?.url}
-                                    className="w-32 h-32 rounded-2xl shadow-2xl cursor-pointer hover:scale-105 transition-transform"
-                                    alt=""
-                                    onClick={() => selectedTrack.album && openAlbumById(selectedTrack.album.id)}
-                                />
-                                <div className="min-w-0">
-                                    <h2 className="text-2xl font-black mb-1 truncate">{selectedTrack.name}</h2>
-                                    <div className="flex flex-wrap gap-x-2 text-gray-400 font-bold mb-3">
-                                        {selectedTrack.artists?.map((a, i) => (
-                                            <span
-                                                key={a.id}
-                                                onClick={() => openArtistById(a.id)}
-                                                className="hover:text-green-500 cursor-pointer transition-colors"
-                                            >
-                                                {a.name}{i < selectedTrack.artists.length - 1 ? ',' : ''}
-                                            </span>
-                                        ))}
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <div className="flex items-center gap-3">
-                                            {isTrackLiked ? (
-                                                <div className="flex items-center gap-1.5 bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-500/20">
-                                                    <Heart size={12} fill="currentColor" /> Liked
-                                                </div>
-                                            ) : (
-                                                <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Not in library</div>
-                                            )}
-                                            <div className="bg-blue-500/10 text-blue-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-500/20">
-                                                {selectedTrack.popularity || selectedAlbum?.popularity || 0}% Popular
-                                            </div>
-                                        </div>
-                                        {(selectedTrack.album?.name || selectedAlbum?.name) && (
-                                            <div
-                                                onClick={() => (selectedTrack.album?.id || selectedAlbum?.id) && openAlbumById(selectedTrack.album?.id || selectedAlbum?.id)}
-                                                className="text-[10px] text-gray-500 font-black uppercase tracking-widest hover:text-green-500 cursor-pointer transition-colors flex items-center gap-1.5"
-                                            >
-                                                <Disc size={12} /> {selectedTrack.album?.name || selectedAlbum?.name}
-                                            </div>
+                                            ))
                                         )}
                                     </div>
-                                </div>
-                            </div>
-
-                            <div className="space-y-8">
-                                <section>
-                                    <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4 flex items-center justify-between">
-                                        <span>Artist Spotlight</span>
-                                        <span className="text-green-500 flex items-center gap-1"><Trophy size={10} /> Global Hits</span>
-                                    </h3>
-
-                                    {trackInsightsLoading ? (
-                                        <div className="flex justify-center p-12"><Loader2 className="animate-spin text-green-500" /></div>
-                                    ) : (
-                                        <div className="space-y-2">
-                                            {artistSpotlight.slice(0, 3).map((t, i) => (
-                                                <div
-                                                    key={t.id}
-                                                    onClick={(e) => { e.stopPropagation(); fetchTrackInsights(t); }}
-                                                    className="group flex items-center gap-4 p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-green-500/30 transition-all cursor-pointer"
-                                                >
-                                                    <span className="text-[10px] font-mono text-gray-600 w-4">{i + 1}</span>
-                                                    <img src={t.album.images[2]?.url} className="w-10 h-10 rounded-lg shadow-lg" alt="" />
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="text-sm font-bold truncate group-hover:text-green-500 transition-colors uppercase tracking-tight">{t.name}</div>
-                                                        <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{Math.round(t.popularity)}% Pop.</div>
-                                                    </div>
-                                                    <div className="w-16 h-1 bg-black rounded-full overflow-hidden border border-white/5">
-                                                        <div className="bg-green-500 h-full" style={{ width: `${t.popularity}%` }} />
-                                                    </div>
-                                                </div>
-                                            ))}
-                                            {artistSpotlight.length === 0 && !trackInsightsLoading && (
-                                                <div className="text-center p-6 text-gray-500 text-[10px] font-black uppercase tracking-widest bg-white/5 rounded-2xl border border-white/5">Data unavailable</div>
-                                            )}
-                                        </div>
-                                    )}
-                                </section>
-
-                                <section>
-                                    <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Discovery Metrics</h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="bg-[#181818] p-5 rounded-3xl border border-neutral-800 text-center flex flex-col items-center justify-center gap-1">
-                                            <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Track Power</div>
-                                            <div className="text-4xl font-black text-blue-500">{selectedTrack.popularity || 0}%</div>
-                                            <div className="text-[10px] text-gray-600 font-bold uppercase mt-1">Global Weight</div>
-                                        </div>
-                                        <div className="bg-[#181818] p-5 rounded-3xl border border-neutral-800 text-center flex flex-col items-center justify-center gap-1">
-                                            <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Momentum</div>
-                                            <div className="text-4xl font-black text-yellow-500">
-                                                {artistSpotlight.length > 0 && artistSpotlight[0].popularity > 0
-                                                    ? Math.round(((selectedTrack.popularity || 0) / artistSpotlight[0].popularity) * 100)
-                                                    : 0}%
-                                            </div>
-                                            <div className="text-[10px] text-gray-600 font-bold uppercase mt-1">vs. Artist Peak</div>
-                                        </div>
+                                    <div className="mt-6 pt-6 border-t border-neutral-800 text-[10px] text-gray-600 font-black uppercase tracking-widest flex items-center gap-2">
+                                        <PlaySquare size={14} /> {albumDetails?.tracks?.length || 0} Total Tracks
                                     </div>
-                                </section>
-
-                                <div className="mt-8 pt-6 border-t border-neutral-800 flex justify-between items-center">
-                                    <div className="text-[10px] text-gray-600 font-black uppercase tracking-widest">
-                                        Released: {new Date(selectedTrack.album?.release_date || selectedAlbum?.release_date).getFullYear() || 'Unknown'}
-                                    </div>
-                                    <button
-                                        onClick={() => setSelectedTrack(null)}
-                                        className="text-[10px] font-black uppercase tracking-widest bg-[#222] hover:bg-[#333] px-6 py-2 rounded-full transition-all"
-                                    >
-                                        Close
-                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+
+            {/* Track Detail Modal */}
+            {
+                selectedTrack && (
+                    <div
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-fade-in"
+                        onClick={() => setSelectedTrack(null)}
+                    >
+                        <div
+                            className="bg-[#121212] w-full max-w-xl rounded-[2.5rem] border border-neutral-800 overflow-hidden shadow-2xl animate-scale-up"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="p-8">
+                                <div className="flex items-center gap-6 mb-8">
+                                    <img
+                                        src={selectedTrack.album?.images[0]?.url || selectedAlbum?.images[0]?.url}
+                                        className="w-32 h-32 rounded-2xl shadow-2xl cursor-pointer hover:scale-105 transition-transform"
+                                        alt=""
+                                        onClick={() => selectedTrack.album && openAlbumById(selectedTrack.album.id)}
+                                    />
+                                    <div className="min-w-0">
+                                        <h2 className="text-2xl font-black mb-1 truncate">{selectedTrack.name}</h2>
+                                        <div className="flex flex-wrap gap-x-2 text-gray-400 font-bold mb-3">
+                                            {selectedTrack.artists?.map((a, i) => (
+                                                <span
+                                                    key={a.id}
+                                                    onClick={() => openArtistById(a.id)}
+                                                    className="hover:text-green-500 cursor-pointer transition-colors"
+                                                >
+                                                    {a.name}{i < selectedTrack.artists.length - 1 ? ',' : ''}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                            <div className="flex items-center gap-3">
+                                                {isTrackLiked ? (
+                                                    <div className="flex items-center gap-1.5 bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-500/20">
+                                                        <Heart size={12} fill="currentColor" /> Liked
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Not in library</div>
+                                                )}
+                                                <div className="bg-blue-500/10 text-blue-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-500/20">
+                                                    {selectedTrack.popularity || selectedAlbum?.popularity || 0}% Popular
+                                                </div>
+                                            </div>
+                                            {(selectedTrack.album?.name || selectedAlbum?.name) && (
+                                                <div
+                                                    onClick={() => (selectedTrack.album?.id || selectedAlbum?.id) && openAlbumById(selectedTrack.album?.id || selectedAlbum?.id)}
+                                                    className="text-[10px] text-gray-500 font-black uppercase tracking-widest hover:text-green-500 cursor-pointer transition-colors flex items-center gap-1.5"
+                                                >
+                                                    <Disc size={12} /> {selectedTrack.album?.name || selectedAlbum?.name}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-8">
+                                    <section>
+                                        <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4 flex items-center justify-between">
+                                            <span>Artist Spotlight</span>
+                                            <span className="text-green-500 flex items-center gap-1"><Trophy size={10} /> Global Hits</span>
+                                        </h3>
+
+                                        {trackInsightsLoading ? (
+                                            <div className="flex justify-center p-12"><Loader2 className="animate-spin text-green-500" /></div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                {artistSpotlight.slice(0, 3).map((t, i) => (
+                                                    <div
+                                                        key={t.id}
+                                                        onClick={(e) => { e.stopPropagation(); fetchTrackInsights(t); }}
+                                                        className="group flex items-center gap-4 p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-green-500/30 transition-all cursor-pointer"
+                                                    >
+                                                        <span className="text-[10px] font-mono text-gray-600 w-4">{i + 1}</span>
+                                                        <img src={t.album.images[2]?.url} className="w-10 h-10 rounded-lg shadow-lg" alt="" />
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="text-sm font-bold truncate group-hover:text-green-500 transition-colors uppercase tracking-tight">{t.name}</div>
+                                                            <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{Math.round(t.popularity)}% Pop.</div>
+                                                        </div>
+                                                        <div className="w-16 h-1 bg-black rounded-full overflow-hidden border border-white/5">
+                                                            <div className="bg-green-500 h-full" style={{ width: `${t.popularity}%` }} />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                {artistSpotlight.length === 0 && !trackInsightsLoading && (
+                                                    <div className="text-center p-6 text-gray-500 text-[10px] font-black uppercase tracking-widest bg-white/5 rounded-2xl border border-white/5">Data unavailable</div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </section>
+
+                                    <section>
+                                        <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Discovery Metrics</h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="bg-[#181818] p-5 rounded-3xl border border-neutral-800 text-center flex flex-col items-center justify-center gap-1">
+                                                <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Track Power</div>
+                                                <div className="text-4xl font-black text-blue-500">{selectedTrack.popularity || 0}%</div>
+                                                <div className="text-[10px] text-gray-600 font-bold uppercase mt-1">Global Weight</div>
+                                            </div>
+                                            <div className="bg-[#181818] p-5 rounded-3xl border border-neutral-800 text-center flex flex-col items-center justify-center gap-1">
+                                                <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Momentum</div>
+                                                <div className="text-4xl font-black text-yellow-500">
+                                                    {artistSpotlight.length > 0 && artistSpotlight[0].popularity > 0
+                                                        ? Math.round(((selectedTrack.popularity || 0) / artistSpotlight[0].popularity) * 100)
+                                                        : 0}%
+                                                </div>
+                                                <div className="text-[10px] text-gray-600 font-bold uppercase mt-1">vs. Artist Peak</div>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <div className="mt-8 pt-6 border-t border-neutral-800 flex justify-between items-center">
+                                        <div className="text-[10px] text-gray-600 font-black uppercase tracking-widest">
+                                            Released: {new Date(selectedTrack.album?.release_date || selectedAlbum?.release_date).getFullYear() || 'Unknown'}
+                                        </div>
+                                        <button
+                                            onClick={() => setSelectedTrack(null)}
+                                            className="text-[10px] font-black uppercase tracking-widest bg-[#222] hover:bg-[#333] px-6 py-2 rounded-full transition-all"
+                                        >
+                                            Close
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     );
 };
 
