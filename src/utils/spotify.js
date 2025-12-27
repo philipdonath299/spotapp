@@ -39,8 +39,10 @@ async function generateCodeChallenge(codeVerifier) {
  *Redirects user to Spotify Authorization Page
  */
 export async function redirectToAuthCodeFlow() {
-  if (!CLIENT_ID) {
-    alert("CRITICAL ERROR: Spotify Client ID is missing. Please check your Vercel Environment Variables for VITE_SPOTIFY_CLIENT_ID.");
+  const checkID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+
+  if (!checkID) {
+    alert("❌ Vercel Deployment Error: VITE_SPOTIFY_CLIENT_ID is not found.\n\nPlease go to Vercel -> Settings -> Environment Variables and ensure 'VITE_SPOTIFY_CLIENT_ID' is set for 'Production' and you have Redeployed.");
     return;
   }
 
