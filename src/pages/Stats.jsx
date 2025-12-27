@@ -146,6 +146,10 @@ const Stats = () => {
     const fetchTrackInsights = async (track) => {
         setTrackFeaturesLoading(true);
         setSelectedTrack(track);
+        // Clear other modals for a clean transition
+        setSelectedArtist(null);
+        setSelectedAlbum(null);
+
         setTrackFeatures(null); // Clear old data
         try {
             // Some tracks might require the base ID if they have a prefixed ID
@@ -173,6 +177,9 @@ const Stats = () => {
     const openArtistById = async (id) => {
         try {
             const artist = await spotifyFetch(`/artists/${id}`);
+            // Clear other modals
+            setSelectedTrack(null);
+            setSelectedAlbum(null);
             fetchArtistInsights(artist);
         } catch (err) {
             console.error(err);
@@ -182,6 +189,9 @@ const Stats = () => {
     const openAlbumById = async (id) => {
         try {
             const album = await spotifyFetch(`/albums/${id}`);
+            // Clear other modals
+            setSelectedTrack(null);
+            setSelectedArtist(null);
             fetchAlbumInsights(album);
         } catch (err) {
             console.error(err);
