@@ -1,3 +1,5 @@
+export const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI || `${window.location.origin}/callback`;
+
 const SCOPES = [
   "user-read-private",
   "user-read-email",
@@ -38,7 +40,6 @@ async function generateCodeChallenge(codeVerifier) {
  */
 export async function redirectToAuthCodeFlow() {
   const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-  const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI || `${window.location.origin}/callback`;
 
   if (!CLIENT_ID) {
     alert("❌ Vercel Deployment Error: VITE_SPOTIFY_CLIENT_ID is not found.");
@@ -66,7 +67,6 @@ export async function redirectToAuthCodeFlow() {
  */
 export async function getAccessToken(code) {
   const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-  const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI || `${window.location.origin}/callback`;
   const verifier = localStorage.getItem("verifier");
 
   const params = new URLSearchParams();
