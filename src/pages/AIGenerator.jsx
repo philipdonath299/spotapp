@@ -13,9 +13,11 @@ const AIGenerator = () => {
 
     const fetchAIResponse = async (apiKey, prompt) => {
         const models = [
-            { version: 'v1', id: 'gemini-1.5-flash' },
             { version: 'v1beta', id: 'gemini-1.5-flash' },
-            { version: 'v1', id: 'gemini-pro' }
+            { version: 'v1beta', id: 'gemini-1.5-flash-latest' },
+            { version: 'v1beta', id: 'gemini-2.0-flash-exp' },
+            { version: 'v1', id: 'gemini-1.5-flash' },
+            { version: 'v1', id: 'gemini-1.0-pro' }
         ];
 
         let lastError = null;
