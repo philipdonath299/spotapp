@@ -11,13 +11,39 @@ const AIGenerator = () => {
     const [status, setStatus] = useState('');
     const navigate = useNavigate();
 
+    const [availableAIModels, setAvailableAIModels] = useState([]);
+
+    const runDiagnostics = async () => {
+        setLoading(true);
+        setStatus('Running AI Diagnostics...');
+        try {
+            const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+            const data = await res.json();
+            if (data.models) {
+                const names = data.models.map(m => m.name.replace('models/', ''));
+                setAvailableAIModels(names);
+                console.log("Available Gemini Models:", names);
+                alert(`✅ Diagnostics Complete!\n\nYour key is active. Found ${names.length} models.\n\nWorking models for your key:\n${names.slice(0, 10).join('\n')}\n...`);
+            } else {
+                throw new Error(data.error?.message || "No models returned. Your API key might be invalid or restricted.");
+            }
+        } catch (err) {
+            setError(`Diagnostic Failed: ${err.message}`);
+        } finally {
+            setLoading(false);
+            setStatus('');
+        }
+    };
+
     const fetchAIResponse = async (apiKey, prompt) => {
         const models = [
             { version: 'v1beta', id: 'gemini-1.5-flash' },
-            { version: 'v1beta', id: 'gemini-1.5-flash-latest' },
-            { version: 'v1beta', id: 'gemini-2.0-flash-exp' },
             { version: 'v1', id: 'gemini-1.5-flash' },
-            { version: 'v1', id: 'gemini-1.0-pro' }
+            { version: 'v1beta', id: 'gemini-1.5-flash-latest' },
+            { version: 'v1beta', id: 'gemini-1.5-pro' },
+            { version: 'v1', id: 'gemini-pro' },
+            { version: 'v1beta', id: 'gemini-pro' }
         ];
 
         let lastError = null;
@@ -164,7 +190,27 @@ const AIGenerator = () => {
             </div>
 
             {status && <p className="text-center text-green-500 animate-pulse mb-8">{status}</p>}
-            {error && <p className="text-center text-red-500 mb-8 p-4 bg-red-500/10 rounded-lg">{error}</p>}
+            {error && (
+                <div className="max-w-xl mx-auto mb-8 text-center">
+                    <p className="text-red-500 mb-4 p-4 bg-red-500/10 rounded-lg">{error}</p>
+                    <button
+                        onClick={runDiagnostics}
+                        className="text-xs text-neutral-500 hover:text-white underline transition-colors"
+                    >
+                        Run Connection Diagnostics
+                    </button>
+                    {availableAIModels.length > 0 && (
+                        <div className="mt-4 p-4 bg-neutral-900 rounded-lg border border-neutral-800 text-left">
+                            <p className="text-[10px] text-neutral-600 uppercase mb-2">Available Models for your Key:</p>
+                            <div className="flex flex-wrap gap-2">
+                                {availableAIModels.map(m => (
+                                    <span key={m} className="text-[10px] bg-black px-2 py-1 rounded text-green-400 font-mono">{m}</span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {results.length > 0 && (
                 <div className="max-w-4xl mx-auto space-y-4">
