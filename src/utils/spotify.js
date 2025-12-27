@@ -46,9 +46,6 @@ export async function redirectToAuthCodeFlow() {
     return;
   }
 
-  // Final Troubleshooting Alert
-  alert(`🔍 SETUP CHECK:\n\n1. Copy this exact URL:\n${REDIRECT_URI}\n\n2. Paste it into your Spotify Dashboard -> Settings -> Redirect URIs.\n\nAfter you click OK, we will try to connect!`);
-
   const verifier = generateRandomString(128);
   localStorage.setItem("verifier", verifier);
 
