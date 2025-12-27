@@ -1,5 +1,3 @@
-const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-export const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI || `${window.location.origin}/callback`;
 const SCOPES = [
   "user-read-private",
   "user-read-email",
@@ -39,10 +37,11 @@ async function generateCodeChallenge(codeVerifier) {
  *Redirects user to Spotify Authorization Page
  */
 export async function redirectToAuthCodeFlow() {
-  const checkID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+  const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+  const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI || `${window.location.origin}/callback`;
 
-  if (!checkID) {
-    alert("❌ Vercel Deployment Error: VITE_SPOTIFY_CLIENT_ID is not found.\n\nPlease go to Vercel -> Settings -> Environment Variables and ensure 'VITE_SPOTIFY_CLIENT_ID' is set for 'Production' and you have Redeployed.");
+  if (!CLIENT_ID) {
+    alert("❌ Vercel Deployment Error: VITE_SPOTIFY_CLIENT_ID is not found.");
     return;
   }
 
@@ -66,6 +65,8 @@ export async function redirectToAuthCodeFlow() {
  * Gets the access token given the authorization code
  */
 export async function getAccessToken(code) {
+  const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+  const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI || `${window.location.origin}/callback`;
   const verifier = localStorage.getItem("verifier");
 
   const params = new URLSearchParams();
