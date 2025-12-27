@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { spotifyFetch } from '../utils/spotify';
-import { ArrowLeft, Loader2, Music, User, Clock, TrendingUp, Disc, X, Heart, CheckCircle, PlaySquare, Users, Zap, Calendar } from 'lucide-react';
+import { ArrowLeft, Loader2, Music, User, Clock, TrendingUp, Disc, X, Heart, CheckCircle, PlaySquare, Users, Zap, Calendar, Sparkles, Mic, Activity, Layers, Volume2, Flame } from 'lucide-react';
 
 const Stats = () => {
     const [loading, setLoading] = useState(true);
@@ -144,6 +144,25 @@ const Stats = () => {
         const keys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
         if (key === -1) return 'Unknown';
         return `${keys[key]} ${mode === 1 ? 'Major' : 'Minor'}`;
+    };
+
+    const getSongTraits = (features) => {
+        const traits = [];
+        if (features.energy > 0.75) traits.push({ icon: <Zap size={14} />, label: 'High Octane', color: 'text-orange-500', bg: 'bg-orange-500/10' });
+        else if (features.energy < 0.3) traits.push({ icon: <Clock size={14} />, label: 'Chilled Out', color: 'text-blue-400', bg: 'bg-blue-400/10' });
+
+        if (features.danceability > 0.75) traits.push({ icon: <Mic size={14} />, label: 'Club Ready', color: 'text-green-500', bg: 'bg-green-500/10' });
+
+        if (features.valence > 0.7) traits.push({ icon: <Sparkles size={14} />, label: 'Euphoric', color: 'text-yellow-500', bg: 'bg-yellow-500/10' });
+        else if (features.valence < 0.3) traits.push({ icon: <Volume2 size={14} />, label: 'Moody & Deep', color: 'text-purple-500', bg: 'bg-purple-500/10' });
+
+        if (features.acousticness > 0.7) traits.push({ icon: <Music size={14} />, label: 'Deeply Acoustic', color: 'text-blue-200', bg: 'bg-blue-200/10' });
+
+        if (features.instrumentalness > 0.5) traits.push({ icon: <Layers size={14} />, label: 'Purely Instrumental', color: 'text-gray-400', bg: 'bg-gray-400/10' });
+
+        if (features.liveness > 0.8) traits.push({ icon: <Mic size={14} />, label: 'Live Performance', color: 'text-red-500', bg: 'bg-red-500/10' });
+
+        return traits;
     };
 
     const formatDuration = (ms) => {
@@ -610,54 +629,54 @@ const Stats = () => {
 
                             <div className="space-y-6">
                                 <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] flex justify-between items-center">
-                                    <span>Audio Vibe Analysis</span>
+                                    <span>Musical Anatomy</span>
                                     {(selectedTrack.album?.release_date || selectedAlbum?.release_date) && (
                                         <span className="text-gray-600">Released: {new Date(selectedTrack.album?.release_date || selectedAlbum?.release_date).getFullYear()}</span>
                                     )}
                                 </h3>
+
                                 {trackFeaturesLoading ? (
                                     <div className="flex justify-center p-12"><Loader2 className="animate-spin text-green-500" /></div>
                                 ) : trackFeatures ? (
-                                    <div className="space-y-6">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            {[
-                                                { label: 'Energy', value: trackFeatures.energy, color: 'bg-orange-500' },
-                                                { label: 'Danceability', value: trackFeatures.danceability, color: 'bg-green-500' },
-                                                { label: 'Acousticness', value: trackFeatures.acousticness, color: 'bg-blue-500' },
-                                                { label: 'Mood (Valence)', value: trackFeatures.valence, color: 'bg-yellow-500' }
-                                            ].map(feature => (
-                                                <div key={feature.label} className="bg-[#181818] p-5 rounded-2xl border border-neutral-800">
-                                                    <div className="flex justify-between items-center mb-3">
-                                                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{feature.label}</span>
-                                                        <span className="text-xs font-mono font-bold">{Math.round(feature.value * 100)}%</span>
-                                                    </div>
-                                                    <div className="w-full bg-black h-1.5 rounded-full overflow-hidden border border-neutral-800">
-                                                        <div className={`${feature.color} h-full transition-all duration-1000`} style={{ width: `${feature.value * 100}%` }} />
-                                                    </div>
+                                    <div className="space-y-8">
+                                        <div className="flex flex-wrap gap-2">
+                                            {getSongTraits(trackFeatures).map((trait, i) => (
+                                                <div key={i} className={`${trait.bg} ${trait.color} px-4 py-2 rounded-full flex items-center gap-2 border border-white/5 shadow-xl animate-fade-in`}>
+                                                    {trait.icon}
+                                                    <span className="text-[10px] font-black uppercase tracking-widest">{trait.label}</span>
                                                 </div>
                                             ))}
+                                            {getSongTraits(trackFeatures).length === 0 && (
+                                                <div className="bg-white/5 text-gray-400 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/5">Solid Neutral Vibe</div>
+                                            )}
                                         </div>
 
-                                        <div className="grid grid-cols-3 gap-3">
-                                            <div className="bg-[#181818] p-4 rounded-2xl border border-neutral-800 text-center">
-                                                <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Tempo</div>
-                                                <div className="text-xl font-black">{Math.round(trackFeatures.tempo)}</div>
-                                                <div className="text-[10px] font-bold text-gray-600">BPM</div>
+                                        <div className="grid grid-cols-3 gap-6">
+                                            <div className="bg-[#181818] p-6 rounded-[2rem] border border-neutral-800 text-center group hover:border-blue-500/30 transition-all">
+                                                <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+                                                    <Activity size={12} className="text-blue-500" /> Tempo
+                                                </div>
+                                                <div className="text-3xl font-black text-white">{Math.round(trackFeatures.tempo)}</div>
+                                                <div className="text-[10px] font-bold text-gray-600 mt-1 uppercase">Beats PM</div>
                                             </div>
-                                            <div className="bg-[#181818] p-4 rounded-2xl border border-neutral-800 text-center">
-                                                <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Key</div>
-                                                <div className="text-xl font-black truncate">{getMusicalKey(trackFeatures.key, trackFeatures.mode).split(' ')[0]}</div>
-                                                <div className="text-[10px] font-bold text-gray-600 uppercase">{getMusicalKey(trackFeatures.key, trackFeatures.mode).split(' ')[1]}</div>
+                                            <div className="bg-[#181818] p-6 rounded-[2rem] border border-neutral-800 text-center group hover:border-purple-500/30 transition-all">
+                                                <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+                                                    <Layers size={12} className="text-purple-500" /> Harmony
+                                                </div>
+                                                <div className="text-3xl font-black text-white truncate">{getMusicalKey(trackFeatures.key, trackFeatures.mode).split(' ')[0]}</div>
+                                                <div className="text-[10px] font-bold text-gray-600 mt-1 uppercase">{getMusicalKey(trackFeatures.key, trackFeatures.mode).split(' ')[1]}</div>
                                             </div>
-                                            <div className="bg-[#181818] p-4 rounded-2xl border border-neutral-800 text-center">
-                                                <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Live</div>
-                                                <div className="text-xl font-black">{trackFeatures.liveness > 0.8 ? 'Yes' : 'No'}</div>
-                                                <div className="text-[10px] font-bold text-gray-600 uppercase">{Math.round(trackFeatures.liveness * 100)}%</div>
+                                            <div className="bg-[#181818] p-6 rounded-[2rem] border border-neutral-800 text-center group hover:border-green-500/30 transition-all">
+                                                <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+                                                    <Flame size={12} className="text-green-500" /> Energy
+                                                </div>
+                                                <div className="text-3xl font-black text-white">{Math.round(trackFeatures.energy * 100)}%</div>
+                                                <div className="text-[10px] font-bold text-gray-600 mt-1 uppercase">Dynamic</div>
                                             </div>
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="text-center p-8 text-gray-500 text-xs font-medium">No audio features available.</div>
+                                    <div className="text-center p-8 text-gray-500 text-xs font-medium bg-white/5 rounded-3xl border border-white/5">Vibe data unavailable for this track.</div>
                                 )}
 
                                 <div className="mt-8 pt-6 border-t border-neutral-800 flex justify-between items-center">
