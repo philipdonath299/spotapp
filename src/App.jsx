@@ -5,6 +5,7 @@ import Callback from './pages/Callback';
 import Dashboard from './pages/Dashboard';
 import Recommendations from './pages/Recommendations';
 import AIGenerator from './pages/AIGenerator';
+import Stats from './pages/Stats';
 
 function App() {
     return (
@@ -15,6 +16,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/recommendations/:playlistId" element={<Recommendations />} />
                 <Route path="/ai-generator" element={<AIGenerator />} />
+                <Route path="/stats" element={<Stats />} />
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>
         </BrowserRouter>

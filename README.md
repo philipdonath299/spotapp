@@ -1,10 +1,12 @@
+```
 # SpotApp: Spotify Music Discovery Engine 🎵
 
 SpotApp is a specialized music discovery engine that finds genuinely new music based on your existing playlists. It uses a custom genre-and-artist discovery algorithm to bypass the deprecated Spotify Recommendations API.
 
 ## Features
-- **Deep Discovery**: Find tracks you've never heard (checked against your library).
-- **Genre-Aware**: Analyzes your playlist's specific vibe and sub-genres.
+- **AI Magic**: Brainstorms song lists based on text prompts using Gemini 2.x/2.5.
+- **Diagnostics**: Built-in tool to detect available models for any API key.
+- **Large Playlists**: Supports generating up to 80-100 songs with real-time progress tracking.
 - **Save to Library**: Effortlessly create a new Spotify playlist with all your discoveries in one click.
 - **Premium UI**: Clean, dark-mode focused experience.
 

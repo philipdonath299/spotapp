@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { spotifyFetch } from '../utils/spotify';
-import { Music, Play, Wand2 } from 'lucide-react';
+import { Music, Play, Wand2, BarChart3 } from 'lucide-react';
 
 const Dashboard = () => {
     const [playlists, setPlaylists] = useState([]);
@@ -44,6 +44,12 @@ const Dashboard = () => {
                     Hello, {profile?.display_name}
                 </h1>
                 <div className="flex items-center gap-6">
+                    <button
+                        onClick={() => navigate('/stats')}
+                        className="flex items-center gap-2 bg-[#181818] border border-neutral-800 text-white px-6 py-2 rounded-full font-bold hover:bg-[#282828] transition-all hover:scale-105 shadow-lg"
+                    >
+                        <BarChart3 size={18} /> My Stats
+                    </button>
                     <button
                         onClick={() => navigate('/ai-generator')}
                         className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-500 text-black px-6 py-2 rounded-full font-bold hover:opacity-90 transition-all hover:scale-105 shadow-lg shadow-green-500/20"
