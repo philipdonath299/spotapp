@@ -146,15 +146,22 @@ const Stats = () => {
     const fetchTrackInsights = async (track) => {
         setTrackFeaturesLoading(true);
         setSelectedTrack(track);
+        setTrackFeatures(null); // Clear old data
         try {
             const [features, likedData] = await Promise.all([
                 spotifyFetch(`/audio-features/${track.id}`),
                 spotifyFetch(`/me/tracks/contains?ids=${track.id}`)
             ]);
-            setTrackFeatures(features);
+            // Ensure we got an object with at least danceability
+            if (features && features.danceability !== undefined) {
+                setTrackFeatures(features);
+            } else {
+                setTrackFeatures(null);
+            }
             setIsTrackLiked(likedData[0]);
         } catch (err) {
             console.error(err);
+            setTrackFeatures(null);
         } finally {
             setTrackFeaturesLoading(false);
         }
@@ -378,9 +385,13 @@ const Stats = () => {
                                     <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-6">Your heavy rotation tracks</h4>
                                     <div className="space-y-2">
                                         {artistDetails.topTracksOccurrences.map(t => (
-                                            <div key={t.id} className="bg-[#222] p-4 rounded-2xl flex items-center gap-4 border border-neutral-800 hover:border-neutral-700 transition-all">
-                                                <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
-                                                <span className="font-bold text-sm">{t.name}</span>
+                                            <div
+                                                key={t.id}
+                                                onClick={() => fetchTrackInsights(t)}
+                                                className="bg-[#222] p-4 rounded-2xl flex items-center gap-4 border border-neutral-800 hover:border-green-500/50 hover:bg-[#282828] transition-all cursor-pointer group/track"
+                                            >
+                                                <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)] group-hover/track:scale-150 transition-transform" />
+                                                <span className="font-bold text-sm group-hover/track:text-green-500 transition-colors uppercase tracking-tight">{t.name}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -421,10 +432,14 @@ const Stats = () => {
                                         <div className="h-full flex items-center justify-center"><Loader2 className="animate-spin text-green-500" /></div>
                                     ) : (
                                         albumDetails?.tracks?.map((track, i) => (
-                                            <div key={track.id} className="group flex items-center gap-4 p-3 rounded-xl hover:bg-neutral-800/50 transition-all">
+                                            <div
+                                                key={track.id}
+                                                onClick={() => fetchTrackInsights(track)}
+                                                className="group flex items-center gap-4 p-3 rounded-xl hover:bg-neutral-800/80 transition-all cursor-pointer"
+                                            >
                                                 <span className="w-4 text-[10px] font-mono text-gray-600">{i + 1}</span>
                                                 <div className="flex-1 min-w-0">
-                                                    <div className={`text-sm font-bold truncate ${track.isTopTrack ? 'text-green-500' : 'text-gray-300'}`}>{track.name}</div>
+                                                    <div className={`text-sm font-bold truncate ${track.isTopTrack ? 'text-green-500' : 'text-gray-300'} group-hover:text-green-400`}>{track.name}</div>
                                                 </div>
                                                 {track.isTopTrack && <CheckCircle size={14} className="text-green-500" />}
                                                 <span className="text-[10px] font-mono text-gray-600">{formatDuration(track.duration_ms)}</span>
