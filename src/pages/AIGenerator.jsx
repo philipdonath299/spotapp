@@ -11,6 +11,44 @@ const AIGenerator = () => {
     const [status, setStatus] = useState('');
     const navigate = useNavigate();
 
+    const fetchAIResponse = async (apiKey, prompt) => {
+        const models = [
+            { version: 'v1', id: 'gemini-1.5-flash' },
+            { version: 'v1beta', id: 'gemini-1.5-flash' },
+            { version: 'v1', id: 'gemini-pro' }
+        ];
+
+        let lastError = null;
+
+        for (const model of models) {
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/${model.version}/models/${model.id}:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: `Generate a list of exactly 15 songs that match this vibe: "${prompt}". 
+                                Return ONLY a JSON array of objects with "track" and "artist" keys. 
+                                Format: [{"track": "Song Name", "artist": "Artist Name"}]`
+                            }]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                if (data.error) throw new Error(data.error.message);
+                if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+                    return data;
+                }
+            } catch (err) {
+                console.warn(`Model ${model.id} (${model.version}) failed:`, err.message);
+                lastError = err.message;
+            }
+        }
+        throw new Error(`AI Connection Failed. Last error: ${lastError}. Please ensure your API Key is valid for Gemini 1.5.`);
+    };
+
     const generateAIPlaylist = async (e) => {
         e.preventDefault();
         if (!prompt.trim()) return;
@@ -18,7 +56,7 @@ const AIGenerator = () => {
         setLoading(true);
         setError(null);
         setResults([]);
-        setStatus('AI is brainstorming songs...');
+        setStatus('AI is brainstorming songs (trying stable models)...');
 
         try {
             const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
@@ -26,32 +64,7 @@ const AIGenerator = () => {
                 throw new Error('Gemini API Key is missing. Please add VITE_GEMINI_API_KEY to your environment variables.');
             }
 
-            // 1. Get Song Recommendations from Gemini
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-002:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: `Generate a list of exactly 15 songs that match this vibe: "${prompt}". 
-                            Return ONLY a JSON array of objects with "track" and "artist" keys. 
-                            Format: [{"track": "Song Name", "artist": "Artist Name"}]`
-                        }]
-                    }]
-                })
-            });
-
-            const data = await response.json();
-
-            if (data.error) {
-                throw new Error(`AI Error: ${data.error.message || 'Unknown error'}`);
-            }
-
-            if (!data.candidates || data.candidates.length === 0) {
-                console.error("No candidates in response:", data);
-                throw new Error("The AI didn't return any song ideas. Try a different prompt!");
-            }
-
+            const data = await fetchAIResponse(apiKey, prompt);
             const textResponse = data.candidates[0].content.parts[0].text;
 
             // Extract JSON from potential markdown backticks
