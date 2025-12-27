@@ -22,16 +22,21 @@ const Stats = () => {
     const [albumDetails, setAlbumDetails] = useState(null);
     const [albumDetailsLoading, setAlbumDetailsLoading] = useState(false);
 
+    const [selectedTrack, setSelectedTrack] = useState(null);
+    const [trackFeatures, setTrackFeatures] = useState(null);
+    const [trackFeaturesLoading, setTrackFeaturesLoading] = useState(false);
+    const [isTrackLiked, setIsTrackLiked] = useState(false);
+
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (selectedArtist || selectedAlbum) {
+        if (selectedArtist || selectedAlbum || selectedTrack) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'auto';
         }
         return () => { document.body.style.overflow = 'auto'; };
-    }, [selectedArtist, selectedAlbum]);
+    }, [selectedArtist, selectedAlbum, selectedTrack]);
 
     useEffect(() => {
         fetchStats();
@@ -138,6 +143,23 @@ const Stats = () => {
         return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
     };
 
+    const fetchTrackInsights = async (track) => {
+        setTrackFeaturesLoading(true);
+        setSelectedTrack(track);
+        try {
+            const [features, likedData] = await Promise.all([
+                spotifyFetch(`/audio-features/${track.id}`),
+                spotifyFetch(`/me/tracks/contains?ids=${track.id}`)
+            ]);
+            setTrackFeatures(features);
+            setIsTrackLiked(likedData[0]);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setTrackFeaturesLoading(false);
+        }
+    };
+
     if (loading && !topArtists.length) {
         return (
             <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -220,7 +242,11 @@ const Stats = () => {
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {recentTracks.map((item, index) => (
-                                        <div key={item.played_at + index} className="flex items-center gap-4 bg-[#181818] p-4 rounded-2xl border border-neutral-800/50 hover:bg-[#222] transition-all group">
+                                        <div
+                                            key={item.played_at + index}
+                                            onClick={() => fetchTrackInsights(item.track)}
+                                            className="flex items-center gap-4 bg-[#181818] p-4 rounded-2xl border border-neutral-800/50 hover:bg-[#222] transition-all group cursor-pointer"
+                                        >
                                             <img src={item.track.album.images[2]?.url} className="w-14 h-14 rounded-lg" alt="" />
                                             <div className="flex-1 min-w-0">
                                                 <div className="font-bold truncate text-sm">{item.track.name}</div>
@@ -257,7 +283,11 @@ const Stats = () => {
                         {activeTab === 'tracks' && (
                             <section className="space-y-4 animate-fade-in leading-none">
                                 {topTracks.map((track) => (
-                                    <div key={track.id} className="flex items-center gap-6 bg-[#181818] p-4 rounded-2xl border border-neutral-800 hover:bg-[#222] transition-all group">
+                                    <div
+                                        key={track.id}
+                                        onClick={() => fetchTrackInsights(track)}
+                                        className="flex items-center gap-6 bg-[#181818] p-4 rounded-2xl border border-neutral-800 hover:bg-[#222] transition-all group cursor-pointer"
+                                    >
                                         <img src={track.album.images[2]?.url} className="w-16 h-16 rounded-xl shadow-2xl" alt="" />
                                         <div className="flex-1 min-w-0">
                                             <div className="text-lg font-black truncate group-hover:text-green-500 transition-colors uppercase tracking-tight mb-2">{track.name}</div>
@@ -404,6 +434,79 @@ const Stats = () => {
                                 </div>
                                 <div className="mt-6 pt-6 border-t border-neutral-800 text-[10px] text-gray-600 font-black uppercase tracking-widest flex items-center gap-2">
                                     <PlaySquare size={14} /> {albumDetails?.tracks?.length || 0} Total Tracks
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Track Detail Modal */}
+            {selectedTrack && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-fade-in"
+                    onClick={() => setSelectedTrack(null)}
+                >
+                    <div
+                        className="bg-[#121212] w-full max-w-xl rounded-[2.5rem] border border-neutral-800 overflow-hidden shadow-2xl animate-scale-up"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-8">
+                            <div className="flex items-center gap-6 mb-8">
+                                <img src={selectedTrack.album.images[0]?.url} className="w-32 h-32 rounded-2xl shadow-2xl" alt="" />
+                                <div className="min-w-0">
+                                    <h2 className="text-2xl font-black mb-1 truncate">{selectedTrack.name}</h2>
+                                    <p className="text-gray-400 font-bold mb-3">{selectedTrack.artists.map(a => a.name).join(', ')}</p>
+                                    <div className="flex items-center gap-3">
+                                        {isTrackLiked ? (
+                                            <div className="flex items-center gap-1.5 bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-500/20">
+                                                <Heart size={12} fill="currentColor" /> Liked
+                                            </div>
+                                        ) : (
+                                            <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Not in library</div>
+                                        )}
+                                        <div className="bg-blue-500/10 text-blue-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-500/20">
+                                            {selectedTrack.popularity}% Popular
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Audio Vibe Analysis</h3>
+                                {trackFeaturesLoading ? (
+                                    <div className="flex justify-center p-12"><Loader2 className="animate-spin text-green-500" /></div>
+                                ) : trackFeatures ? (
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {[
+                                            { label: 'Energy', value: trackFeatures.energy, color: 'bg-orange-500' },
+                                            { label: 'Danceability', value: trackFeatures.danceability, color: 'bg-green-500' },
+                                            { label: 'Acousticness', value: trackFeatures.acousticness, color: 'bg-blue-500' },
+                                            { label: 'Instrumentalness', value: trackFeatures.instrumentalness, color: 'bg-purple-500' }
+                                        ].map(feature => (
+                                            <div key={feature.label} className="bg-[#181818] p-5 rounded-2xl border border-neutral-800">
+                                                <div className="flex justify-between items-center mb-3">
+                                                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{feature.label}</span>
+                                                    <span className="text-xs font-mono font-bold">{Math.round(feature.value * 100)}%</span>
+                                                </div>
+                                                <div className="w-full bg-black h-1.5 rounded-full overflow-hidden border border-neutral-800">
+                                                    <div className={`${feature.color} h-full transition-all duration-1000`} style={{ width: `${feature.value * 100}%` }} />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center p-8 text-gray-500 text-xs font-medium">No audio features available.</div>
+                                )}
+
+                                <div className="mt-8 pt-6 border-t border-neutral-800 flex justify-between items-center">
+                                    <div className="text-[10px] text-gray-600 font-black uppercase tracking-widest">Released: {new Date(selectedTrack.album.release_date).getFullYear()}</div>
+                                    <button
+                                        onClick={() => setSelectedTrack(null)}
+                                        className="text-[10px] font-black uppercase tracking-widest bg-[#222] hover:bg-[#333] px-6 py-2 rounded-full transition-all"
+                                    >
+                                        Close
+                                    </button>
                                 </div>
                             </div>
                         </div>
