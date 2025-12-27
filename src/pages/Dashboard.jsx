@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { spotifyFetch } from '../utils/spotify';
-import { Music, Play } from 'lucide-react';
+import { Music, Play, Wand2 } from 'lucide-react';
 
 const Dashboard = () => {
     const [playlists, setPlaylists] = useState([]);
@@ -43,15 +43,23 @@ const Dashboard = () => {
                 <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500">
                     Hello, {profile?.display_name}
                 </h1>
-                <button
-                    onClick={() => {
-                        localStorage.clear();
-                        navigate('/');
-                    }}
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
-                >
-                    Logout
-                </button>
+                <div className="flex items-center gap-6">
+                    <button
+                        onClick={() => navigate('/ai-generator')}
+                        className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-500 text-black px-6 py-2 rounded-full font-bold hover:opacity-90 transition-all hover:scale-105 shadow-lg shadow-green-500/20"
+                    >
+                        <Wand2 size={18} /> AI Magic
+                    </button>
+                    <button
+                        onClick={() => {
+                            localStorage.clear();
+                            navigate('/');
+                        }}
+                        className="text-sm text-gray-400 hover:text-white transition-colors"
+                    >
+                        Logout
+                    </button>
+                </div>
             </header>
 
             <h2 className="text-2xl font-bold mb-6">Select a Playlist to Discover New Music</h2>
