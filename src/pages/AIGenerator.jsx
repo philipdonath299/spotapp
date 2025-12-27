@@ -42,6 +42,16 @@ const AIGenerator = () => {
             });
 
             const data = await response.json();
+
+            if (data.error) {
+                throw new Error(`AI Error: ${data.error.message || 'Unknown error'}`);
+            }
+
+            if (!data.candidates || data.candidates.length === 0) {
+                console.error("No candidates in response:", data);
+                throw new Error("The AI didn't return any song ideas. Try a different prompt!");
+            }
+
             const textResponse = data.candidates[0].content.parts[0].text;
 
             // Extract JSON from potential markdown backticks

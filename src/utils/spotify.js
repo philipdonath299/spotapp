@@ -59,14 +59,6 @@ export async function redirectToAuthCodeFlow() {
   params.append("code_challenge_method", "S256");
   params.append("code_challenge", challenge);
 
-  // DIAGNOSTIC ALERT - USER MUST SEE THIS
-  const debugMsg = `🚀 REDIRECTING TO SPOTIFY...\n\n` +
-    `1. Your Client ID: ${CLIENT_ID}\n` +
-    `2. Your Redirect URI: ${REDIRECT_URI}\n\n` +
-    `🚨 IMPORTANT: Go to Spotify Dashboard and make sure the "Redirect URI" there matches the one above EXACTLY (including https:// and /callback).`;
-
-  alert(debugMsg);
-
   document.location = `https://accounts.spotify.com/authorize?${params.toString()}`;
 }
 
