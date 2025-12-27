@@ -44,10 +44,6 @@ export async function redirectToAuthCodeFlow() {
     return;
   }
 
-  // Debug Alert for Redirect URI
-  console.log("Sending Redirect URI:", REDIRECT_URI);
-  // alert(`Debug: Sending Redirect URI to Spotify: ${REDIRECT_URI}\n\nPlease ensure this EXACT text is added to your Spotify Dashboard Redirect URIs.`);
-
   const verifier = generateRandomString(128);
   localStorage.setItem("verifier", verifier);
 
