@@ -1,5 +1,5 @@
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI || `${window.location.origin}/callback`;
+export const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI || `${window.location.origin}/callback`;
 const SCOPES = [
   "user-read-private",
   "user-read-email",
@@ -43,6 +43,11 @@ export async function redirectToAuthCodeFlow() {
     alert("CRITICAL ERROR: Spotify Client ID is missing. Please check your Vercel Environment Variables for VITE_SPOTIFY_CLIENT_ID.");
     return;
   }
+
+  // Debug Alert for Redirect URI
+  console.log("Sending Redirect URI:", REDIRECT_URI);
+  // alert(`Debug: Sending Redirect URI to Spotify: ${REDIRECT_URI}\n\nPlease ensure this EXACT text is added to your Spotify Dashboard Redirect URIs.`);
+
   const verifier = generateRandomString(128);
   localStorage.setItem("verifier", verifier);
 
