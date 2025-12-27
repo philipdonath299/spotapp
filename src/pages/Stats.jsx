@@ -661,7 +661,9 @@ const Stats = () => {
                                 )}
 
                                 <div className="mt-8 pt-6 border-t border-neutral-800 flex justify-between items-center">
-                                    <div className="text-[10px] text-gray-600 font-black uppercase tracking-widest">Released: {new Date(selectedTrack.album.release_date).getFullYear()}</div>
+                                    <div className="text-[10px] text-gray-600 font-black uppercase tracking-widest">
+                                        Released: {new Date(selectedTrack.album?.release_date || selectedAlbum?.release_date).getFullYear() || 'Unknown'}
+                                    </div>
                                     <button
                                         onClick={() => setSelectedTrack(null)}
                                         className="text-[10px] font-black uppercase tracking-widest bg-[#222] hover:bg-[#333] px-6 py-2 rounded-full transition-all"
