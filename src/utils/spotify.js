@@ -39,6 +39,10 @@ async function generateCodeChallenge(codeVerifier) {
  *Redirects user to Spotify Authorization Page
  */
 export async function redirectToAuthCodeFlow() {
+  if (!CLIENT_ID) {
+    alert("CRITICAL ERROR: Spotify Client ID is missing. Please check your Vercel Environment Variables for VITE_SPOTIFY_CLIENT_ID.");
+    return;
+  }
   const verifier = generateRandomString(128);
   localStorage.setItem("verifier", verifier);
 
