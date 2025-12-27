@@ -25,6 +25,15 @@ const Stats = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        if (selectedArtist || selectedAlbum) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+        return () => { document.body.style.overflow = 'auto'; };
+    }, [selectedArtist, selectedAlbum]);
+
+    useEffect(() => {
         fetchStats();
     }, [timeRange]);
 
@@ -138,156 +147,158 @@ const Stats = () => {
     }
 
     return (
-        <div className="min-h-screen bg-black text-white p-4 md:p-8 animate-fade-in">
-            <button
-                onClick={() => navigate('/dashboard')}
-                className="flex items-center text-gray-400 hover:text-white mb-8 transition-colors group"
-            >
-                <ArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" size={20} /> Back to Dashboard
-            </button>
+        <div className="min-h-screen bg-black text-white p-4 md:p-8 relative">
+            <div className="animate-fade-in">
+                <button
+                    onClick={() => navigate('/dashboard')}
+                    className="flex items-center text-gray-400 hover:text-white mb-8 transition-colors group"
+                >
+                    <ArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" size={20} /> Back to Dashboard
+                </button>
 
-            <div className="max-w-6xl mx-auto">
-                <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
-                    <div className="flex items-center gap-6">
-                        <div className="p-4 bg-green-500/10 rounded-2xl border border-green-500/20 shadow-2xl shadow-green-500/10">
-                            <TrendingUp className="text-green-500" size={40} />
+                <div className="max-w-6xl mx-auto">
+                    <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
+                        <div className="flex items-center gap-6">
+                            <div className="p-4 bg-green-500/10 rounded-2xl border border-green-500/20 shadow-2xl shadow-green-500/10">
+                                <TrendingUp className="text-green-500" size={40} />
+                            </div>
+                            <div>
+                                <h1 className="text-4xl md:text-5xl font-black mb-2 tracking-tight">Your Vibe Stats</h1>
+                                <p className="text-gray-400 font-medium tracking-wide">Deep insights into your Spotify universe.</p>
+                            </div>
                         </div>
-                        <div>
-                            <h1 className="text-4xl md:text-5xl font-black mb-2 tracking-tight">Your Vibe Stats</h1>
-                            <p className="text-gray-400 font-medium tracking-wide">Deep insights into your Spotify universe.</p>
-                        </div>
-                    </div>
 
-                    <div className="flex bg-[#121212] p-1.5 rounded-xl border border-neutral-800 shadow-inner">
-                        {['short_term', 'medium_term', 'long_term'].map((range) => (
-                            <button
-                                key={range}
-                                onClick={() => setTimeRange(range)}
-                                className={`px-5 py-2.5 rounded-lg text-sm font-black transition-all ${timeRange === range
+                        <div className="flex bg-[#121212] p-1.5 rounded-xl border border-neutral-800 shadow-inner">
+                            {['short_term', 'medium_term', 'long_term'].map((range) => (
+                                <button
+                                    key={range}
+                                    onClick={() => setTimeRange(range)}
+                                    className={`px-5 py-2.5 rounded-lg text-sm font-black transition-all ${timeRange === range
                                         ? 'bg-[#282828] text-white shadow-xl scale-[1.02]'
                                         : 'text-gray-500 hover:text-gray-300'
+                                        }`}
+                                >
+                                    {range === 'short_term' ? 'Last Month' : range === 'medium_term' ? '6 Months' : 'All Time'}
+                                </button>
+                            ))}
+                        </div>
+                    </header>
+
+                    <div className="flex flex-wrap gap-2 mb-10 border-b border-neutral-800 pb-4">
+                        {[
+                            { id: 'artists', label: 'Top Artists', icon: User },
+                            { id: 'tracks', label: 'Top Songs', icon: Music },
+                            { id: 'albums', label: 'Top Albums', icon: Disc },
+                            { id: 'recent', label: 'History', icon: Clock }
+                        ].map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-black transition-all border ${activeTab === tab.id
+                                    ? 'bg-green-500 border-green-500 text-black shadow-lg shadow-green-500/30'
+                                    : 'bg-[#121212] border-neutral-800 text-gray-400 hover:text-white hover:border-neutral-700'
                                     }`}
                             >
-                                {range === 'short_term' ? 'Last Month' : range === 'medium_term' ? '6 Months' : 'All Time'}
+                                <tab.icon size={18} />
+                                {tab.label}
                             </button>
                         ))}
                     </div>
-                </header>
 
-                <div className="flex flex-wrap gap-2 mb-10 border-b border-neutral-800 pb-4">
-                    {[
-                        { id: 'artists', label: 'Top Artists', icon: User },
-                        { id: 'tracks', label: 'Top Songs', icon: Music },
-                        { id: 'albums', label: 'Top Albums', icon: Disc },
-                        { id: 'recent', label: 'History', icon: Clock }
-                    ].map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-black transition-all border ${activeTab === tab.id
-                                    ? 'bg-green-500 border-green-500 text-black shadow-lg shadow-green-500/30'
-                                    : 'bg-[#121212] border-neutral-800 text-gray-400 hover:text-white hover:border-neutral-700'
-                                }`}
-                        >
-                            <tab.icon size={18} />
-                            {tab.label}
-                        </button>
-                    ))}
-                </div>
+                    <div className="min-h-[400px]">
+                        {activeTab === 'recent' && (
+                            <section className="animate-fade-in">
+                                <div className="flex justify-between items-center mb-8 bg-neutral-900/50 p-6 rounded-2xl border border-neutral-800">
+                                    <div>
+                                        <h3 className="text-xl font-bold mb-1">Last 50 sessions</h3>
+                                        <p className="text-sm text-gray-500">Your most recent music history.</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-[10px] text-gray-500 uppercase font-black mb-1">Volumne</div>
+                                        <div className="text-2xl font-black text-green-500">{getTotalRecentTime()}</div>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {recentTracks.map((item, index) => (
+                                        <div key={item.played_at + index} className="flex items-center gap-4 bg-[#181818] p-4 rounded-2xl border border-neutral-800/50 hover:bg-[#222] transition-all group">
+                                            <img src={item.track.album.images[2]?.url} className="w-14 h-14 rounded-lg" alt="" />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="font-bold truncate text-sm">{item.track.name}</div>
+                                                <div className="text-xs text-gray-400 truncate">{item.track.artists[0].name}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
 
-                <div className="min-h-[400px]">
-                    {activeTab === 'recent' && (
-                        <section className="animate-fade-in">
-                            <div className="flex justify-between items-center mb-8 bg-neutral-900/50 p-6 rounded-2xl border border-neutral-800">
-                                <div>
-                                    <h3 className="text-xl font-bold mb-1">Last 50 sessions</h3>
-                                    <p className="text-sm text-gray-500">Your most recent music history.</p>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-[10px] text-gray-500 uppercase font-black mb-1">Volumne</div>
-                                    <div className="text-2xl font-black text-green-500">{getTotalRecentTime()}</div>
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {recentTracks.map((item, index) => (
-                                    <div key={item.played_at + index} className="flex items-center gap-4 bg-[#181818] p-4 rounded-2xl border border-neutral-800/50 hover:bg-[#222] transition-all group">
-                                        <img src={item.track.album.images[2]?.url} className="w-14 h-14 rounded-lg" alt="" />
-                                        <div className="flex-1 min-w-0">
-                                            <div className="font-bold truncate text-sm">{item.track.name}</div>
-                                            <div className="text-xs text-gray-400 truncate">{item.track.artists[0].name}</div>
+                        {activeTab === 'artists' && (
+                            <section className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+                                {topArtists.map((artist) => (
+                                    <div
+                                        key={artist.id}
+                                        onClick={() => fetchArtistInsights(artist)}
+                                        className="flex items-center gap-6 bg-[#181818] p-5 rounded-2xl border border-neutral-800/50 hover:border-green-500/50 hover:bg-[#222] transition-all group cursor-pointer"
+                                    >
+                                        <img src={artist.images[1]?.url} className="w-20 h-20 rounded-full object-cover shadow-2xl" alt="" />
+                                        <div className="flex-1">
+                                            <h3 className="text-xl font-black group-hover:text-green-500 transition-colors mb-1">{artist.name}</h3>
+                                            <p className="text-xs text-gray-400 uppercase tracking-widest font-black mb-3">{artist.genres.slice(0, 2).join(' • ')}</p>
+                                            <div className="w-full bg-black h-1.5 rounded-full overflow-hidden border border-neutral-800">
+                                                <div className="bg-green-500 h-full" style={{ width: `${artist.popularity}%` }} />
+                                            </div>
+                                            <span className="text-[10px] text-gray-600 font-bold uppercase mt-1 inline-block">Popularity: {artist.popularity}%</span>
                                         </div>
                                     </div>
                                 ))}
-                            </div>
-                        </section>
-                    )}
+                            </section>
+                        )}
 
-                    {activeTab === 'artists' && (
-                        <section className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
-                            {topArtists.map((artist) => (
-                                <div
-                                    key={artist.id}
-                                    onClick={() => fetchArtistInsights(artist)}
-                                    className="flex items-center gap-6 bg-[#181818] p-5 rounded-2xl border border-neutral-800/50 hover:border-green-500/50 hover:bg-[#222] transition-all group cursor-pointer"
-                                >
-                                    <img src={artist.images[1]?.url} className="w-20 h-20 rounded-full object-cover shadow-2xl" alt="" />
-                                    <div className="flex-1">
-                                        <h3 className="text-xl font-black group-hover:text-green-500 transition-colors mb-1">{artist.name}</h3>
-                                        <p className="text-xs text-gray-400 uppercase tracking-widest font-black mb-3">{artist.genres.slice(0, 2).join(' • ')}</p>
-                                        <div className="w-full bg-black h-1.5 rounded-full overflow-hidden border border-neutral-800">
-                                            <div className="bg-green-500 h-full" style={{ width: `${artist.popularity}%` }} />
-                                        </div>
-                                        <span className="text-[10px] text-gray-600 font-bold uppercase mt-1 inline-block">Popularity: {artist.popularity}%</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </section>
-                    )}
-
-                    {activeTab === 'tracks' && (
-                        <section className="space-y-4 animate-fade-in leading-none">
-                            {topTracks.map((track) => (
-                                <div key={track.id} className="flex items-center gap-6 bg-[#181818] p-4 rounded-2xl border border-neutral-800 hover:bg-[#222] transition-all group">
-                                    <img src={track.album.images[2]?.url} className="w-16 h-16 rounded-xl shadow-2xl" alt="" />
-                                    <div className="flex-1 min-w-0">
-                                        <div className="text-lg font-black truncate group-hover:text-green-500 transition-colors uppercase tracking-tight mb-2">{track.name}</div>
-                                        <div className="text-sm text-gray-400 truncate font-medium">{track.artists.map(a => a.name).join(', ')}</div>
-                                        <div className="mt-3 flex items-center gap-3">
-                                            <div className="flex-1 max-w-[200px] bg-black h-1.5 rounded-full overflow-hidden border border-neutral-800">
-                                                <div className="bg-blue-500 h-full" style={{ width: `${track.popularity}%` }} />
+                        {activeTab === 'tracks' && (
+                            <section className="space-y-4 animate-fade-in leading-none">
+                                {topTracks.map((track) => (
+                                    <div key={track.id} className="flex items-center gap-6 bg-[#181818] p-4 rounded-2xl border border-neutral-800 hover:bg-[#222] transition-all group">
+                                        <img src={track.album.images[2]?.url} className="w-16 h-16 rounded-xl shadow-2xl" alt="" />
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-lg font-black truncate group-hover:text-green-500 transition-colors uppercase tracking-tight mb-2">{track.name}</div>
+                                            <div className="text-sm text-gray-400 truncate font-medium">{track.artists.map(a => a.name).join(', ')}</div>
+                                            <div className="mt-3 flex items-center gap-3">
+                                                <div className="flex-1 max-w-[200px] bg-black h-1.5 rounded-full overflow-hidden border border-neutral-800">
+                                                    <div className="bg-blue-500 h-full" style={{ width: `${track.popularity}%` }} />
+                                                </div>
+                                                <span className="text-[10px] text-gray-500 font-bold uppercase">Popularity: {track.popularity}%</span>
                                             </div>
-                                            <span className="text-[10px] text-gray-500 font-bold uppercase">Popularity: {track.popularity}%</span>
+                                        </div>
+                                        <div className="hidden md:block text-right pr-6">
+                                            <div className="text-xs text-gray-600 uppercase font-black mb-1">Length</div>
+                                            <div className="text-sm font-mono text-gray-400">{formatDuration(track.duration_ms)}</div>
                                         </div>
                                     </div>
-                                    <div className="hidden md:block text-right pr-6">
-                                        <div className="text-xs text-gray-600 uppercase font-black mb-1">Length</div>
-                                        <div className="text-sm font-mono text-gray-400">{formatDuration(track.duration_ms)}</div>
-                                    </div>
-                                </div>
-                            ))}
-                        </section>
-                    )}
+                                ))}
+                            </section>
+                        )}
 
-                    {activeTab === 'albums' && (
-                        <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 animate-fade-in">
-                            {topAlbums.map((album) => (
-                                <div
-                                    key={album.id}
-                                    onClick={() => fetchAlbumInsights(album)}
-                                    className="group cursor-pointer"
-                                >
-                                    <div className="relative aspect-square mb-4 shadow-2xl overflow-hidden rounded-2xl border border-neutral-800 group-hover:border-green-500/50 transition-all">
-                                        <img src={album.images[0]?.url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
-                                        <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black border border-white/10 uppercase">
-                                            {album.count} of your favorites
+                        {activeTab === 'albums' && (
+                            <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 animate-fade-in">
+                                {topAlbums.map((album) => (
+                                    <div
+                                        key={album.id}
+                                        onClick={() => fetchAlbumInsights(album)}
+                                        className="group cursor-pointer"
+                                    >
+                                        <div className="relative aspect-square mb-4 shadow-2xl overflow-hidden rounded-2xl border border-neutral-800 group-hover:border-green-500/50 transition-all">
+                                            <img src={album.images[0]?.url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                                            <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black border border-white/10 uppercase">
+                                                {album.count} of your favorites
+                                            </div>
                                         </div>
+                                        <h4 className="font-black text-sm truncate mb-1 group-hover:text-green-500 transition-colors">{album.name}</h4>
+                                        <p className="text-xs text-gray-500 truncate font-medium">{album.artists[0].name}</p>
                                     </div>
-                                    <h4 className="font-black text-sm truncate mb-1 group-hover:text-green-500 transition-colors">{album.name}</h4>
-                                    <p className="text-xs text-gray-500 truncate font-medium">{album.artists[0].name}</p>
-                                </div>
-                            ))}
-                        </section>
-                    )}
+                                ))}
+                            </section>
+                        )}
+                    </div>
                 </div>
             </div>
 
