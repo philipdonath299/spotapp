@@ -92,9 +92,11 @@ const Stats = () => {
                 item.track.artists.some(a => a.id === artist.id)
             );
 
-            const inTop50 = topTracks.filter(track =>
-                track.artists.some(a => a.id === artist.id)
-            );
+            const inTop50 = topTracks.filter(track => {
+                // Handle different track structures (sometimes artists are flat, sometimes nested)
+                const artistsList = track.artists || (track.track && track.track.artists) || [];
+                return artistsList.some(a => a.id === artist.id);
+            });
 
             setArtistDetails({
                 isFollowing: followingData[0],
@@ -571,7 +573,7 @@ const Stats = () => {
                                 <div className="min-w-0">
                                     <h2 className="text-2xl font-black mb-1 truncate">{selectedTrack.name}</h2>
                                     <div className="flex flex-wrap gap-x-2 text-gray-400 font-bold mb-3">
-                                        {selectedTrack.artists.map((a, i) => (
+                                        {selectedTrack.artists?.map((a, i) => (
                                             <span
                                                 key={a.id}
                                                 onClick={() => openArtistById(a.id)}
@@ -581,23 +583,38 @@ const Stats = () => {
                                             </span>
                                         ))}
                                     </div>
-                                    <div className="flex items-center gap-3">
-                                        {isTrackLiked ? (
-                                            <div className="flex items-center gap-1.5 bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-500/20">
-                                                <Heart size={12} fill="currentColor" /> Liked
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex items-center gap-3">
+                                            {isTrackLiked ? (
+                                                <div className="flex items-center gap-1.5 bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-500/20">
+                                                    <Heart size={12} fill="currentColor" /> Liked
+                                                </div>
+                                            ) : (
+                                                <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Not in library</div>
+                                            )}
+                                            <div className="bg-blue-500/10 text-blue-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-500/20">
+                                                {selectedTrack.popularity || selectedAlbum?.popularity}% Popular
                                             </div>
-                                        ) : (
-                                            <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Not in library</div>
-                                        )}
-                                        <div className="bg-blue-500/10 text-blue-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-500/20">
-                                            {selectedTrack.popularity}% Popular
                                         </div>
+                                        {(selectedTrack.album?.name || selectedAlbum?.name) && (
+                                            <div
+                                                onClick={() => (selectedTrack.album?.id || selectedAlbum?.id) && openAlbumById(selectedTrack.album?.id || selectedAlbum?.id)}
+                                                className="text-[10px] text-gray-500 font-black uppercase tracking-widest hover:text-green-500 cursor-pointer transition-colors flex items-center gap-1.5"
+                                            >
+                                                <Disc size={12} /> {selectedTrack.album?.name || selectedAlbum?.name}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
 
                             <div className="space-y-6">
-                                <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Audio Vibe Analysis</h3>
+                                <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] flex justify-between items-center">
+                                    <span>Audio Vibe Analysis</span>
+                                    {(selectedTrack.album?.release_date || selectedAlbum?.release_date) && (
+                                        <span className="text-gray-600">Released: {new Date(selectedTrack.album?.release_date || selectedAlbum?.release_date).getFullYear()}</span>
+                                    )}
+                                </h3>
                                 {trackFeaturesLoading ? (
                                     <div className="flex justify-center p-12"><Loader2 className="animate-spin text-green-500" /></div>
                                 ) : trackFeatures ? (
