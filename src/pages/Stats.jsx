@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { spotifyFetch } from '../utils/spotify';
-import { ArrowLeft, Loader2, Music, User, Clock, TrendingUp, Disc, X, Heart, CheckCircle, PlaySquare, Users, Zap, Calendar, Sparkles, Mic, Activity, Layers, Volume2, Flame } from 'lucide-react';
+import { ArrowLeft, Loader2, Music, User, Clock, TrendingUp, Disc, X, Heart, CheckCircle, PlaySquare, Users, Zap, Calendar, Sparkles, Mic, Activity, Layers, Volume2, Flame, Trophy } from 'lucide-react';
 
 const Stats = () => {
     const [loading, setLoading] = useState(true);
@@ -23,8 +23,8 @@ const Stats = () => {
     const [albumDetailsLoading, setAlbumDetailsLoading] = useState(false);
 
     const [selectedTrack, setSelectedTrack] = useState(null);
-    const [trackFeatures, setTrackFeatures] = useState(null);
-    const [trackFeaturesLoading, setTrackFeaturesLoading] = useState(false);
+    const [artistSpotlight, setArtistSpotlight] = useState([]);
+    const [trackInsightsLoading, setTrackInsightsLoading] = useState(false);
     const [isTrackLiked, setIsTrackLiked] = useState(false);
 
     const navigate = useNavigate();
@@ -93,7 +93,6 @@ const Stats = () => {
             );
 
             const inTop50 = topTracks.filter(track => {
-                // Handle different track structures (sometimes artists are flat, sometimes nested)
                 const artistsList = track.artists || (track.track && track.track.artists) || [];
                 return artistsList.some(a => a.id === artist.id);
             });
@@ -120,7 +119,6 @@ const Stats = () => {
                 spotifyFetch(`/albums/${album.id}`)
             ]);
 
-            // Check which tracks are in user's top 50 and inject album metadata
             const enrichment = (tracksData.items || []).map(t => ({
                 ...t,
                 isTopTrack: topTracks.some(tt => tt.id === t.id),
@@ -130,7 +128,7 @@ const Stats = () => {
                     images: fullAlbum.images,
                     release_date: fullAlbum.release_date
                 },
-                popularity: fullAlbum.popularity // Fallback popularity
+                popularity: fullAlbum.popularity
             }));
 
             setAlbumDetails({
@@ -147,31 +145,6 @@ const Stats = () => {
         }
     };
 
-    const getMusicalKey = (key, mode) => {
-        const keys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-        if (key === -1) return 'Unknown';
-        return `${keys[key]} ${mode === 1 ? 'Major' : 'Minor'}`;
-    };
-
-    const getSongTraits = (features) => {
-        const traits = [];
-        if (features.energy > 0.75) traits.push({ icon: <Zap size={14} />, label: 'High Octane', color: 'text-orange-500', bg: 'bg-orange-500/10' });
-        else if (features.energy < 0.3) traits.push({ icon: <Clock size={14} />, label: 'Chilled Out', color: 'text-blue-400', bg: 'bg-blue-400/10' });
-
-        if (features.danceability > 0.75) traits.push({ icon: <Mic size={14} />, label: 'Club Ready', color: 'text-green-500', bg: 'bg-green-500/10' });
-
-        if (features.valence > 0.7) traits.push({ icon: <Sparkles size={14} />, label: 'Euphoric', color: 'text-yellow-500', bg: 'bg-yellow-500/10' });
-        else if (features.valence < 0.3) traits.push({ icon: <Volume2 size={14} />, label: 'Moody & Deep', color: 'text-purple-500', bg: 'bg-purple-500/10' });
-
-        if (features.acousticness > 0.7) traits.push({ icon: <Music size={14} />, label: 'Deeply Acoustic', color: 'text-blue-200', bg: 'bg-blue-200/10' });
-
-        if (features.instrumentalness > 0.5) traits.push({ icon: <Layers size={14} />, label: 'Purely Instrumental', color: 'text-gray-400', bg: 'bg-gray-400/10' });
-
-        if (features.liveness > 0.8) traits.push({ icon: <Mic size={14} />, label: 'Live Performance', color: 'text-red-500', bg: 'bg-red-500/10' });
-
-        return traits;
-    };
-
     const formatDuration = (ms) => {
         const minutes = Math.floor(ms / 60000);
         const seconds = ((ms % 60000) / 1000).toFixed(0);
@@ -186,45 +159,36 @@ const Stats = () => {
     };
 
     const fetchTrackInsights = async (track) => {
-        setTrackFeaturesLoading(true);
+        setTrackInsightsLoading(true);
         setSelectedTrack(track);
         // Clear other modals for a clean transition
         setSelectedArtist(null);
         setSelectedAlbum(null);
 
-        setTrackFeatures(null); // Clear old data
+        setArtistSpotlight([]); // Clear old data
         try {
-            // Ensure we have a clean 22-char Spotify ID
-            let cleanId = track.id;
-            if (cleanId.includes(':')) {
-                cleanId = cleanId.split(':').pop();
-            }
-            // Trip any whitespace
-            cleanId = cleanId.trim();
+            const artistId = track.artists[0].id;
+            const cleanId = track.id.includes(':') ? track.id.split(':').pop() : track.id;
 
-            const [features, likedData] = await Promise.all([
-                spotifyFetch(`/audio-features/${cleanId}`),
+            const [topTracksData, likedData] = await Promise.all([
+                spotifyFetch(`/artists/${artistId}/top-tracks?market=from_token`),
                 spotifyFetch(`/me/tracks/contains?ids=${cleanId}`)
             ]);
 
-            if (features && features.danceability !== undefined) {
-                setTrackFeatures(features);
-            } else {
-                setTrackFeatures(null);
+            if (topTracksData && topTracksData.tracks) {
+                setArtistSpotlight(topTracksData.tracks.slice(0, 5));
             }
             setIsTrackLiked(likedData[0]);
         } catch (err) {
-            console.error("Audio features failed:", err);
-            setTrackFeatures(null);
+            console.error("Track insights failed:", err);
         } finally {
-            setTrackFeaturesLoading(false);
+            setTrackInsightsLoading(false);
         }
     };
 
     const openArtistById = async (id) => {
         try {
             const artist = await spotifyFetch(`/artists/${id}`);
-            // Clear other modals
             setSelectedTrack(null);
             setSelectedAlbum(null);
             fetchArtistInsights(artist);
@@ -236,7 +200,6 @@ const Stats = () => {
     const openAlbumById = async (id) => {
         try {
             const album = await spotifyFetch(`/albums/${id}`);
-            // Clear other modals
             setSelectedTrack(null);
             setSelectedArtist(null);
             fetchAlbumInsights(album);
@@ -624,7 +587,7 @@ const Stats = () => {
                                                 <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Not in library</div>
                                             )}
                                             <div className="bg-blue-500/10 text-blue-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-500/20">
-                                                {selectedTrack.popularity || selectedAlbum?.popularity}% Popular
+                                                {selectedTrack.popularity || selectedAlbum?.popularity || 0}% Popular
                                             </div>
                                         </div>
                                         {(selectedTrack.album?.name || selectedAlbum?.name) && (
@@ -639,57 +602,60 @@ const Stats = () => {
                                 </div>
                             </div>
 
-                            <div className="space-y-6">
-                                <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] flex justify-between items-center">
-                                    <span>Musical Anatomy</span>
-                                    {(selectedTrack.album?.release_date || selectedAlbum?.release_date) && (
-                                        <span className="text-gray-600">Released: {new Date(selectedTrack.album?.release_date || selectedAlbum?.release_date).getFullYear()}</span>
-                                    )}
-                                </h3>
+                            <div className="space-y-8">
+                                <section>
+                                    <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4 flex items-center justify-between">
+                                        <span>Artist Spotlight</span>
+                                        <span className="text-green-500 flex items-center gap-1"><Trophy size={10} /> Global Hits</span>
+                                    </h3>
 
-                                {trackFeaturesLoading ? (
-                                    <div className="flex justify-center p-12"><Loader2 className="animate-spin text-green-500" /></div>
-                                ) : trackFeatures ? (
-                                    <div className="space-y-8">
-                                        <div className="flex flex-wrap gap-2">
-                                            {getSongTraits(trackFeatures).map((trait, i) => (
-                                                <div key={i} className={`${trait.bg} ${trait.color} px-4 py-2 rounded-full flex items-center gap-2 border border-white/5 shadow-xl animate-fade-in`}>
-                                                    {trait.icon}
-                                                    <span className="text-[10px] font-black uppercase tracking-widest">{trait.label}</span>
+                                    {trackInsightsLoading ? (
+                                        <div className="flex justify-center p-12"><Loader2 className="animate-spin text-green-500" /></div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            {artistSpotlight.slice(0, 3).map((t, i) => (
+                                                <div
+                                                    key={t.id}
+                                                    onClick={(e) => { e.stopPropagation(); fetchTrackInsights(t); }}
+                                                    className="group flex items-center gap-4 p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-green-500/30 transition-all cursor-pointer"
+                                                >
+                                                    <span className="text-[10px] font-mono text-gray-600 w-4">{i + 1}</span>
+                                                    <img src={t.album.images[2]?.url} className="w-10 h-10 rounded-lg shadow-lg" alt="" />
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="text-sm font-bold truncate group-hover:text-green-500 transition-colors uppercase tracking-tight">{t.name}</div>
+                                                        <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{Math.round(t.popularity)}% Pop.</div>
+                                                    </div>
+                                                    <div className="w-16 h-1 bg-black rounded-full overflow-hidden border border-white/5">
+                                                        <div className="bg-green-500 h-full" style={{ width: `${t.popularity}%` }} />
+                                                    </div>
                                                 </div>
                                             ))}
-                                            {getSongTraits(trackFeatures).length === 0 && (
-                                                <div className="bg-white/5 text-gray-400 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/5">Solid Neutral Vibe</div>
+                                            {artistSpotlight.length === 0 && !trackInsightsLoading && (
+                                                <div className="text-center p-6 text-gray-500 text-[10px] font-black uppercase tracking-widest bg-white/5 rounded-2xl border border-white/5">Data unavailable</div>
                                             )}
                                         </div>
+                                    )}
+                                </section>
 
-                                        <div className="grid grid-cols-3 gap-6">
-                                            <div className="bg-[#181818] p-6 rounded-[2rem] border border-neutral-800 text-center group hover:border-blue-500/30 transition-all">
-                                                <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
-                                                    <Activity size={12} className="text-blue-500" /> Tempo
-                                                </div>
-                                                <div className="text-3xl font-black text-white">{Math.round(trackFeatures.tempo)}</div>
-                                                <div className="text-[10px] font-bold text-gray-600 mt-1 uppercase">Beats PM</div>
+                                <section>
+                                    <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Discovery Metrics</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="bg-[#181818] p-5 rounded-3xl border border-neutral-800 text-center flex flex-col items-center justify-center gap-1">
+                                            <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Track Power</div>
+                                            <div className="text-4xl font-black text-blue-500">{selectedTrack.popularity || 0}%</div>
+                                            <div className="text-[10px] text-gray-600 font-bold uppercase mt-1">Global Weight</div>
+                                        </div>
+                                        <div className="bg-[#181818] p-5 rounded-3xl border border-neutral-800 text-center flex flex-col items-center justify-center gap-1">
+                                            <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Momentum</div>
+                                            <div className="text-4xl font-black text-yellow-500">
+                                                {artistSpotlight.length > 0 && artistSpotlight[0].popularity > 0
+                                                    ? Math.round(((selectedTrack.popularity || 0) / artistSpotlight[0].popularity) * 100)
+                                                    : 0}%
                                             </div>
-                                            <div className="bg-[#181818] p-6 rounded-[2rem] border border-neutral-800 text-center group hover:border-purple-500/30 transition-all">
-                                                <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
-                                                    <Layers size={12} className="text-purple-500" /> Harmony
-                                                </div>
-                                                <div className="text-3xl font-black text-white truncate">{getMusicalKey(trackFeatures.key, trackFeatures.mode).split(' ')[0]}</div>
-                                                <div className="text-[10px] font-bold text-gray-600 mt-1 uppercase">{getMusicalKey(trackFeatures.key, trackFeatures.mode).split(' ')[1]}</div>
-                                            </div>
-                                            <div className="bg-[#181818] p-6 rounded-[2rem] border border-neutral-800 text-center group hover:border-green-500/30 transition-all">
-                                                <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
-                                                    <Flame size={12} className="text-green-500" /> Energy
-                                                </div>
-                                                <div className="text-3xl font-black text-white">{Math.round(trackFeatures.energy * 100)}%</div>
-                                                <div className="text-[10px] font-bold text-gray-600 mt-1 uppercase">Dynamic</div>
-                                            </div>
+                                            <div className="text-[10px] text-gray-600 font-bold uppercase mt-1">vs. Artist Peak</div>
                                         </div>
                                     </div>
-                                ) : (
-                                    <div className="text-center p-8 text-gray-500 text-xs font-medium bg-white/5 rounded-3xl border border-white/5">Vibe data unavailable for this track.</div>
-                                )}
+                                </section>
 
                                 <div className="mt-8 pt-6 border-t border-neutral-800 flex justify-between items-center">
                                     <div className="text-[10px] text-gray-600 font-black uppercase tracking-widest">
