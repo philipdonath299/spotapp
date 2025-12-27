@@ -80,10 +80,11 @@ const Stats = () => {
         setArtistDetailsLoading(true);
         setSelectedArtist(artist);
         try {
-            const [followingData, likedPart1, likedPart2] = await Promise.all([
+            const [followingData, likedPart1, likedPart2, relatedData] = await Promise.all([
                 spotifyFetch(`/me/following/contains?type=artist&ids=${artist.id}`),
                 spotifyFetch(`/me/tracks?limit=50`),
-                spotifyFetch(`/me/tracks?limit=50&offset=50`)
+                spotifyFetch(`/me/tracks?limit=50&offset=50`),
+                spotifyFetch(`/artists/${artist.id}/related-artists`)
             ]);
 
             const allLiked = [...(likedPart1.items || []), ...(likedPart2.items || [])];
@@ -98,7 +99,8 @@ const Stats = () => {
             setArtistDetails({
                 isFollowing: followingData[0],
                 likedCount: artistLiked.length,
-                topTracksOccurrences: inTop50
+                topTracksOccurrences: inTop50,
+                relatedArtists: (relatedData.artists || []).slice(0, 5)
             });
         } catch (err) {
             console.error(err);
@@ -111,23 +113,35 @@ const Stats = () => {
         setAlbumDetailsLoading(true);
         setSelectedAlbum(album);
         try {
-            const tracksData = await spotifyFetch(`/albums/${album.id}/tracks?limit=50`);
+            const [tracksData, fullAlbum] = await Promise.all([
+                spotifyFetch(`/albums/${album.id}/tracks?limit=50`),
+                spotifyFetch(`/albums/${album.id}`)
+            ]);
 
             // Check which tracks are in user's top 50
-            const enrichment = tracksData.items.map(t => ({
+            const enrichment = (tracksData.items || []).map(t => ({
                 ...t,
                 isTopTrack: topTracks.some(tt => tt.id === t.id)
             }));
 
             setAlbumDetails({
                 tracks: enrichment,
-                releaseDate: album.release_date
+                releaseDate: fullAlbum.release_date,
+                label: fullAlbum.label,
+                popularity: fullAlbum.popularity,
+                totalDurationMs: (tracksData.items || []).reduce((acc, t) => acc + t.duration_ms, 0)
             });
         } catch (err) {
             console.error(err);
         } finally {
             setAlbumDetailsLoading(false);
         }
+    };
+
+    const getMusicalKey = (key, mode) => {
+        const keys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        if (key === -1) return 'Unknown';
+        return `${keys[key]} ${mode === 1 ? 'Major' : 'Minor'}`;
     };
 
     const formatDuration = (ms) => {
@@ -398,36 +412,70 @@ const Stats = () => {
                         </div>
 
                         <div className="p-10 md:p-12 overflow-y-auto custom-scrollbar flex-1">
-                            <div className="grid grid-cols-2 gap-4 mb-10">
-                                <div className="bg-[#181818] p-8 rounded-3xl border border-neutral-800 text-center flex flex-col items-center justify-center gap-2">
-                                    <Heart className="text-red-500 mb-1" size={32} fill={artistDetails?.likedCount > 0 ? "currentColor" : "none"} />
-                                    <div className="text-4xl font-black">{artistDetails?.likedCount || 0}</div>
-                                    <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Library Matches</div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+                                <div className="bg-[#181818] p-5 rounded-3xl border border-neutral-800 text-center flex flex-col items-center justify-center gap-1">
+                                    <Heart className="text-red-500 mb-1" size={24} fill={artistDetails?.likedCount > 0 ? "currentColor" : "none"} />
+                                    <div className="text-2xl font-black">{artistDetails?.likedCount || 0}</div>
+                                    <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest leading-tight">Your Likes</div>
                                 </div>
-                                <div className="bg-[#181818] p-8 rounded-3xl border border-neutral-800 text-center flex flex-col items-center justify-center gap-2">
-                                    <TrendingUp className="text-green-500 mb-1" size={32} />
-                                    <div className="text-4xl font-black">{artistDetails?.topTracksOccurrences?.length || 0}</div>
-                                    <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest">In your top 50</div>
+                                <div className="bg-[#181818] p-5 rounded-3xl border border-neutral-800 text-center flex flex-col items-center justify-center gap-1">
+                                    <TrendingUp className="text-green-500 mb-1" size={24} />
+                                    <div className="text-2xl font-black">{artistDetails?.topTracksOccurrences?.length || 0}</div>
+                                    <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest leading-tight">In Rotation</div>
+                                </div>
+                                <div className="bg-[#181818] p-5 rounded-3xl border border-neutral-800 text-center flex flex-col items-center justify-center gap-1">
+                                    <Users className="text-blue-500 mb-1" size={24} />
+                                    <div className="text-2xl font-black">{selectedArtist.followers?.total >= 1000000 ? (selectedArtist.followers.total / 1000000).toFixed(1) + 'M' : (selectedArtist.followers?.total / 1000).toFixed(0) + 'K'}</div>
+                                    <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest leading-tight">Followers</div>
+                                </div>
+                                <div className="bg-[#181818] p-5 rounded-3xl border border-neutral-800 text-center flex flex-col items-center justify-center gap-1">
+                                    <Zap className="text-yellow-500 mb-1" size={24} />
+                                    <div className="text-2xl font-black">{selectedArtist.popularity}%</div>
+                                    <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest leading-tight">Global Rank</div>
                                 </div>
                             </div>
 
-                            {artistDetails?.topTracksOccurrences?.length > 0 && (
-                                <div>
-                                    <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-6">Your heavy rotation tracks</h4>
-                                    <div className="space-y-2">
-                                        {artistDetails.topTracksOccurrences.map(t => (
-                                            <div
-                                                key={t.id}
-                                                onClick={() => fetchTrackInsights(t)}
-                                                className="bg-[#222] p-4 rounded-2xl flex items-center gap-4 border border-neutral-800 hover:border-green-500/50 hover:bg-[#282828] transition-all cursor-pointer group/track"
-                                            >
-                                                <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)] group-hover/track:scale-150 transition-transform" />
-                                                <span className="font-bold text-sm group-hover/track:text-green-500 transition-colors uppercase tracking-tight">{t.name}</span>
-                                            </div>
-                                        ))}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                {artistDetails?.topTracksOccurrences?.length > 0 && (
+                                    <div>
+                                        <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                            <Music size={14} /> My heavy rotation
+                                        </h4>
+                                        <div className="space-y-2">
+                                            {artistDetails.topTracksOccurrences.map(t => (
+                                                <div
+                                                    key={t.id}
+                                                    onClick={() => fetchTrackInsights(t)}
+                                                    className="bg-[#181818] p-4 rounded-2xl flex items-center gap-4 border border-neutral-800 hover:border-green-500/50 hover:bg-[#282828] transition-all cursor-pointer group/track"
+                                                >
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                                                    <span className="font-bold text-sm group-hover/track:text-green-500 transition-colors uppercase tracking-tight truncate flex-1">{t.name}</span>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
+
+                                {artistDetails?.relatedArtists?.length > 0 && (
+                                    <div>
+                                        <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                            <Disc size={14} /> Related Artists
+                                        </h4>
+                                        <div className="space-y-3">
+                                            {artistDetails.relatedArtists.map(rel => (
+                                                <div
+                                                    key={rel.id}
+                                                    onClick={() => fetchArtistInsights(rel)}
+                                                    className="flex items-center gap-4 group cursor-pointer"
+                                                >
+                                                    <img src={rel.images[2]?.url} className="w-10 h-10 rounded-full grayscale group-hover:grayscale-0 transition-all border border-neutral-800 group-hover:border-green-500" alt="" />
+                                                    <div className="text-sm font-bold text-gray-400 group-hover:text-white transition-colors">{rel.name}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -452,7 +500,20 @@ const Stats = () => {
                                     <p className="text-green-500 font-bold text-sm tracking-widest cursor-pointer hover:underline" onClick={() => openArtistById(selectedAlbum.artists[0].id)}>
                                         {selectedAlbum.artists[0].name}
                                     </p>
-                                    <p className="text-gray-500 text-xs mt-2 font-mono">Released: {new Date(albumDetails?.releaseDate).getFullYear()}</p>
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-4">
+                                        <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-1.5">
+                                            <Calendar size={12} /> {new Date(albumDetails?.releaseDate).getFullYear()}
+                                        </div>
+                                        <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-1.5">
+                                            <Clock size={12} /> {albumDetails?.totalDurationMs ? Math.floor(albumDetails.totalDurationMs / 60000) + 'm' : '--'}
+                                        </div>
+                                        <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-1.5">
+                                            <Zap size={12} /> {albumDetails?.popularity}% Pop.
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 text-[10px] text-gray-600 font-bold uppercase tracking-widest bg-white/5 py-1.5 px-3 rounded-lg border border-white/5 inline-block">
+                                        {albumDetails?.label}
+                                    </div>
                                 </div>
                             </div>
 
@@ -540,23 +601,43 @@ const Stats = () => {
                                 {trackFeaturesLoading ? (
                                     <div className="flex justify-center p-12"><Loader2 className="animate-spin text-green-500" /></div>
                                 ) : trackFeatures ? (
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {[
-                                            { label: 'Energy', value: trackFeatures.energy, color: 'bg-orange-500' },
-                                            { label: 'Danceability', value: trackFeatures.danceability, color: 'bg-green-500' },
-                                            { label: 'Acousticness', value: trackFeatures.acousticness, color: 'bg-blue-500' },
-                                            { label: 'Instrumentalness', value: trackFeatures.instrumentalness, color: 'bg-purple-500' }
-                                        ].map(feature => (
-                                            <div key={feature.label} className="bg-[#181818] p-5 rounded-2xl border border-neutral-800">
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{feature.label}</span>
-                                                    <span className="text-xs font-mono font-bold">{Math.round(feature.value * 100)}%</span>
+                                    <div className="space-y-6">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {[
+                                                { label: 'Energy', value: trackFeatures.energy, color: 'bg-orange-500' },
+                                                { label: 'Danceability', value: trackFeatures.danceability, color: 'bg-green-500' },
+                                                { label: 'Acousticness', value: trackFeatures.acousticness, color: 'bg-blue-500' },
+                                                { label: 'Mood (Valence)', value: trackFeatures.valence, color: 'bg-yellow-500' }
+                                            ].map(feature => (
+                                                <div key={feature.label} className="bg-[#181818] p-5 rounded-2xl border border-neutral-800">
+                                                    <div className="flex justify-between items-center mb-3">
+                                                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{feature.label}</span>
+                                                        <span className="text-xs font-mono font-bold">{Math.round(feature.value * 100)}%</span>
+                                                    </div>
+                                                    <div className="w-full bg-black h-1.5 rounded-full overflow-hidden border border-neutral-800">
+                                                        <div className={`${feature.color} h-full transition-all duration-1000`} style={{ width: `${feature.value * 100}%` }} />
+                                                    </div>
                                                 </div>
-                                                <div className="w-full bg-black h-1.5 rounded-full overflow-hidden border border-neutral-800">
-                                                    <div className={`${feature.color} h-full transition-all duration-1000`} style={{ width: `${feature.value * 100}%` }} />
-                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="grid grid-cols-3 gap-3">
+                                            <div className="bg-[#181818] p-4 rounded-2xl border border-neutral-800 text-center">
+                                                <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Tempo</div>
+                                                <div className="text-xl font-black">{Math.round(trackFeatures.tempo)}</div>
+                                                <div className="text-[10px] font-bold text-gray-600">BPM</div>
                                             </div>
-                                        ))}
+                                            <div className="bg-[#181818] p-4 rounded-2xl border border-neutral-800 text-center">
+                                                <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Key</div>
+                                                <div className="text-xl font-black truncate">{getMusicalKey(trackFeatures.key, trackFeatures.mode).split(' ')[0]}</div>
+                                                <div className="text-[10px] font-bold text-gray-600 uppercase">{getMusicalKey(trackFeatures.key, trackFeatures.mode).split(' ')[1]}</div>
+                                            </div>
+                                            <div className="bg-[#181818] p-4 rounded-2xl border border-neutral-800 text-center">
+                                                <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Live</div>
+                                                <div className="text-xl font-black">{trackFeatures.liveness > 0.8 ? 'Yes' : 'No'}</div>
+                                                <div className="text-[10px] font-bold text-gray-600 uppercase">{Math.round(trackFeatures.liveness * 100)}%</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 ) : (
                                     <div className="text-center p-8 text-gray-500 text-xs font-medium">No audio features available.</div>
