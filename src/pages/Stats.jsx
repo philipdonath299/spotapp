@@ -148,11 +148,14 @@ const Stats = () => {
         setSelectedTrack(track);
         setTrackFeatures(null); // Clear old data
         try {
+            // Some tracks might require the base ID if they have a prefixed ID
+            const cleanId = track.id.includes(':') ? track.id.split(':').pop() : track.id;
+
             const [features, likedData] = await Promise.all([
-                spotifyFetch(`/audio-features/${track.id}`),
-                spotifyFetch(`/me/tracks/contains?ids=${track.id}`)
+                spotifyFetch(`/audio-features/${cleanId}`),
+                spotifyFetch(`/me/tracks/contains?ids=${cleanId}`)
             ]);
-            // Ensure we got an object with at least danceability
+
             if (features && features.danceability !== undefined) {
                 setTrackFeatures(features);
             } else {
@@ -160,10 +163,28 @@ const Stats = () => {
             }
             setIsTrackLiked(likedData[0]);
         } catch (err) {
-            console.error(err);
+            console.error("Audio features failed:", err);
             setTrackFeatures(null);
         } finally {
             setTrackFeaturesLoading(false);
+        }
+    };
+
+    const openArtistById = async (id) => {
+        try {
+            const artist = await spotifyFetch(`/artists/${id}`);
+            fetchArtistInsights(artist);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const openAlbumById = async (id) => {
+        try {
+            const album = await spotifyFetch(`/albums/${id}`);
+            fetchAlbumInsights(album);
+        } catch (err) {
+            console.error(err);
         }
     };
 
@@ -418,7 +439,9 @@ const Stats = () => {
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-transparent to-transparent hidden md:block" />
                                 <div className="absolute bottom-8 left-8 right-8 md:block">
                                     <h2 className="text-3xl font-black tracking-tighter mb-2">{selectedAlbum.name}</h2>
-                                    <p className="text-green-500 font-bold text-sm tracking-widest">{selectedAlbum.artists[0].name}</p>
+                                    <p className="text-green-500 font-bold text-sm tracking-widest cursor-pointer hover:underline" onClick={() => openArtistById(selectedAlbum.artists[0].id)}>
+                                        {selectedAlbum.artists[0].name}
+                                    </p>
                                     <p className="text-gray-500 text-xs mt-2 font-mono">Released: {new Date(albumDetails?.releaseDate).getFullYear()}</p>
                                 </div>
                             </div>
@@ -468,10 +491,25 @@ const Stats = () => {
                     >
                         <div className="p-8">
                             <div className="flex items-center gap-6 mb-8">
-                                <img src={selectedTrack.album.images[0]?.url} className="w-32 h-32 rounded-2xl shadow-2xl" alt="" />
+                                <img
+                                    src={selectedTrack.album?.images[0]?.url || selectedAlbum?.images[0]?.url}
+                                    className="w-32 h-32 rounded-2xl shadow-2xl cursor-pointer hover:scale-105 transition-transform"
+                                    alt=""
+                                    onClick={() => selectedTrack.album && openAlbumById(selectedTrack.album.id)}
+                                />
                                 <div className="min-w-0">
                                     <h2 className="text-2xl font-black mb-1 truncate">{selectedTrack.name}</h2>
-                                    <p className="text-gray-400 font-bold mb-3">{selectedTrack.artists.map(a => a.name).join(', ')}</p>
+                                    <div className="flex flex-wrap gap-x-2 text-gray-400 font-bold mb-3">
+                                        {selectedTrack.artists.map((a, i) => (
+                                            <span
+                                                key={a.id}
+                                                onClick={() => openArtistById(a.id)}
+                                                className="hover:text-green-500 cursor-pointer transition-colors"
+                                            >
+                                                {a.name}{i < selectedTrack.artists.length - 1 ? ',' : ''}
+                                            </span>
+                                        ))}
+                                    </div>
                                     <div className="flex items-center gap-3">
                                         {isTrackLiked ? (
                                             <div className="flex items-center gap-1.5 bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-500/20">
