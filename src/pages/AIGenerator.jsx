@@ -54,7 +54,7 @@ const AIGenerator = () => {
                     body: JSON.stringify({
                         contents: [{
                             parts: [{
-                                text: `Generate a list of exactly 15 songs that match this vibe: "${prompt}". 
+                                text: `Generate a list of exactly 80 songs that match this vibe: "${prompt}". 
                                 Return ONLY a JSON array of objects with "track" and "artist" keys. 
                                 Format: [{"track": "Song Name", "artist": "Artist Name"}]`
                             }]
@@ -100,10 +100,12 @@ const AIGenerator = () => {
             const aiSongs = JSON.parse(jsonMatch[0]);
 
             // 2. Search for each song on Spotify
-            setStatus('Searching for songs on Spotify...');
             const spotifyResults = [];
 
-            for (const item of aiSongs) {
+            for (let i = 0; i < aiSongs.length; i++) {
+                const item = aiSongs[i];
+                setStatus(`Searching for songs (${i + 1}/${aiSongs.length})...`);
+
                 const searchQ = encodeURIComponent(`track:${item.track} artist:${item.artist}`);
                 const searchData = await spotifyFetch(`/search?q=${searchQ}&type=track&limit=1`);
 
