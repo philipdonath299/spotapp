@@ -120,10 +120,17 @@ const Stats = () => {
                 spotifyFetch(`/albums/${album.id}`)
             ]);
 
-            // Check which tracks are in user's top 50
+            // Check which tracks are in user's top 50 and inject album metadata
             const enrichment = (tracksData.items || []).map(t => ({
                 ...t,
-                isTopTrack: topTracks.some(tt => tt.id === t.id)
+                isTopTrack: topTracks.some(tt => tt.id === t.id),
+                album: {
+                    id: fullAlbum.id,
+                    name: fullAlbum.name,
+                    images: fullAlbum.images,
+                    release_date: fullAlbum.release_date
+                },
+                popularity: fullAlbum.popularity // Fallback popularity
             }));
 
             setAlbumDetails({
@@ -187,8 +194,13 @@ const Stats = () => {
 
         setTrackFeatures(null); // Clear old data
         try {
-            // Some tracks might require the base ID if they have a prefixed ID
-            const cleanId = track.id.includes(':') ? track.id.split(':').pop() : track.id;
+            // Ensure we have a clean 22-char Spotify ID
+            let cleanId = track.id;
+            if (cleanId.includes(':')) {
+                cleanId = cleanId.split(':').pop();
+            }
+            // Trip any whitespace
+            cleanId = cleanId.trim();
 
             const [features, likedData] = await Promise.all([
                 spotifyFetch(`/audio-features/${cleanId}`),
