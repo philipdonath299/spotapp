@@ -304,12 +304,18 @@ const Stats = () => {
 
             {/* Artist Detail Modal */}
             {selectedArtist && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-fade-in">
-                    <div className="bg-[#121212] w-full max-w-2xl rounded-[2.5rem] border border-neutral-800 overflow-hidden shadow-[0_0_100px_rgba(34,197,94,0.15)] animate-scale-up">
-                        <div className="relative h-72">
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-fade-in scrollbar-hide"
+                    onClick={() => setSelectedArtist(null)}
+                >
+                    <div
+                        className="bg-[#121212] w-full max-w-2xl max-h-[90vh] rounded-[2.5rem] border border-neutral-800 overflow-hidden shadow-[0_0_100px_rgba(34,197,94,0.15)] animate-scale-up flex flex-col"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="relative h-72 shrink-0">
                             <img src={selectedArtist.images[0]?.url} className="w-full h-full object-cover" alt="" />
                             <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-[#121212]/30 to-transparent" />
-                            <button onClick={() => setSelectedArtist(null)} className="absolute top-8 right-8 bg-black/60 p-3 rounded-full hover:bg-black transition-colors"><X size={24} /></button>
+                            <button onClick={() => setSelectedArtist(null)} className="absolute top-8 right-8 bg-black/60 p-3 rounded-full hover:bg-black transition-colors z-10"><X size={24} /></button>
                             <div className="absolute bottom-8 left-12 right-12">
                                 <h2 className="text-5xl font-black tracking-tighter mb-4 flex items-center gap-4">
                                     {selectedArtist.name}
@@ -323,7 +329,7 @@ const Stats = () => {
                             </div>
                         </div>
 
-                        <div className="p-12">
+                        <div className="p-10 md:p-12 overflow-y-auto custom-scrollbar flex-1">
                             <div className="grid grid-cols-2 gap-4 mb-10">
                                 <div className="bg-[#181818] p-8 rounded-3xl border border-neutral-800 text-center flex flex-col items-center justify-center gap-2">
                                     <Heart className="text-red-500 mb-1" size={32} fill={artistDetails?.likedCount > 0 ? "currentColor" : "none"} />
@@ -357,8 +363,14 @@ const Stats = () => {
 
             {/* Album Detail Modal */}
             {selectedAlbum && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-fade-in">
-                    <div className="bg-[#121212] w-full max-w-2xl rounded-[2.5rem] border border-neutral-800 overflow-hidden shadow-2xl animate-scale-up">
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-fade-in"
+                    onClick={() => setSelectedAlbum(null)}
+                >
+                    <div
+                        className="bg-[#121212] w-full max-w-2xl rounded-[2.5rem] border border-neutral-800 overflow-hidden shadow-2xl animate-scale-up"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <div className="flex flex-col md:flex-row h-[500px]">
                             <div className="w-full md:w-1/2 relative">
                                 <img src={selectedAlbum.images[0]?.url} className="w-full h-full object-cover" alt="" />
