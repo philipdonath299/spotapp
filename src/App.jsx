@@ -8,6 +8,7 @@ import AIGenerator from './pages/AIGenerator';
 import PlaylistManager from './pages/PlaylistManager';
 import Stats from './pages/Stats';
 import LibraryCleanup from './pages/LibraryCleanup';
+import Automation from './pages/Automation';
 
 function App() {
     return (
@@ -17,9 +18,10 @@ function App() {
                 <Route path="/callback" element={<Callback />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/recommendations/:playlistId" element={<Recommendations />} />
-                <Route path="/ai-generator" element={<AIGenerator />} />
-                <Route path="/playlist-manager" element={<PlaylistManager />} />
+                <Route path="/recommendations" element={<Recommendations />} />
+                <Route path="/playlists" element={<PlaylistManager />} />
                 <Route path="/cleanup" element={<LibraryCleanup />} />
+                <Route path="/automation" element={<Automation />} />
                 <Route path="/stats" element={<Stats />} />
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>

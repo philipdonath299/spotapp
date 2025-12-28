@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { spotifyFetch } from '../utils/spotify';
-import { ArrowLeft, Edit3, Wand2, Loader2, Save, X, CheckCircle, Sparkles, Music, BarChart3, Scissors } from 'lucide-react';
+import { ArrowLeft, Edit3, Wand2, Loader2, Save, X, CheckCircle, Sparkles, Music, BarChart3, Scissors, Merge } from 'lucide-react';
 
 const PlaylistManager = () => {
     const navigate = useNavigate();
     const [playlists, setPlaylists] = useState([]);
     const [selectedPlaylist, setSelectedPlaylist] = useState(null);
     const [view, setView] = useState('list'); // 'list' | 'editor'
-    const [activeTab, setActiveTab] = useState('details'); // 'details' | 'tools' | 'split'
+    const [activeTab, setActiveTab] = useState('details'); // 'details' | 'tools' | 'split' | 'merge'
 
     // Editor State
     const [name, setName] = useState('');
@@ -19,6 +19,9 @@ const PlaylistManager = () => {
 
     // Split State
     const [splitSize, setSplitSize] = useState(50);
+
+    // Merge State
+    const [selectedMergePlaylists, setSelectedMergePlaylists] = useState(new Set());
 
     useEffect(() => {
         fetchPlaylists();
@@ -40,6 +43,7 @@ const PlaylistManager = () => {
         setView('editor');
         setActiveTab('details');
         setStatus('');
+        setSelectedMergePlaylists(new Set()); // Reset merge selection
     };
 
     const handleUpdateDetails = async (e) => {
@@ -95,15 +99,14 @@ const PlaylistManager = () => {
         }
     };
 
-    // --- TOOLS: SHUFFLE, SORT, SPLIT ---
+    // --- TOOLS: SHUFFLE, SORT, SPLIT, MERGE ---
 
-    const getAllTracks = async () => {
-        setStatus('Fetching all tracks...');
+    const fetchTracksForPlaylist = async (playlistId) => {
         let allTracks = [];
-        let nextUrl = `/playlists/${selectedPlaylist.id}/tracks?limit=100`;
+        let nextUrl = `/playlists/${playlistId}/tracks?limit=100`;
         while (nextUrl) {
             const res = await spotifyFetch(nextUrl.replace('https://api.spotify.com/v1', ''));
-            if (res.items) {
+            if (res?.items) {
                 allTracks = [...allTracks, ...res.items];
                 nextUrl = res.next;
             } else {
@@ -139,7 +142,7 @@ const PlaylistManager = () => {
         setLoading(true);
         setStatus('');
         try {
-            const tracks = await getAllTracks();
+            const tracks = await fetchTracksForPlaylist(selectedPlaylist.id);
             for (let i = tracks.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [tracks[i], tracks[j]] = [tracks[j], tracks[i]];
@@ -157,7 +160,7 @@ const PlaylistManager = () => {
         setLoading(true);
         setStatus('');
         try {
-            const tracks = await getAllTracks();
+            const tracks = await fetchTracksForPlaylist(selectedPlaylist.id);
             setStatus('Analyzing audio features...');
 
             const ids = tracks.map(t => t.track.id).filter(Boolean);
@@ -204,7 +207,7 @@ const PlaylistManager = () => {
         setLoading(true);
         setStatus('Fetching tracks to split...');
         try {
-            const allTracks = await getAllTracks();
+            const allTracks = await fetchTracksForPlaylist(selectedPlaylist.id);
             const totalParts = Math.ceil(allTracks.length / splitSize);
             const me = await spotifyFetch('/me');
 
@@ -237,6 +240,64 @@ const PlaylistManager = () => {
         }
     };
 
+    const toggleMergeSelection = (playlistId) => {
+        const newSet = new Set(selectedMergePlaylists);
+        if (newSet.has(playlistId)) {
+            newSet.delete(playlistId);
+        } else {
+            newSet.add(playlistId);
+        }
+        setSelectedMergePlaylists(newSet);
+    };
+
+    const handleMergePlaylists = async () => {
+        if (selectedMergePlaylists.size === 0) return;
+        setLoading(true);
+        setStatus('Merging playlists...');
+        try {
+            const currentTracks = await fetchTracksForPlaylist(selectedPlaylist.id);
+            const existingUris = new Set(currentTracks.map(t => t.track.uri));
+
+            const newUris = [];
+
+            for (const playlistId of selectedMergePlaylists) {
+                setStatus(`Fetching tracks from ${playlists.find(p => p.id === playlistId)?.name}...`);
+                const tracks = await fetchTracksForPlaylist(playlistId);
+                tracks.forEach(t => {
+                    if (!existingUris.has(t.track.uri)) {
+                        existingUris.add(t.track.uri);
+                        newUris.push(t.track.uri);
+                    }
+                });
+            }
+
+            if (newUris.length === 0) {
+                setStatus('No new tracks to merge!');
+                setLoading(false);
+                return;
+            }
+
+            setStatus(`Adding ${newUris.length} new tracks...`);
+
+            // Add in chunks
+            for (let i = 0; i < newUris.length; i += 100) {
+                const chunk = newUris.slice(i, i + 100);
+                await spotifyFetch(`/playlists/${selectedPlaylist.id}/tracks`, 'POST', {
+                    uris: chunk
+                });
+            }
+
+            setStatus(`Successfully merged ${newUris.length} tracks!`);
+            setSelectedMergePlaylists(new Set()); // Clear selection
+
+        } catch (err) {
+            console.error(err);
+            setStatus('Merge failed.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (view === 'list') {
         return (
             <div className="min-h-screen bg-black text-white p-4 md:p-8 animate-fade-in">
@@ -250,7 +311,7 @@ const PlaylistManager = () => {
                     <h1 className="text-4xl font-bold mb-4 flex items-center gap-3">
                         <Wand2 className="text-purple-500" /> Playlist Manager
                     </h1>
-                    <p className="text-gray-400">Rename, describe, shuffle, sort, or split your playlists.</p>
+                    <p className="text-gray-400">Rename, describe, shuffle, sort, split, or merge your playlists.</p>
                 </header>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -291,13 +352,16 @@ const PlaylistManager = () => {
 
                 <div className="flex gap-4 border-b border-neutral-800 mb-8 overflow-x-auto">
                     <button onClick={() => setActiveTab('details')} className={`pb-4 px-2 font-bold transition-colors whitespace-nowrap ${activeTab === 'details' ? 'text-purple-500 border-b-2 border-purple-500' : 'text-gray-500 hover:text-white'}`}>
-                        Edit Details
+                        Details
                     </button>
                     <button onClick={() => setActiveTab('tools')} className={`pb-4 px-2 font-bold transition-colors whitespace-nowrap ${activeTab === 'tools' ? 'text-purple-500 border-b-2 border-purple-500' : 'text-gray-500 hover:text-white'}`}>
-                        Smart Tools
+                        Tools
                     </button>
                     <button onClick={() => setActiveTab('split')} className={`pb-4 px-2 font-bold transition-colors whitespace-nowrap ${activeTab === 'split' ? 'text-purple-500 border-b-2 border-purple-500' : 'text-gray-500 hover:text-white'}`}>
                         Splitter
+                    </button>
+                    <button onClick={() => setActiveTab('merge')} className={`pb-4 px-2 font-bold transition-colors whitespace-nowrap ${activeTab === 'merge' ? 'text-purple-500 border-b-2 border-purple-500' : 'text-gray-500 hover:text-white'}`}>
+                        Merge
                     </button>
                 </div>
 
@@ -334,9 +398,6 @@ const PlaylistManager = () => {
                                 <span className="p-2 bg-blue-500/10 text-blue-500 rounded-lg"><Music size={20} /></span>
                                 True Shuffle
                             </h3>
-                            <p className="text-gray-400 text-sm mb-6">
-                                Permanently calculate a random order and update the playlist.
-                            </p>
                             <button onClick={handleTrueShuffle} disabled={loading} className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all">
                                 {loading ? 'Shuffling...' : 'Randomize Order'}
                             </button>
@@ -347,9 +408,6 @@ const PlaylistManager = () => {
                                 <span className="p-2 bg-pink-500/10 text-pink-500 rounded-lg"><BarChart3 size={20} /></span>
                                 Smart Sort
                             </h3>
-                            <p className="text-gray-400 text-sm mb-6">
-                                Reorder tracks based on their audio features.
-                            </p>
                             <div className="grid grid-cols-2 gap-3">
                                 <button onClick={() => handleSmartSort('energy')} disabled={loading} className="p-3 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-sm font-bold border border-neutral-700 transition-all">🔥 High Energy</button>
                                 <button onClick={() => handleSmartSort('danceability')} disabled={loading} className="p-3 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-sm font-bold border border-neutral-700 transition-all">💃 Danceability</button>
@@ -367,10 +425,6 @@ const PlaylistManager = () => {
                             <span className="p-2 bg-green-500/10 text-green-500 rounded-lg"><Scissors size={20} /></span>
                             Playlist Splitter
                         </h3>
-                        <p className="text-gray-400 text-sm mb-6">
-                            Split this {selectedPlaylist.tracks.total}-track playlist into smaller chunks.
-                        </p>
-
                         <div className="mb-8">
                             <label className="block text-sm font-bold mb-2 text-gray-400">Tracks per Playlist</label>
                             <input
@@ -396,6 +450,47 @@ const PlaylistManager = () => {
                         </button>
 
                         {status && <p className="text-center text-green-500 font-bold mt-4">{status}</p>}
+                    </div>
+                )}
+
+                {activeTab === 'merge' && (
+                    <div className="bg-[#181818] p-6 rounded-2xl border border-neutral-800 animate-slide-up">
+                        <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+                            <span className="p-2 bg-indigo-500/10 text-indigo-500 rounded-lg"><Merge size={20} /></span>
+                            Merge Playlists
+                        </h3>
+                        <p className="text-gray-400 text-sm mb-6">
+                            Select playlists to merge INTO <strong>{selectedPlaylist.name}</strong>. Duplicates will be ignored.
+                        </p>
+
+                        <div className="max-h-60 overflow-y-auto custom-scrollbar mb-6 space-y-2 border border-neutral-800 rounded-lg p-2">
+                            {playlists.filter(p => p.id !== selectedPlaylist.id).map(p => (
+                                <div
+                                    key={p.id}
+                                    onClick={() => toggleMergeSelection(p.id)}
+                                    className={`p-3 rounded-lg flex items-center gap-3 cursor-pointer transition-all ${selectedMergePlaylists.has(p.id) ? 'bg-indigo-500/20 border border-indigo-500' : 'hover:bg-neutral-800 border border-transparent'}`}
+                                >
+                                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${selectedMergePlaylists.has(p.id) ? 'bg-indigo-500 border-indigo-500' : 'border-neutral-600'}`}>
+                                        {selectedMergePlaylists.has(p.id) && <CheckCircle size={12} className="text-white" />}
+                                    </div>
+                                    <div className="flex-1 truncate">
+                                        <div className="font-bold text-sm truncate">{p.name}</div>
+                                        <div className="text-xs text-gray-500">{p.tracks.total} tracks</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <button
+                            onClick={handleMergePlaylists}
+                            disabled={loading || selectedMergePlaylists.size === 0}
+                            className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                        >
+                            {loading ? <Loader2 className="animate-spin" /> : <Merge />}
+                            {loading ? 'Merging...' : `Merge ${selectedMergePlaylists.size} Playlists`}
+                        </button>
+
+                        {status && <p className="text-center text-indigo-400 font-bold mt-4">{status}</p>}
                     </div>
                 )}
             </div>

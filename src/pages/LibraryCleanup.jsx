@@ -22,7 +22,15 @@ const LibraryCleanup = () => {
         try {
             const data = await spotifyFetch('/me/playlists?limit=50');
             if (data?.items) {
-                setPlaylists(data.items);
+                // Add "Liked Songs" as a virtual playlist option
+                const likedSongs = {
+                    id: 'liked-songs',
+                    name: 'Liked Songs',
+                    images: [{ url: 'https://misc.scdn.co/liked-songs/liked-songs-640.png' }], // Standard Spotify liked songs art or similar
+                    tracks: { total: 'Your Library' },
+                    isVirtual: true
+                };
+                setPlaylists([likedSongs, ...data.items]);
             }
         } catch (err) {
             console.error(err);
@@ -38,7 +46,14 @@ const LibraryCleanup = () => {
         try {
             setAnalysisStatus('Fetching tracks...');
             let allTracks = [];
-            let nextUrl = `/playlists/${playlist.id}/tracks?limit=100&market=from_token`; // Add market param to check availability
+
+            // Handle Liked Songs vs Regular Playlists
+            let nextUrl;
+            if (playlist.id === 'liked-songs') {
+                nextUrl = `/me/tracks?limit=50&market=from_token`;
+            } else {
+                nextUrl = `/playlists/${playlist.id}/tracks?limit=100&market=from_token`;
+            }
 
             while (nextUrl) {
                 const res = await spotifyFetch(nextUrl.replace('https://api.spotify.com/v1', ''));
@@ -58,17 +73,16 @@ const LibraryCleanup = () => {
                 allTracks.forEach((item, index) => {
                     if (!item.track || item.is_local) return;
 
-                    // Key based on Name + Artist to catch different versions (e.g. Album vs Single)
+                    // Key based on Name + Artist
                     const key = `${item.track.name.toLowerCase()}-${item.track.artists[0]?.name.toLowerCase()}`;
 
                     if (trackMap.has(key)) {
-                        // This is a duplicate!
                         const original = trackMap.get(key);
                         dupeList.push({
                             original: original,
                             duplicate: item,
-                            // We need the snapshot_id from the playlist to safely remove specific occurrences
                             uri: item.track.uri,
+                            id: item.track.id,
                             position: index
                         });
                     } else {
@@ -83,16 +97,11 @@ const LibraryCleanup = () => {
                 allTracks.forEach((item, index) => {
                     if (!item.track) return;
 
-                    // Check availability
-                    // A track is unavailable if:
-                    // 1. is_playable is false (if provided)
-                    // 2. available_markets is empty or doesn't contain user's market (harder to check without knowing user market explicitly, but is_playable covering most)
-                    // item.track.is_playable is returned when 'market' param is used.
-
                     if (item.track.is_playable === false) {
                         unavailable.push({
                             track: item.track,
                             uri: item.track.uri,
+                            id: item.track.id,
                             position: index,
                             reason: 'Not playable in your region'
                         });
@@ -114,39 +123,44 @@ const LibraryCleanup = () => {
         if (itemsToRemove.length === 0) return;
         setProcessing(true);
         try {
-            // Group positions by URI to batch delete efficiently
-            const tracksToDelete = itemsToRemove.reduce((acc, item) => {
-                const uri = item.uri;
-                if (!acc[uri]) {
-                    acc[uri] = [];
+            if (selectedPlaylist.id === 'liked-songs') {
+                // DELETE /me/tracks expects body: { ids: ["id1", "id2"] }
+                // Batch by 50
+                const idsToRemove = itemsToRemove.map(item => item.id);
+
+                for (let i = 0; i < idsToRemove.length; i += 50) {
+                    const chunk = idsToRemove.slice(i, i + 50);
+                    await spotifyFetch('/me/tracks', 'DELETE', { ids: chunk });
                 }
-                acc[uri].push(item.position);
-                return acc;
-            }, {});
 
-            // Format for Spotify API: { uri: "...", positions: [0, 5, ...] }
-            const apiBody = Object.entries(tracksToDelete).map(([uri, positions]) => ({
-                uri,
-                positions
-            }));
+            } else {
+                // Regular playlist deletion
+                // Group positions by URI
+                const tracksToDelete = itemsToRemove.reduce((acc, item) => {
+                    const uri = item.uri;
+                    if (!acc[uri]) acc[uri] = [];
+                    acc[uri].push(item.position);
+                    return acc;
+                }, {});
 
-            // Send in chunks of 100 items (not 100 positions, but 100 track objects)
-            // Note: Spotify API limit for 'tracks' array is 100.
-            for (let i = 0; i < apiBody.length; i += 100) {
-                const chunk = apiBody.slice(i, i + 100);
-                await spotifyFetch(`/playlists/${selectedPlaylist.id}/tracks`, 'DELETE', {
-                    tracks: chunk,
-                    snapshot_id: selectedPlaylist.snapshot_id // Recommended for safer deletes
-                });
+                const apiBody = Object.entries(tracksToDelete).map(([uri, positions]) => ({
+                    uri,
+                    positions
+                }));
+
+                for (let i = 0; i < apiBody.length; i += 100) {
+                    const chunk = apiBody.slice(i, i + 100);
+                    await spotifyFetch(`/playlists/${selectedPlaylist.id}/tracks`, 'DELETE', {
+                        tracks: chunk,
+                        snapshot_id: selectedPlaylist.snapshot_id
+                    });
+                }
             }
 
             setDuplicates([]);
             setUnavailableTracks([]);
             alert('Tracks removed!');
 
-            // Re-analyze
-            // We need to re-fetch the playlist structure because positions have changed
-            // Waiting a brief moment for Spotify backend to update is sometimes safer
             setTimeout(() => {
                 analyzePlaylist(selectedPlaylist);
             }, 1000);
@@ -177,7 +191,6 @@ const LibraryCleanup = () => {
                     <p className="text-gray-400">Keep your library fresh by detecting duplicates and managing your tracks.</p>
                 </header>
 
-                {/* Tabs */}
                 <div className="flex gap-4 mb-8">
                     <button
                         onClick={() => { setCleanupMode('duplicates'); setSelectedPlaylist(null); }}
@@ -199,22 +212,27 @@ const LibraryCleanup = () => {
 
                 {!selectedPlaylist ? (
                     <div className="grid gap-4">
-                        <h2 className="text-xl font-bold mb-4">Select a Playlist to Check for {cleanupMode === 'duplicates' ? 'Duplicates' : 'Issues'}</h2>
+                        <h2 className="text-xl font-bold mb-4">Select a Playlist (or Liked Songs) to Check for {cleanupMode === 'duplicates' ? 'Duplicates' : 'Issues'}</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {playlists.map(playlist => (
                                 <div
                                     key={playlist.id}
                                     onClick={() => analyzePlaylist(playlist)}
-                                    className="bg-[#181818] p-4 rounded-xl border border-neutral-800 hover:border-red-500/50 cursor-pointer transition-all flex items-center gap-4"
+                                    className={`p-4 rounded-xl border cursor-pointer transition-all flex items-center gap-4 ${playlist.id === 'liked-songs'
+                                            ? 'bg-gradient-to-br from-purple-900/40 to-blue-900/40 border-blue-500/30 hover:border-blue-500'
+                                            : 'bg-[#181818] border-neutral-800 hover:border-red-500/50'
+                                        }`}
                                 >
                                     {playlist.images?.[0]?.url ? (
                                         <img src={playlist.images[0].url} className="w-12 h-12 rounded" alt="" />
                                     ) : (
-                                        <div className="w-12 h-12 bg-neutral-800 rounded flex items-center justify-center">?</div>
+                                        <div className="w-12 h-12 bg-neutral-800 rounded flex items-center justify-center">
+                                            {playlist.id === 'liked-songs' ? '❤️' : '?'}
+                                        </div>
                                     )}
                                     <div className="truncate">
                                         <div className="font-bold truncate text-sm">{playlist.name}</div>
-                                        <div className="text-xs text-gray-500">{playlist.tracks.total} tracks</div>
+                                        <div className="text-xs text-gray-500">{playlist.tracks.total} {playlist.id === 'liked-songs' ? '' : 'tracks'}</div>
                                     </div>
                                 </div>
                             ))}
@@ -259,7 +277,7 @@ const LibraryCleanup = () => {
                                                             <div className="flex items-center gap-3">
                                                                 <img src={d.duplicate.track.album.images[2]?.url} className="w-10 h-10 rounded" alt="" />
                                                                 <div>
-                                                                    <div className="font-bold text-sm">{d.duplicate.track.name}</div>
+                                                                    <div className="font-bold text-sm truncate max-w-[200px]">{d.duplicate.track.name}</div>
                                                                     <div className="text-xs text-gray-500">{d.duplicate.track.artists[0].name}</div>
                                                                 </div>
                                                             </div>
@@ -304,7 +322,7 @@ const LibraryCleanup = () => {
                                                                     <div className="w-10 h-10 bg-neutral-800 rounded"></div>
                                                                 )}
                                                                 <div>
-                                                                    <div className="font-bold text-sm">{d.track.name}</div>
+                                                                    <div className="font-bold text-sm truncate max-w-[200px]">{d.track.name}</div>
                                                                     <div className="text-xs text-gray-500">{d.track.artists[0]?.name}</div>
                                                                 </div>
                                                             </div>
