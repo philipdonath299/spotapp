@@ -168,7 +168,7 @@ const Recommendations = () => {
     }
 
     return (
-        <div className="min-h-screen bg-black text-white p-8 animate-fade-in">
+        <div className="min-h-screen bg-black text-white p-4 md:p-8 animate-fade-in">
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
                     <button
@@ -198,7 +198,7 @@ const Recommendations = () => {
                 </div>
 
                 <header className="mb-12">
-                    <h1 className="text-5xl md:text-6xl font-extrabold mb-4 tracking-tight leading-tight">
+                    <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold mb-4 tracking-tight leading-tight">
                         Discovery Mix
                     </h1>
                     <p className="text-neutral-400 text-xl md:text-2xl font-medium max-w-2xl">
@@ -217,7 +217,7 @@ const Recommendations = () => {
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-8">
                         {recommendations.map((track, index) => (
                             <div
                                 key={track.id}

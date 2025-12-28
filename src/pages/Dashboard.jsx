@@ -38,7 +38,7 @@ const Dashboard = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-neutral-900 to-black p-8 text-white">
+        <div className="min-h-screen bg-gradient-to-b from-neutral-900 to-black p-4 md:p-8 text-white">
             <header className="flex flex-col md:flex-row justify-between items-center mb-12 gap-8">
                 <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500 text-center md:text-left">
                     Hello, {profile?.display_name}
@@ -76,7 +76,7 @@ const Dashboard = () => {
 
             <h2 className="text-2xl font-bold mb-6">Select a Playlist to Discover New Music</h2>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
                 {playlists.map((playlist, index) => (
                     <div
                         key={playlist.id}
