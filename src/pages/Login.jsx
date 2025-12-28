@@ -4,7 +4,7 @@ const Login = () => {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
             <div className="text-center max-w-md">
-                <h1 className="text-5xl font-bold mb-6 text-green-500 tracking-tighter">Spotify Discovery</h1>
+                <h1 className="text-5xl font-bold mb-6 text-green-500 tracking-tighter">Statsify</h1>
                 <p className="text-gray-400 mb-10 text-lg">
                     Connect your account to find new music based on your unique playlists.
                     We check against your library to ensure every recommendation is brand new to you.
