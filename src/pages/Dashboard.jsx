@@ -51,7 +51,7 @@ const Dashboard = () => {
                         <BarChart3 size={18} /> My Stats
                     </button>
                     <button
-                        onClick={() => navigate('/playlist-manager')}
+                        onClick={() => navigate('/playlists')}
                         className="flex items-center gap-2 bg-[#181818] border border-neutral-800 text-white px-5 py-2 rounded-full font-bold hover:bg-[#282828] transition-all hover:scale-105 shadow-lg text-sm md:text-base"
                     >
                         <Edit3 size={18} /> Manage Playlists

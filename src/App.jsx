@@ -19,6 +19,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/recommendations/:playlistId" element={<Recommendations />} />
                 <Route path="/recommendations" element={<Recommendations />} />
+                <Route path="/ai-generator" element={<AIGenerator />} />
                 <Route path="/playlists" element={<PlaylistManager />} />
                 <Route path="/cleanup" element={<LibraryCleanup />} />
                 <Route path="/automation" element={<Automation />} />
