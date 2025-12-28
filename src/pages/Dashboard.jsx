@@ -112,38 +112,40 @@ const Dashboard = () => {
             )}
 
             {/* Quick Actions Grid */}
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Wand2 size={18} className="text-green-500" /> Quick Actions
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-10">
-                <QuickActionCard
-                    title="AI Generator"
-                    desc="Create playlists from prompts"
-                    icon={Wand2}
-                    color="green"
-                    onClick={() => navigate('/ai-generator')}
-                />
-                <QuickActionCard
-                    title="Manage"
-                    desc="Split, merge, or sort playlists"
-                    icon={Edit3}
-                    color="purple"
-                    onClick={() => navigate('/playlists')}
-                />
-                <QuickActionCard
-                    title="Cleanup"
-                    desc="Remove duplicates & filler"
-                    icon={Trash2}
-                    color="red"
-                    onClick={() => navigate('/cleanup')}
-                />
-                <QuickActionCard
-                    title="Full Stats"
-                    desc="Deep dive into your taste"
-                    icon={BarChart3}
-                    color="blue"
-                    onClick={() => navigate('/stats')}
-                />
+            <div className="hidden md:block">
+                <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                    <Wand2 size={18} className="text-green-500" /> Quick Actions
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-10">
+                    <QuickActionCard
+                        title="AI Generator"
+                        desc="Create playlists from prompts"
+                        icon={Wand2}
+                        color="green"
+                        onClick={() => navigate('/ai-generator')}
+                    />
+                    <QuickActionCard
+                        title="Manage"
+                        desc="Split, merge, or sort playlists"
+                        icon={Edit3}
+                        color="purple"
+                        onClick={() => navigate('/playlists')}
+                    />
+                    <QuickActionCard
+                        title="Cleanup"
+                        desc="Remove duplicates & filler"
+                        icon={Trash2}
+                        color="red"
+                        onClick={() => navigate('/cleanup')}
+                    />
+                    <QuickActionCard
+                        title="Full Stats"
+                        desc="Deep dive into your taste"
+                        icon={BarChart3}
+                        color="blue"
+                        onClick={() => navigate('/stats')}
+                    />
+                </div>
             </div>
 
             {/* Curated Playlists (Horizontal Scroll) */}

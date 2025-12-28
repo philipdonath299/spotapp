@@ -541,7 +541,7 @@ const Stats = () => {
 
                     {/* Listening Stats Summary */}
                     {listeningStats && (
-                        <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="mb-8 hidden md:grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 p-6 rounded-2xl border border-green-500/30">
                                 <div className="flex items-center gap-3 mb-3">
                                     <Clock className="text-green-500" size={24} />
