@@ -6,6 +6,7 @@ import { Music, Play, Wand2, BarChart3, Edit3, Trash2, Activity, RefreshCw } fro
 const Dashboard = () => {
     const [playlists, setPlaylists] = useState([]);
     const [profile, setProfile] = useState(null);
+    const [topArtist, setTopArtist] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const navigate = useNavigate();
@@ -21,10 +22,17 @@ const Dashboard = () => {
             setProfile(profileData);
 
             // Fetch user's playlists
-            const playlistsData = await spotifyFetch('/me/playlists?limit=50');
+            const playlistsData = await spotifyFetch('/me/playlists?limit=20');
             if (playlistsData) {
                 setPlaylists(playlistsData.items);
             }
+
+            // Fetch Top Artist for "Vibe Check"
+            const topArtistsData = await spotifyFetch('/me/top/artists?limit=1&time_range=short_term');
+            if (topArtistsData?.items?.length > 0) {
+                setTopArtist(topArtistsData.items[0]);
+            }
+
         } catch (error) {
             console.error(error);
         } finally {
@@ -45,96 +53,122 @@ const Dashboard = () => {
         );
     }
 
-    return (
-        <div className="min-h-screen bg-gradient-to-b from-neutral-900 to-black p-4 md:p-8 text-white">
-            <header className="flex flex-col xl:flex-row justify-between items-center mb-8 md:mb-12 gap-6 md:gap-8">
-                <div className="flex items-center gap-3 md:gap-4 w-full md:w-auto justify-between md:justify-start">
-                    <h1 className="text-2xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500 text-left">
-                        Hello, {profile?.display_name}
-                    </h1>
-                    <button
-                        onClick={() => loadData(true)}
-                        disabled={refreshing}
-                        className={`p-2 rounded-full hover:bg-white/10 transition-all ${refreshing ? 'animate-spin text-green-500' : 'text-gray-400 hover:text-white'}`}
-                        title="Refresh Library"
-                    >
-                        <RefreshCw size={20} className="md:w-6 md:h-6" />
-                    </button>
-                </div>
+    const QuickActionCard = ({ title, icon: Icon, color, onClick, desc }) => (
+        <button
+            onClick={onClick}
+            className="group relative bg-[#181818] p-6 rounded-2xl border border-white/5 hover:border-white/20 transition-all hover:scale-[1.02] text-left overflow-hidden"
+        >
+            <div className={`absolute top-0 right-0 p-32 bg-${color}-500/5 blur-[80px] rounded-full -translate-y-1/2 translate-x-1/2`} />
+            <div className={`w-12 h-12 rounded-full bg-${color}-500/10 flex items-center justify-center mb-4 group-hover:bg-${color}-500/20 transition-colors`}>
+                <Icon size={24} className={`text-${color}-500`} />
+            </div>
+            <h3 className="text-lg font-bold mb-1">{title}</h3>
+            <p className="text-sm text-gray-400">{desc}</p>
+        </button>
+    );
 
-                <div className="hidden xl:flex flex-wrap justify-center xl:justify-end gap-3">
-                    {/* ... desktop buttons ... */}
-                    <button
-                        onClick={() => navigate('/stats')}
-                        className="flex items-center gap-2 bg-[#181818] border border-neutral-800 text-white px-5 py-2 rounded-full font-bold hover:bg-[#282828] hover:border-green-500/50 transition-all hover:scale-105 shadow-lg text-sm"
-                    >
-                        <BarChart3 size={18} className="text-green-500" /> My Stats
-                    </button>
-                    <button
-                        onClick={() => navigate('/playlists')}
-                        className="flex items-center gap-2 bg-[#181818] border border-neutral-800 text-white px-5 py-2 rounded-full font-bold hover:bg-[#282828] hover:border-purple-500/50 transition-all hover:scale-105 shadow-lg text-sm"
-                    >
-                        <Edit3 size={18} className="text-purple-500" /> Playlist Manager
-                    </button>
-                    <button
-                        onClick={() => navigate('/cleanup')}
-                        className="flex items-center gap-2 bg-[#181818] border border-neutral-800 text-white px-5 py-2 rounded-full font-bold hover:bg-[#282828] hover:border-red-500/50 transition-all hover:scale-105 shadow-lg text-sm"
-                    >
-                        <Trash2 size={18} className="text-red-500" /> Cleanup
-                    </button>
-                    <button
-                        onClick={() => navigate('/ai-generator')}
-                        className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-500 text-black px-5 py-2 rounded-full font-bold hover:opacity-90 transition-all hover:scale-105 shadow-lg shadow-green-500/20 text-sm md:text-base"
-                    >
-                        <Wand2 size={18} /> AI Magic
-                    </button>
-                    <button
-                        onClick={() => {
-                            localStorage.clear();
-                            navigate('/');
-                        }}
-                        className="text-sm text-gray-400 hover:text-white transition-colors px-2"
-                    >
-                        Logout
-                    </button>
+    return (
+        <div className="min-h-screen bg-gradient-to-b from-neutral-900 to-black p-4 md:p-8 text-white pb-32">
+            {/* Header */}
+            <header className="flex justify-between items-center mb-8">
+                <div className="flex items-center gap-4">
+                    {profile?.images?.[0]?.url && (
+                        <img src={profile.images[0].url} className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-green-500" alt="Profile" />
+                    )}
+                    <div>
+                        <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">Dashboard</p>
+                        <h1 className="text-xl md:text-3xl font-bold">Hi, {profile?.display_name}</h1>
+                    </div>
                 </div>
+                <button
+                    onClick={() => loadData(true)}
+                    disabled={refreshing}
+                    className={`p-2 rounded-full hover:bg-white/10 transition-all ${refreshing ? 'animate-spin text-green-500' : 'text-gray-400 hover:text-white'}`}
+                >
+                    <RefreshCw size={20} />
+                </button>
             </header>
 
-            <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Select a Playlist to Discover New Music</h2>
+            {/* Vibe Check Widget */}
+            {topArtist && (
+                <div
+                    className="mb-8 w-full bg-gradient-to-r from-purple-900/40 to-blue-900/40 border border-white/10 rounded-2xl p-6 flex items-center justify-between overflow-hidden relative cursor-pointer hover:border-white/20 transition-all"
+                    onClick={() => navigate('/stats')}
+                >
+                    <div className="z-10">
+                        <p className="text-xs font-bold text-purple-400 mb-1 uppercase tracking-wider flex items-center gap-2">
+                            <Activity size={12} /> Current Vibe
+                        </p>
+                        <h2 className="text-2xl md:text-3xl font-bold mb-1">{topArtist.name}</h2>
+                        <p className="text-sm text-gray-300">Your top artist this month</p>
+                    </div>
+                    {topArtist.images?.[0] && (
+                        <div className="absolute right-0 top-0 h-full w-1/2 md:w-1/3">
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#171425] to-transparent z-10" />
+                            <img src={topArtist.images[0].url} className="h-full w-full object-cover opacity-60" alt="" />
+                        </div>
+                    )}
+                </div>
+            )}
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 pb-20 md:pb-0">
-                {playlists.map((playlist, index) => (
+            {/* Quick Actions Grid */}
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <Wand2 size={18} className="text-green-500" /> Quick Actions
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-10">
+                <QuickActionCard
+                    title="AI Generator"
+                    desc="Create playlists from prompts"
+                    icon={Wand2}
+                    color="green"
+                    onClick={() => navigate('/ai-generator')}
+                />
+                <QuickActionCard
+                    title="Manage"
+                    desc="Split, merge, or sort playlists"
+                    icon={Edit3}
+                    color="purple"
+                    onClick={() => navigate('/playlists')}
+                />
+                <QuickActionCard
+                    title="Cleanup"
+                    desc="Remove duplicates & filler"
+                    icon={Trash2}
+                    color="red"
+                    onClick={() => navigate('/cleanup')}
+                />
+                <QuickActionCard
+                    title="Full Stats"
+                    desc="Deep dive into your taste"
+                    icon={BarChart3}
+                    color="blue"
+                    onClick={() => navigate('/stats')}
+                />
+            </div>
+
+            {/* Curated Playlists (Horizontal Scroll) */}
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <Play size={18} className="text-white" /> Jump Back In
+            </h2>
+            <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory">
+                {playlists.slice(0, 8).map(playlist => (
                     <div
                         key={playlist.id}
-                        className="group relative bg-[#181818] p-4 rounded-lg hover:bg-[#282828] transition-all duration-300 cursor-pointer animate-fade-in"
-                        style={{ animationDelay: `${index * 50}ms` }}
                         onClick={() => navigate(`/recommendations/${playlist.id}`)}
+                        className="min-w-[140px] md:min-w-[160px] cursor-pointer snap-start"
                     >
-                        <div className="relative aspect-square w-full mb-4 shadow-lg overflow-hidden rounded-md">
+                        <div className="relative aspect-square w-full mb-3 rounded-lg overflow-hidden shadow-lg group">
                             {playlist.images?.[0]?.url ? (
-                                <img
-                                    src={playlist.images[0].url}
-                                    alt={playlist.name}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                />
+                                <img src={playlist.images[0].url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="" />
                             ) : (
-                                <div className="w-full h-full bg-neutral-800 flex items-center justify-center">
-                                    <Music className="w-12 h-12 text-gray-600" />
-                                </div>
+                                <div className="w-full h-full bg-neutral-800 flex items-center justify-center"><Music className="text-neutral-500" /></div>
                             )}
-                            {/* Play Button Overlay */}
-                            <div className="absolute bottom-2 right-2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 shadow-xl">
-                                <div className="bg-green-500 rounded-full p-3 text-black">
-                                    <Play fill="currentColor" size={20} />
-                                </div>
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <Play fill="white" size={32} />
                             </div>
                         </div>
-                        <h3 className="font-bold truncate text-white mb-1" title={playlist.name}>
-                            {playlist.name}
-                        </h3>
-                        <p className="text-sm text-gray-400 truncate">
-                            By {playlist.owner.display_name}
-                        </p>
+                        <h3 className="text-sm font-bold truncate text-white">{playlist.name}</h3>
+                        <p className="text-xs text-gray-400 truncate">{playlist.tracks.total} tracks</p>
                     </div>
                 ))}
             </div>
