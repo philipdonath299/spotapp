@@ -157,7 +157,7 @@ const AIGenerator = () => {
         <div className="min-h-screen bg-black text-white p-4 md:p-8 animate-fade-in">
             <button
                 onClick={() => navigate('/dashboard')}
-                className="flex items-center text-gray-400 hover:text-white mb-8 transition-colors"
+                className="hidden md:flex items-center text-gray-400 hover:text-white mb-8 transition-colors"
             >
                 <ArrowLeft className="mr-2" size={20} /> Back to Dashboard
             </button>

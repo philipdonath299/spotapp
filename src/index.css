@@ -5,7 +5,13 @@
 @layer base {
   body {
     @apply bg-black text-white overflow-x-hidden;
-    font-family: 'Circular Std', 'Helvetica Neue', sans-serif; /* Fallback if font not available */
+    font-family: 'Circular Std', 'Helvetica Neue', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    /* Remove tap highlight on iOS */
+    user-select: none;
+    /* Prevent text selection for app-like feel */
+    touch-action: manipulation;
+    /* Improve touch response */
   }
 }
 
@@ -13,13 +19,16 @@
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: #121212;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #555;
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #888;
 }
@@ -31,8 +40,15 @@
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fade-in {

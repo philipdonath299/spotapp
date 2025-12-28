@@ -47,9 +47,9 @@ const Dashboard = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-neutral-900 to-black p-4 md:p-8 text-white">
-            <header className="flex flex-col xl:flex-row justify-between items-center mb-12 gap-8">
-                <div className="flex items-center gap-4">
-                    <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500 text-center md:text-left">
+            <header className="flex flex-col xl:flex-row justify-between items-center mb-8 md:mb-12 gap-6 md:gap-8">
+                <div className="flex items-center gap-3 md:gap-4 w-full md:w-auto justify-between md:justify-start">
+                    <h1 className="text-2xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500 text-left">
                         Hello, {profile?.display_name}
                     </h1>
                     <button
@@ -58,11 +58,12 @@ const Dashboard = () => {
                         className={`p-2 rounded-full hover:bg-white/10 transition-all ${refreshing ? 'animate-spin text-green-500' : 'text-gray-400 hover:text-white'}`}
                         title="Refresh Library"
                     >
-                        <RefreshCw size={24} />
+                        <RefreshCw size={20} className="md:w-6 md:h-6" />
                     </button>
                 </div>
 
                 <div className="hidden xl:flex flex-wrap justify-center xl:justify-end gap-3">
+                    {/* ... desktop buttons ... */}
                     <button
                         onClick={() => navigate('/stats')}
                         className="flex items-center gap-2 bg-[#181818] border border-neutral-800 text-white px-5 py-2 rounded-full font-bold hover:bg-[#282828] hover:border-green-500/50 transition-all hover:scale-105 shadow-lg text-sm"
@@ -99,9 +100,9 @@ const Dashboard = () => {
                 </div>
             </header>
 
-            <h2 className="text-2xl font-bold mb-6">Select a Playlist to Discover New Music</h2>
+            <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Select a Playlist to Discover New Music</h2>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 pb-20 md:pb-0">
                 {playlists.map((playlist, index) => (
                     <div
                         key={playlist.id}
