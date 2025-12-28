@@ -10,8 +10,16 @@ const Stats = () => {
     const [topTracks, setTopTracks] = useState([]);
     const [topAlbums, setTopAlbums] = useState([]);
     const [recentTracks, setRecentTracks] = useState([]);
+    const [playlists, setPlaylists] = useState([]);
+    const [savedTracks, setSavedTracks] = useState([]);
     const [timeRange, setTimeRange] = useState('medium_term');
     const [activeTab, setActiveTab] = useState('artists');
+
+    // New feature states
+    const [lifespanData, setLifespanData] = useState([]);
+    const [overplayedTracks, setOverplayedTracks] = useState([]);
+    const [rediscoverTracks, setRediscoverTracks] = useState([]);
+    const [tasteGravity, setTasteGravity] = useState({});
 
     // Modal States
     const [selectedArtist, setSelectedArtist] = useState(null);
@@ -43,19 +51,24 @@ const Stats = () => {
         fetchStats();
     }, [timeRange]);
 
+
     const fetchStats = async () => {
         setLoading(true);
         setError(null);
         try {
-            const [artistsData, tracksData, recentData] = await Promise.all([
+            const [artistsData, tracksData, recentData, playlistsData, savedTracksData] = await Promise.all([
                 spotifyFetch(`/me/top/artists?limit=50&time_range=${timeRange}`),
                 spotifyFetch(`/me/top/tracks?limit=50&time_range=${timeRange}`),
-                spotifyFetch(`/me/player/recently-played?limit=50`)
+                spotifyFetch(`/me/player/recently-played?limit=50`),
+                spotifyFetch(`/me/playlists?limit=50`),
+                spotifyFetch(`/me/tracks?limit=50`)
             ]);
 
             setTopArtists(artistsData.items || []);
             setTopTracks(tracksData.items || []);
             setRecentTracks(recentData.items || []);
+            setPlaylists(playlistsData.items || []);
+            setSavedTracks(savedTracksData.items || []);
 
             // Derive Top Albums
             const albumMap = {};
@@ -69,12 +82,132 @@ const Stats = () => {
             const derivedAlbums = Object.values(albumMap).sort((a, b) => b.count - a.count).slice(0, 20);
             setTopAlbums(derivedAlbums);
 
+            // Calculate insights
+            calculateLifespan(recentData.items || []);
+            calculateOverplayed(recentData.items || []);
+            calculateRediscover(savedTracksData.items || [], recentData.items || []);
+            calculateTasteGravity(artistsData.items || []);
+
         } catch (err) {
             console.error(err);
             setError('Failed to load stats. Please reconnect if permission was denied.');
         } finally {
             setLoading(false);
         }
+    };
+
+    const calculateLifespan = (recentItems) => {
+        const trackPlayDates = {};
+
+        recentItems.forEach(item => {
+            const trackId = item.track.id;
+            const playedAt = new Date(item.played_at);
+
+            if (!trackPlayDates[trackId]) {
+                trackPlayDates[trackId] = {
+                    track: item.track,
+                    firstPlay: playedAt,
+                    lastPlay: playedAt,
+                    playCount: 1
+                };
+            } else {
+                trackPlayDates[trackId].playCount++;
+                if (playedAt < trackPlayDates[trackId].firstPlay) {
+                    trackPlayDates[trackId].firstPlay = playedAt;
+                }
+                if (playedAt > trackPlayDates[trackId].lastPlay) {
+                    trackPlayDates[trackId].lastPlay = playedAt;
+                }
+            }
+        });
+
+        const lifespanArray = Object.values(trackPlayDates).map(data => {
+            const lifespan = Math.floor((data.lastPlay - data.firstPlay) / (1000 * 60 * 60 * 24));
+            const age = Math.floor((new Date() - data.firstPlay) / (1000 * 60 * 60 * 24));
+            return {
+                ...data,
+                lifespan,
+                age,
+                isActive: lifespan > 0 && data.playCount > 2
+            };
+        }).filter(item => item.playCount > 1).sort((a, b) => b.playCount - a.playCount);
+
+        setLifespanData(lifespanArray);
+    };
+
+    const calculateOverplayed = (recentItems) => {
+        const now = new Date();
+        const threeDaysAgo = new Date(now - 3 * 24 * 60 * 60 * 1000);
+
+        const recentPlays = {};
+        recentItems.forEach(item => {
+            const playedAt = new Date(item.played_at);
+            if (playedAt >= threeDaysAgo) {
+                const trackId = item.track.id;
+                if (!recentPlays[trackId]) {
+                    recentPlays[trackId] = {
+                        track: item.track,
+                        count: 0
+                    };
+                }
+                recentPlays[trackId].count++;
+            }
+        });
+
+        const overplayed = Object.values(recentPlays)
+            .filter(item => item.count >= 10) // 10+ plays in 3 days
+            .sort((a, b) => b.count - a.count);
+
+        setOverplayedTracks(overplayed);
+    };
+
+    const calculateRediscover = (savedItems, recentItems) => {
+        const twoMonthsAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+        const recentTrackIds = new Set(recentItems.map(item => item.track.id));
+
+        const forgotten = savedItems
+            .filter(item => {
+                const addedAt = new Date(item.added_at);
+                const isOld = addedAt < twoMonthsAgo;
+                const notRecentlyPlayed = !recentTrackIds.has(item.track.id);
+                return isOld && notRecentlyPlayed;
+            })
+            .map(item => ({
+                ...item.track,
+                addedAt: item.added_at,
+                monthsSinceAdded: Math.floor((Date.now() - new Date(item.added_at)) / (30 * 24 * 60 * 60 * 1000))
+            }))
+            .slice(0, 20);
+
+        setRediscoverTracks(forgotten);
+    };
+
+    const calculateTasteGravity = (artists) => {
+        const genreCounts = {};
+        let totalGenres = 0;
+
+        artists.forEach(artist => {
+            artist.genres.forEach(genre => {
+                genreCounts[genre] = (genreCounts[genre] || 0) + 1;
+                totalGenres++;
+            });
+        });
+
+        const genreData = Object.entries(genreCounts)
+            .map(([genre, count]) => ({
+                genre,
+                count,
+                percentage: ((count / totalGenres) * 100).toFixed(1),
+                gravity: count / artists.length
+            }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 10);
+
+        setTasteGravity({
+            genres: genreData,
+            coreGenres: genreData.slice(0, 3),
+            totalGenres: Object.keys(genreCounts).length
+        });
     };
 
 
@@ -284,7 +417,10 @@ const Stats = () => {
                             { id: 'artists', label: 'Top Artists', icon: User },
                             { id: 'tracks', label: 'Top Songs', icon: Music },
                             { id: 'albums', label: 'Top Albums', icon: Disc },
-                            { id: 'recent', label: 'History', icon: Clock }
+                            { id: 'recent', label: 'History', icon: Clock },
+                            { id: 'playlists', label: 'Playlists', icon: PlaySquare },
+                            { id: 'insights', label: 'Insights', icon: Activity },
+                            { id: 'rediscover', label: 'Rediscover', icon: Sparkles }
                         ].map((tab) => (
                             <button
                                 key={tab.id}
@@ -399,6 +535,200 @@ const Stats = () => {
                                         <p className="text-xs text-gray-500 truncate font-medium">{album.artists[0].name}</p>
                                     </div>
                                 ))}
+                            </section>
+                        )}
+
+                        {/* Playlists Tab */}
+                        {activeTab === 'playlists' && (
+                            <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 animate-fade-in">
+                                {playlists.map((playlist) => (
+                                    <div
+                                        key={playlist.id}
+                                        onClick={() => navigate(`/recommendations/${playlist.id}`)}
+                                        className="group cursor-pointer"
+                                    >
+                                        <div className="relative aspect-square mb-4 shadow-2xl overflow-hidden rounded-2xl border border-neutral-800 group-hover:border-green-500/50 transition-all">
+                                            {playlist.images?.[0]?.url ? (
+                                                <img src={playlist.images[0].url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                                            ) : (
+                                                <div className="w-full h-full bg-neutral-800 flex items-center justify-center">
+                                                    <Music className="w-12 h-12 text-gray-600" />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <h4 className="font-black text-sm truncate mb-1 group-hover:text-green-500 transition-colors">{playlist.name}</h4>
+                                        <p className="text-xs text-gray-500 truncate font-medium">{playlist.tracks.total} tracks</p>
+                                    </div>
+                                ))}
+                            </section>
+                        )}
+
+                        {/* Insights Tab */}
+                        {activeTab === 'insights' && (
+                            <section className="space-y-12 animate-fade-in">
+                                {/* Music Taste Gravity */}
+                                <div className="bg-[#181818] p-8 rounded-3xl border border-neutral-800">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <Flame className="text-orange-500" size={28} />
+                                        <div>
+                                            <h3 className="text-2xl font-black">Music Taste Gravity</h3>
+                                            <p className="text-sm text-gray-400">Genres you always drift back to</p>
+                                        </div>
+                                    </div>
+
+                                    {tasteGravity.coreGenres?.length > 0 ? (
+                                        <>
+                                            <div className="mb-8 p-6 bg-gradient-to-br from-orange-500/10 to-red-500/10 rounded-2xl border border-orange-500/20">
+                                                <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Your Core Sound</div>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {tasteGravity.coreGenres.map((item, i) => (
+                                                        <div key={item.genre} className="bg-orange-500/20 border border-orange-500/30 px-4 py-2 rounded-full">
+                                                            <span className="text-orange-400 font-black text-sm uppercase">{item.genre}</span>
+                                                            <span className="text-gray-400 text-xs ml-2">{item.percentage}%</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {tasteGravity.genres?.map((item, i) => (
+                                                    <div key={item.genre} className="bg-[#121212] p-4 rounded-2xl border border-neutral-800 hover:border-orange-500/30 transition-all">
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <span className="font-bold text-sm uppercase tracking-tight">{item.genre}</span>
+                                                            <span className="text-orange-500 font-black text-lg">{item.percentage}%</span>
+                                                        </div>
+                                                        <div className="w-full bg-black h-2 rounded-full overflow-hidden">
+                                                            <div className="bg-gradient-to-r from-orange-500 to-red-500 h-full transition-all duration-1000" style={{ width: `${item.percentage}%` }} />
+                                                        </div>
+                                                        <div className="text-[10px] text-gray-600 mt-1 uppercase font-bold">
+                                                            Gravity: {(item.gravity * 100).toFixed(0)}% of artists
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="text-center py-12 text-gray-500">
+                                            <p>Not enough data to calculate taste gravity yet.</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Song Lifespan Tracker */}
+                                <div className="bg-[#181818] p-8 rounded-3xl border border-neutral-800">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <Clock className="text-blue-500" size={28} />
+                                        <div>
+                                            <h3 className="text-2xl font-black">Song Lifespan Tracker</h3>
+                                            <p className="text-sm text-gray-400">How long songs stay in your rotation</p>
+                                        </div>
+                                    </div>
+
+                                    {lifespanData.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {lifespanData.slice(0, 10).map((item) => (
+                                                <div key={item.track.id} className="bg-[#121212] p-4 rounded-2xl border border-neutral-800 hover:bg-[#1a1a1a] transition-all">
+                                                    <div className="flex items-center gap-4">
+                                                        <img src={item.track.album.images[2]?.url} className="w-14 h-14 rounded-lg" alt="" />
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="font-bold text-sm truncate">{item.track.name}</div>
+                                                            <div className="text-xs text-gray-400 truncate">{item.track.artists[0].name}</div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="text-xs text-gray-500 uppercase font-black mb-1">Age</div>
+                                                            <div className="text-lg font-black text-blue-500">{item.age}d</div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="text-xs text-gray-500 uppercase font-black mb-1">Plays</div>
+                                                            <div className="text-lg font-black text-green-500">{item.playCount}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-12 text-gray-500">
+                                            <p>Not enough listening history to track lifespans yet.</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Overplayed Warning */}
+                                {overplayedTracks.length > 0 && (
+                                    <div className="bg-gradient-to-br from-red-500/10 to-orange-500/10 p-8 rounded-3xl border border-red-500/30">
+                                        <div className="flex items-center gap-3 mb-6">
+                                            <Flame className="text-red-500" size={28} />
+                                            <div>
+                                                <h3 className="text-2xl font-black text-red-400">⚠️ Overplayed Warning</h3>
+                                                <p className="text-sm text-gray-400">You're playing these a LOT - take a break before you ruin them!</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            {overplayedTracks.map((item) => (
+                                                <div key={item.track.id} className="bg-black/40 p-4 rounded-2xl border border-red-500/30 hover:border-red-500/50 transition-all">
+                                                    <div className="flex items-center gap-4">
+                                                        <img src={item.track.album.images[2]?.url} className="w-14 h-14 rounded-lg" alt="" />
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="font-bold text-sm truncate">{item.track.name}</div>
+                                                            <div className="text-xs text-gray-400 truncate">{item.track.artists[0].name}</div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="text-xs text-red-400 uppercase font-black mb-1">Danger Zone</div>
+                                                            <div className="text-2xl font-black text-red-500">{item.count} plays</div>
+                                                            <div className="text-[10px] text-gray-500 uppercase">in 3 days</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </section>
+                        )}
+
+                        {/* Rediscover Tab */}
+                        {activeTab === 'rediscover' && (
+                            <section className="animate-fade-in">
+                                <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 p-8 rounded-3xl border border-purple-500/30 mb-8">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <Sparkles className="text-purple-400" size={32} />
+                                        <div>
+                                            <h3 className="text-3xl font-black">Rediscover Your Favorites</h3>
+                                            <p className="text-gray-400">Songs you loved but haven't played in months</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {rediscoverTracks.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {rediscoverTracks.map((track) => (
+                                            <div
+                                                key={track.id}
+                                                onClick={() => fetchTrackInsights(track)}
+                                                className="bg-[#181818] p-4 rounded-2xl border border-neutral-800 hover:border-purple-500/50 hover:bg-[#222] transition-all cursor-pointer group"
+                                            >
+                                                <div className="flex items-center gap-4 mb-3">
+                                                    <img src={track.album.images[2]?.url} className="w-16 h-16 rounded-xl shadow-lg" alt="" />
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="font-bold text-sm truncate group-hover:text-purple-400 transition-colors">{track.name}</div>
+                                                        <div className="text-xs text-gray-400 truncate">{track.artists[0].name}</div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center justify-between text-[10px] text-gray-500 uppercase font-black">
+                                                    <span>Added {track.monthsSinceAdded} months ago</span>
+                                                    <Sparkles size={12} className="text-purple-400" />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-20 bg-[#181818] rounded-3xl border border-neutral-800">
+                                        <Sparkles className="mx-auto mb-4 text-gray-600" size={48} />
+                                        <p className="text-gray-500 text-lg font-bold">No forgotten favorites found!</p>
+                                        <p className="text-gray-600 text-sm mt-2">You're doing a great job keeping your library fresh.</p>
+                                    </div>
+                                )}
                             </section>
                         )}
                     </div>
