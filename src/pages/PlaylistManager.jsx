@@ -165,7 +165,7 @@ Generate a description that captures the vibe, genre, mood, or theme. Be creativ
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-neutral-900 to-black text-white p-8 animate-fade-in">
+        <div className="min-h-screen bg-gradient-to-b from-neutral-900 to-black text-white p-4 md:p-8 animate-fade-in">
             <button
                 onClick={() => navigate('/dashboard')}
                 className="flex items-center text-gray-400 hover:text-white mb-8 transition-colors"

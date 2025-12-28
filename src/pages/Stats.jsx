@@ -516,12 +516,12 @@ const Stats = () => {
                             </div>
                         </div>
 
-                        <div className="flex bg-[#121212] p-1.5 rounded-xl border border-neutral-800 shadow-inner">
+                        <div className="flex bg-[#121212] p-1.5 rounded-xl border border-neutral-800 shadow-inner overflow-x-auto max-w-full">
                             {['short_term', 'medium_term', 'long_term'].map((range) => (
                                 <button
                                     key={range}
                                     onClick={() => setTimeRange(range)}
-                                    className={`px-5 py-2.5 rounded-lg text-sm font-black transition-all ${timeRange === range
+                                    className={`px-4 md:px-5 py-2.5 rounded-lg text-sm font-black transition-all whitespace-nowrap ${timeRange === range
                                         ? 'bg-[#282828] text-white shadow-xl scale-[1.02]'
                                         : 'text-gray-500 hover:text-gray-300'
                                         }`}
@@ -902,7 +902,7 @@ const Stats = () => {
                                         {/* Overall Score */}
                                         <div className="mb-8 p-6 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-2xl border border-cyan-500/20 text-center">
                                             <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Overall Health</div>
-                                            <div className={`text-6xl font-black mb-2 ${libraryHealth.statusColor === 'green' ? 'text-green-500' :
+                                            <div className={`text-4xl md:text-6xl font-black mb-2 ${libraryHealth.statusColor === 'green' ? 'text-green-500' :
                                                 libraryHealth.statusColor === 'blue' ? 'text-blue-500' :
                                                     libraryHealth.statusColor === 'yellow' ? 'text-yellow-500' :
                                                         'text-red-500'

@@ -39,26 +39,26 @@ const Dashboard = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-neutral-900 to-black p-8 text-white">
-            <header className="flex justify-between items-center mb-12">
-                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500">
+            <header className="flex flex-col md:flex-row justify-between items-center mb-12 gap-8">
+                <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500 text-center md:text-left">
                     Hello, {profile?.display_name}
                 </h1>
-                <div className="flex items-center gap-6">
+                <div className="flex flex-wrap justify-center md:justify-end gap-4">
                     <button
                         onClick={() => navigate('/stats')}
-                        className="flex items-center gap-2 bg-[#181818] border border-neutral-800 text-white px-6 py-2 rounded-full font-bold hover:bg-[#282828] transition-all hover:scale-105 shadow-lg"
+                        className="flex items-center gap-2 bg-[#181818] border border-neutral-800 text-white px-5 py-2 rounded-full font-bold hover:bg-[#282828] transition-all hover:scale-105 shadow-lg text-sm md:text-base"
                     >
                         <BarChart3 size={18} /> My Stats
                     </button>
                     <button
                         onClick={() => navigate('/playlist-manager')}
-                        className="flex items-center gap-2 bg-[#181818] border border-neutral-800 text-white px-6 py-2 rounded-full font-bold hover:bg-[#282828] transition-all hover:scale-105 shadow-lg"
+                        className="flex items-center gap-2 bg-[#181818] border border-neutral-800 text-white px-5 py-2 rounded-full font-bold hover:bg-[#282828] transition-all hover:scale-105 shadow-lg text-sm md:text-base"
                     >
                         <Edit3 size={18} /> Manage Playlists
                     </button>
                     <button
                         onClick={() => navigate('/ai-generator')}
-                        className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-500 text-black px-6 py-2 rounded-full font-bold hover:opacity-90 transition-all hover:scale-105 shadow-lg shadow-green-500/20"
+                        className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-500 text-black px-5 py-2 rounded-full font-bold hover:opacity-90 transition-all hover:scale-105 shadow-lg shadow-green-500/20 text-sm md:text-base"
                     >
                         <Wand2 size={18} /> AI Magic
                     </button>
@@ -67,7 +67,7 @@ const Dashboard = () => {
                             localStorage.clear();
                             navigate('/');
                         }}
-                        className="text-sm text-gray-400 hover:text-white transition-colors"
+                        className="text-sm text-gray-400 hover:text-white transition-colors px-2"
                     >
                         Logout
                     </button>
