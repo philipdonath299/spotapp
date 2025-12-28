@@ -76,8 +76,8 @@ const Dashboard = () => {
                         <img src={profile.images[0].url} className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-green-500" alt="Profile" />
                     )}
                     <div>
-                        <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">Dashboard</p>
-                        <h1 className="text-xl md:text-3xl font-bold">Hi, {profile?.display_name}</h1>
+                        <p className="hidden md:block text-xs text-gray-400 uppercase font-bold tracking-wider">Dashboard</p>
+                        <h1 className="text-xl md:text-3xl font-bold">Hi, {profile?.display_name?.split(' ')[0]}</h1>
                     </div>
                 </div>
                 <button
