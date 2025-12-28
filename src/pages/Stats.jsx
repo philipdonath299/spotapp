@@ -20,6 +20,8 @@ const Stats = () => {
     const [overplayedTracks, setOverplayedTracks] = useState([]);
     const [rediscoverTracks, setRediscoverTracks] = useState([]);
     const [tasteGravity, setTasteGravity] = useState({});
+    const [undergroundArtists, setUndergroundArtists] = useState([]);
+    const [libraryHealth, setLibraryHealth] = useState(null);
 
     // Modal States
     const [selectedArtist, setSelectedArtist] = useState(null);
@@ -87,6 +89,8 @@ const Stats = () => {
             calculateOverplayed(recentData.items || []);
             calculateRediscover(savedTracksData.items || [], recentData.items || []);
             calculateTasteGravity(artistsData.items || []);
+            calculateUnderground(artistsData.items || []);
+            calculateLibraryHealth(recentData.items || [], tracksData.items || []);
 
         } catch (err) {
             console.error(err);
@@ -207,6 +211,83 @@ const Stats = () => {
             genres: genreData,
             coreGenres: genreData.slice(0, 3),
             totalGenres: Object.keys(genreCounts).length
+        });
+    };
+
+    const calculateUnderground = (artists) => {
+        // Find artists with less than 100k monthly listeners
+        const LISTENER_THRESHOLD = 100000;
+
+        const underground = artists
+            .filter(artist => artist.followers?.total < LISTENER_THRESHOLD)
+            .map(artist => ({
+                ...artist,
+                listenerCount: artist.followers?.total || 0,
+                isHiddenGem: artist.followers?.total < 50000
+            }))
+            .sort((a, b) => b.popularity - a.popularity)
+            .slice(0, 10);
+
+        setUndergroundArtists(underground);
+    };
+
+    const calculateLibraryHealth = (recentItems, topTracks) => {
+        // Analyze track diversity
+        const uniqueArtists = new Set(topTracks.map(t => t.artists[0].id));
+        const uniqueAlbums = new Set(topTracks.map(t => t.album.id));
+
+        // Calculate diversity score (0-100)
+        const artistDiversity = (uniqueArtists.size / topTracks.length) * 100;
+        const albumDiversity = (uniqueAlbums.size / topTracks.length) * 100;
+
+        // Analyze for similar tracks (same artist appearing multiple times)
+        const artistCounts = {};
+        topTracks.forEach(track => {
+            const artistId = track.artists[0].id;
+            artistCounts[artistId] = (artistCounts[artistId] || 0) + 1;
+        });
+
+        const repeatedArtists = Object.entries(artistCounts)
+            .filter(([_, count]) => count > 3)
+            .map(([artistId, count]) => {
+                const track = topTracks.find(t => t.artists[0].id === artistId);
+                return {
+                    artist: track.artists[0].name,
+                    count
+                };
+            });
+
+        // Calculate overall health score
+        const diversityScore = (artistDiversity + albumDiversity) / 2;
+        const repetitionPenalty = Math.min(repeatedArtists.length * 5, 30);
+        const healthScore = Math.max(0, Math.min(100, diversityScore - repetitionPenalty));
+
+        // Determine health status
+        let status = 'Excellent';
+        let statusColor = 'green';
+        if (healthScore < 70) {
+            status = 'Good';
+            statusColor = 'blue';
+        }
+        if (healthScore < 50) {
+            status = 'Needs Variety';
+            statusColor = 'yellow';
+        }
+        if (healthScore < 30) {
+            status = 'Too Repetitive';
+            statusColor = 'red';
+        }
+
+        setLibraryHealth({
+            score: Math.round(healthScore),
+            status,
+            statusColor,
+            artistDiversity: Math.round(artistDiversity),
+            albumDiversity: Math.round(albumDiversity),
+            repeatedArtists,
+            totalTracks: topTracks.length,
+            uniqueArtists: uniqueArtists.size,
+            uniqueAlbums: uniqueAlbums.size
         });
     };
 
@@ -682,6 +763,124 @@ const Stats = () => {
                                                 </div>
                                             ))}
                                         </div>
+                                    </div>
+                                )}
+
+                                {/* Underground Radar */}
+                                {undergroundArtists.length > 0 && (
+                                    <div className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 p-8 rounded-3xl border border-indigo-500/30">
+                                        <div className="flex items-center gap-3 mb-6">
+                                            <Sparkles className="text-indigo-400" size={28} />
+                                            <div>
+                                                <h3 className="text-2xl font-black text-indigo-400">🎯 Underground Radar</h3>
+                                                <p className="text-sm text-gray-400">Hidden gems with under 100K followers that match your taste</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {undergroundArtists.map((artist) => (
+                                                <div
+                                                    key={artist.id}
+                                                    onClick={() => fetchArtistInsights(artist)}
+                                                    className="bg-black/40 p-4 rounded-2xl border border-indigo-500/30 hover:border-indigo-500/50 transition-all cursor-pointer group"
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <img src={artist.images[1]?.url} className="w-16 h-16 rounded-full shadow-lg" alt="" />
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="font-bold text-sm truncate group-hover:text-indigo-400 transition-colors">
+                                                                {artist.name}
+                                                                {artist.isHiddenGem && <span className="ml-2 text-yellow-400">💎</span>}
+                                                            </div>
+                                                            <div className="text-xs text-gray-400 truncate">{artist.genres.slice(0, 2).join(', ')}</div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="text-xs text-indigo-400 uppercase font-black mb-1">Followers</div>
+                                                            <div className="text-lg font-black text-indigo-300">
+                                                                {artist.listenerCount >= 1000
+                                                                    ? (artist.listenerCount / 1000).toFixed(1) + 'K'
+                                                                    : artist.listenerCount}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Library Health Score */}
+                                {libraryHealth && (
+                                    <div className="bg-[#181818] p-8 rounded-3xl border border-neutral-800">
+                                        <div className="flex items-center gap-3 mb-6">
+                                            <Activity className="text-cyan-500" size={28} />
+                                            <div>
+                                                <h3 className="text-2xl font-black">📊 Library Health Score</h3>
+                                                <p className="text-sm text-gray-400">Analysis of your listening diversity</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Overall Score */}
+                                        <div className="mb-8 p-6 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-2xl border border-cyan-500/20 text-center">
+                                            <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Overall Health</div>
+                                            <div className={`text-6xl font-black mb-2 ${libraryHealth.statusColor === 'green' ? 'text-green-500' :
+                                                    libraryHealth.statusColor === 'blue' ? 'text-blue-500' :
+                                                        libraryHealth.statusColor === 'yellow' ? 'text-yellow-500' :
+                                                            'text-red-500'
+                                                }`}>
+                                                {libraryHealth.score}
+                                            </div>
+                                            <div className={`text-lg font-black uppercase tracking-wider ${libraryHealth.statusColor === 'green' ? 'text-green-400' :
+                                                    libraryHealth.statusColor === 'blue' ? 'text-blue-400' :
+                                                        libraryHealth.statusColor === 'yellow' ? 'text-yellow-400' :
+                                                            'text-red-400'
+                                                }`}>
+                                                {libraryHealth.status}
+                                            </div>
+                                        </div>
+
+                                        {/* Diversity Metrics */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                            <div className="bg-[#121212] p-6 rounded-2xl border border-neutral-800">
+                                                <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Artist Diversity</div>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className="text-2xl font-black text-cyan-500">{libraryHealth.artistDiversity}%</span>
+                                                    <span className="text-xs text-gray-500">{libraryHealth.uniqueArtists}/{libraryHealth.totalTracks} unique</span>
+                                                </div>
+                                                <div className="w-full bg-black h-2 rounded-full overflow-hidden">
+                                                    <div className="bg-gradient-to-r from-cyan-500 to-blue-500 h-full transition-all duration-1000" style={{ width: `${libraryHealth.artistDiversity}%` }} />
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-[#121212] p-6 rounded-2xl border border-neutral-800">
+                                                <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Album Diversity</div>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className="text-2xl font-black text-purple-500">{libraryHealth.albumDiversity}%</span>
+                                                    <span className="text-xs text-gray-500">{libraryHealth.uniqueAlbums}/{libraryHealth.totalTracks} unique</span>
+                                                </div>
+                                                <div className="w-full bg-black h-2 rounded-full overflow-hidden">
+                                                    <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-full transition-all duration-1000" style={{ width: `${libraryHealth.albumDiversity}%` }} />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Repeated Artists Warning */}
+                                        {libraryHealth.repeatedArtists.length > 0 && (
+                                            <div className="bg-yellow-500/10 p-6 rounded-2xl border border-yellow-500/30">
+                                                <div className="flex items-center gap-2 mb-4">
+                                                    <Flame className="text-yellow-500" size={20} />
+                                                    <h4 className="text-sm font-black text-yellow-400 uppercase tracking-wider">Too Many Similar Tracks</h4>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    {libraryHealth.repeatedArtists.map((item, i) => (
+                                                        <div key={i} className="flex items-center justify-between text-sm">
+                                                            <span className="text-gray-300 font-bold">{item.artist}</span>
+                                                            <span className="text-yellow-500 font-black">{item.count} tracks in top 50</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-4">💡 Try exploring more artists to improve diversity!</p>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </section>
