@@ -63,9 +63,10 @@ const PlaylistManager = () => {
 
     const fetchAIResponse = async (apiKey, prompt) => {
         const models = [
-            { version: 'v1beta', id: 'gemini-1.5-flash' },
-            { version: 'v1beta', id: 'gemini-pro' },
-            { version: 'v1beta', id: 'gemini-1.5-pro' }
+            { version: 'v1beta', id: 'gemini-2.5-flash' },
+            { version: 'v1beta', id: 'gemini-2.0-flash' },
+            { version: 'v1beta', id: 'gemini-flash-latest' },
+            { version: 'v1beta', id: 'gemini-pro-latest' }
         ];
 
         let lastError = null;
