@@ -5,6 +5,7 @@ import Callback from './pages/Callback';
 import Dashboard from './pages/Dashboard';
 import Recommendations from './pages/Recommendations';
 import AIGenerator from './pages/AIGenerator';
+import PlaylistManager from './pages/PlaylistManager';
 import Stats from './pages/Stats';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/recommendations/:playlistId" element={<Recommendations />} />
                 <Route path="/ai-generator" element={<AIGenerator />} />
+                <Route path="/playlist-manager" element={<PlaylistManager />} />
                 <Route path="/stats" element={<Stats />} />
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>
