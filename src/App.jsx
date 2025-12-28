@@ -9,6 +9,7 @@ import PlaylistManager from './pages/PlaylistManager';
 import Stats from './pages/Stats';
 import LibraryCleanup from './pages/LibraryCleanup';
 import Automation from './pages/Automation';
+import Layout from './components/Layout';
 
 function App() {
     return (
@@ -16,14 +17,16 @@ function App() {
             <Routes>
                 <Route path="/" element={<Login />} />
                 <Route path="/callback" element={<Callback />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/recommendations/:playlistId" element={<Recommendations />} />
-                <Route path="/recommendations" element={<Recommendations />} />
-                <Route path="/ai-generator" element={<AIGenerator />} />
-                <Route path="/playlists" element={<PlaylistManager />} />
-                <Route path="/cleanup" element={<LibraryCleanup />} />
-                <Route path="/automation" element={<Automation />} />
-                <Route path="/stats" element={<Stats />} />
+
+                {/* Authenticated Routes with Mobile Layout */}
+                <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+                <Route path="/recommendations/:playlistId" element={<Layout><Recommendations /></Layout>} />
+                <Route path="/recommendations" element={<Layout><Recommendations /></Layout>} />
+                <Route path="/ai-generator" element={<Layout><AIGenerator /></Layout>} />
+                <Route path="/playlists" element={<Layout><PlaylistManager /></Layout>} />
+                <Route path="/cleanup" element={<Layout><LibraryCleanup /></Layout>} />
+                <Route path="/automation" element={<Layout><Automation /></Layout>} />
+                <Route path="/stats" element={<Layout><Stats /></Layout>} />
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>
         </BrowserRouter>

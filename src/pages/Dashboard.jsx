@@ -62,7 +62,7 @@ const Dashboard = () => {
                     </button>
                 </div>
 
-                <div className="flex flex-wrap justify-center xl:justify-end gap-3">
+                <div className="hidden xl:flex flex-wrap justify-center xl:justify-end gap-3">
                     <button
                         onClick={() => navigate('/stats')}
                         className="flex items-center gap-2 bg-[#181818] border border-neutral-800 text-white px-5 py-2 rounded-full font-bold hover:bg-[#282828] hover:border-green-500/50 transition-all hover:scale-105 shadow-lg text-sm"
