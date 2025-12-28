@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { spotifyFetch } from '../utils/spotify';
-import { Music, Play, Wand2, BarChart3, Edit3, Trash2, Activity } from 'lucide-react';
+import { Music, Play, Wand2, BarChart3, Edit3, Trash2, Activity, RefreshCw } from 'lucide-react';
 
 const Dashboard = () => {
     const [playlists, setPlaylists] = useState([]);
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const loadData = async () => {
+    const loadData = async (isRefresh = false) => {
+        if (isRefresh) setRefreshing(true);
+        try {
             const profileData = await spotifyFetch('/me');
             if (!profileData) {
                 navigate('/');
@@ -19,13 +21,19 @@ const Dashboard = () => {
             setProfile(profileData);
 
             // Fetch user's playlists
-            // Limit to 50 for now, could paginate
             const playlistsData = await spotifyFetch('/me/playlists?limit=50');
             if (playlistsData) {
                 setPlaylists(playlistsData.items);
             }
+        } catch (error) {
+            console.error(error);
+        } finally {
             setLoading(false);
-        };
+            setRefreshing(false);
+        }
+    };
+
+    useEffect(() => {
         loadData();
     }, [navigate]);
 
@@ -39,28 +47,39 @@ const Dashboard = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-neutral-900 to-black p-4 md:p-8 text-white">
-            <header className="flex flex-col md:flex-row justify-between items-center mb-12 gap-8">
-                <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500 text-center md:text-left">
-                    Hello, {profile?.display_name}
-                </h1>
-                <div className="flex flex-wrap justify-center md:justify-end gap-4">
+            <header className="flex flex-col xl:flex-row justify-between items-center mb-12 gap-8">
+                <div className="flex items-center gap-4">
+                    <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500 text-center md:text-left">
+                        Hello, {profile?.display_name}
+                    </h1>
+                    <button
+                        onClick={() => loadData(true)}
+                        disabled={refreshing}
+                        className={`p-2 rounded-full hover:bg-white/10 transition-all ${refreshing ? 'animate-spin text-green-500' : 'text-gray-400 hover:text-white'}`}
+                        title="Refresh Library"
+                    >
+                        <RefreshCw size={24} />
+                    </button>
+                </div>
+
+                <div className="flex flex-wrap justify-center xl:justify-end gap-3">
                     <button
                         onClick={() => navigate('/stats')}
-                        className="flex items-center gap-2 bg-[#181818] border border-neutral-800 text-white px-5 py-2 rounded-full font-bold hover:bg-[#282828] transition-all hover:scale-105 shadow-lg text-sm md:text-base"
+                        className="flex items-center gap-2 bg-[#181818] border border-neutral-800 text-white px-5 py-2 rounded-full font-bold hover:bg-[#282828] hover:border-green-500/50 transition-all hover:scale-105 shadow-lg text-sm"
                     >
-                        <BarChart3 size={18} /> My Stats
+                        <BarChart3 size={18} className="text-green-500" /> My Stats
                     </button>
                     <button
                         onClick={() => navigate('/playlists')}
-                        className="flex items-center gap-2 bg-[#181818] border border-neutral-800 text-white px-5 py-2 rounded-full font-bold hover:bg-[#282828] transition-all hover:scale-105 shadow-lg text-sm md:text-base"
+                        className="flex items-center gap-2 bg-[#181818] border border-neutral-800 text-white px-5 py-2 rounded-full font-bold hover:bg-[#282828] hover:border-purple-500/50 transition-all hover:scale-105 shadow-lg text-sm"
                     >
-                        <Edit3 size={18} /> Manage Playlists
+                        <Edit3 size={18} className="text-purple-500" /> Playlist Manager
                     </button>
                     <button
                         onClick={() => navigate('/cleanup')}
-                        className="flex items-center gap-2 bg-[#181818] border border-neutral-800 text-white px-5 py-2 rounded-full font-bold hover:bg-[#282828] transition-all hover:scale-105 shadow-lg text-sm md:text-base"
+                        className="flex items-center gap-2 bg-[#181818] border border-neutral-800 text-white px-5 py-2 rounded-full font-bold hover:bg-[#282828] hover:border-red-500/50 transition-all hover:scale-105 shadow-lg text-sm"
                     >
-                        <Trash2 size={18} /> Cleanup
+                        <Trash2 size={18} className="text-red-500" /> Cleanup
                     </button>
                     <button
                         onClick={() => navigate('/ai-generator')}
