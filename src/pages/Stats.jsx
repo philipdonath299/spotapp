@@ -348,7 +348,7 @@ const Stats = () => {
         };
 
         try {
-            const [followingData, likedPart1, likedPart2, relatedData, topTracksData] = await Promise.all([
+            const results = await Promise.allSettled([
                 fetchWithTimeout(spotifyFetch(`/me/following/contains?type=artist&ids=${artist.id}`)),
                 fetchWithTimeout(spotifyFetch(`/me/tracks?limit=50`)),
                 fetchWithTimeout(spotifyFetch(`/me/tracks?limit=50&offset=50`)),
@@ -356,9 +356,15 @@ const Stats = () => {
                 fetchWithTimeout(spotifyFetch(`/artists/${artist.id}/top-tracks?market=from_token`))
             ]);
 
+            const followingData = results[0].status === 'fulfilled' ? results[0].value : [false];
+            const likedPart1 = results[1].status === 'fulfilled' ? results[1].value : { items: [] };
+            const likedPart2 = results[2].status === 'fulfilled' ? results[2].value : { items: [] };
+            const relatedData = results[3].status === 'fulfilled' ? results[3].value : { artists: [] };
+            const topTracksData = results[4].status === 'fulfilled' ? results[4].value : { tracks: [] };
+
             const allLiked = [...(likedPart1.items || []), ...(likedPart2.items || [])];
             const artistLiked = allLiked.filter(item =>
-                item.track.artists.some(a => a.id === artist.id)
+                item.track && item.track.artists.some(a => a.id === artist.id)
             );
 
             const inTop50 = topTracks.filter(track => {
@@ -381,8 +387,9 @@ const Stats = () => {
                 tier
             });
         } catch (err) {
-            console.error("Artist insights failed:", err);
-            setArtistDetailsError("Failed to sync artist data. Please check your connection and try again.");
+            console.error("Artist insights critical failure:", err);
+            // Only show error if we really crashed hard, which shouldn't happen with allSettled
+            setArtistDetailsError("Could not load artist stats.");
         } finally {
             setArtistDetailsLoading(false);
         }
