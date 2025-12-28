@@ -64,6 +64,12 @@ const PlaylistManager = () => {
     const generateAIDescription = async () => {
         setAiLoading(true);
         setStatus("AI is analyzing your playlist's vibe...");
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        if (!apiKey) {
+            setStatus("Missing API Key. Check your .env file.");
+            setAiLoading(false);
+            return;
+        }
         try {
             const tracksData = await spotifyFetch(`/playlists/${selectedPlaylist.id}/tracks?limit=20`);
             const tracks = tracksData.items

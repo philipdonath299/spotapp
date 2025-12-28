@@ -134,25 +134,35 @@ const LibraryCleanup = () => {
                 }
 
             } else {
-                // Regular playlist deletion
-                // Group positions by URI
-                const tracksToDelete = itemsToRemove.reduce((acc, item) => {
-                    const uri = item.uri;
-                    if (!acc[uri]) acc[uri] = [];
-                    acc[uri].push(item.position);
-                    return acc;
-                }, {});
+                // Regular playlist deletion - Handle carefully to avoid index shifts
+                // 1. Flatten all removal items into a single array
+                // 2. Sort by position DESCENDING so we delete from the end first
+                //    This ensures that deleting an item at index 100 doesn't shift the item at index 10.
 
-                const apiBody = Object.entries(tracksToDelete).map(([uri, positions]) => ({
-                    uri,
-                    positions
-                }));
+                const sortedItems = [...itemsToRemove].sort((a, b) => b.position - a.position);
 
-                for (let i = 0; i < apiBody.length; i += 100) {
-                    const chunk = apiBody.slice(i, i + 100);
+                // 3. Process in chunks of 100
+                for (let i = 0; i < sortedItems.length; i += 100) {
+                    const chunk = sortedItems.slice(i, i + 100);
+
+                    // 4. Group by URI within this chunk for the API call
+                    // The API expects: { uri: "...", positions: [1, 2, 3] }
+                    const tracksToDelete = chunk.reduce((acc, item) => {
+                        const uri = item.uri;
+                        if (!acc[uri]) acc[uri] = [];
+                        acc[uri].push(item.position);
+                        return acc;
+                    }, {});
+
+                    const apiBody = Object.entries(tracksToDelete).map(([uri, positions]) => ({
+                        uri,
+                        positions
+                    }));
+
+                    // 5. Send DELETE request for this chunk
                     await spotifyFetch(`/playlists/${selectedPlaylist.id}/tracks`, 'DELETE', {
-                        tracks: chunk,
-                        snapshot_id: selectedPlaylist.snapshot_id
+                        tracks: apiBody,
+                        snapshot_id: selectedPlaylist.snapshot_id // Best effort consistency
                     });
                 }
             }
@@ -219,8 +229,8 @@ const LibraryCleanup = () => {
                                     key={playlist.id}
                                     onClick={() => analyzePlaylist(playlist)}
                                     className={`p-4 rounded-xl border cursor-pointer transition-all flex items-center gap-4 ${playlist.id === 'liked-songs'
-                                            ? 'bg-gradient-to-br from-purple-900/40 to-blue-900/40 border-blue-500/30 hover:border-blue-500'
-                                            : 'bg-[#181818] border-neutral-800 hover:border-red-500/50'
+                                        ? 'bg-gradient-to-br from-purple-900/40 to-blue-900/40 border-blue-500/30 hover:border-blue-500'
+                                        : 'bg-[#181818] border-neutral-800 hover:border-red-500/50'
                                         }`}
                                 >
                                     {playlist.images?.[0]?.url ? (
