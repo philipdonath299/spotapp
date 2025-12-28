@@ -22,6 +22,7 @@ const Stats = () => {
     const [tasteGravity, setTasteGravity] = useState({});
     const [undergroundArtists, setUndergroundArtists] = useState([]);
     const [libraryHealth, setLibraryHealth] = useState(null);
+    const [listeningStats, setListeningStats] = useState(null);
 
     // Modal States
     const [selectedArtist, setSelectedArtist] = useState(null);
@@ -91,6 +92,7 @@ const Stats = () => {
             calculateTasteGravity(artistsData.items || []);
             calculateUnderground(artistsData.items || []);
             calculateLibraryHealth(recentData.items || [], tracksData.items || []);
+            calculateListeningStats(recentData.items || []);
 
         } catch (err) {
             console.error(err);
@@ -288,6 +290,43 @@ const Stats = () => {
             totalTracks: topTracks.length,
             uniqueArtists: uniqueArtists.size,
             uniqueAlbums: uniqueAlbums.size
+        });
+    };
+
+    const calculateListeningStats = (recentItems) => {
+        if (recentItems.length === 0) {
+            setListeningStats(null);
+            return;
+        }
+
+        // Get date range from recent plays
+        const playDates = recentItems.map(item => new Date(item.played_at));
+        const oldestPlay = new Date(Math.min(...playDates));
+        const newestPlay = new Date(Math.max(...playDates));
+
+        // Calculate days in range
+        const daysDiff = Math.max(1, Math.ceil((newestPlay - oldestPlay) / (1000 * 60 * 60 * 24)));
+
+        // Calculate total minutes (assuming average song is 3 minutes)
+        const totalMinutes = recentItems.reduce((sum, item) => {
+            const duration = item.track.duration_ms / 1000 / 60; // Convert to minutes
+            return sum + duration;
+        }, 0);
+
+        // Calculate averages
+        const avgMinutesPerDay = totalMinutes / daysDiff;
+        const avgStreamsPerDay = recentItems.length / daysDiff;
+
+        // Calculate total hours
+        const totalHours = totalMinutes / 60;
+
+        setListeningStats({
+            avgMinutesPerDay: Math.round(avgMinutesPerDay),
+            avgStreamsPerDay: Math.round(avgStreamsPerDay),
+            totalMinutes: Math.round(totalMinutes),
+            totalHours: totalHours.toFixed(1),
+            totalStreams: recentItems.length,
+            daysCovered: daysDiff
         });
     };
 
@@ -492,6 +531,47 @@ const Stats = () => {
                             ))}
                         </div>
                     </header>
+
+                    {/* Listening Stats Summary */}
+                    {listeningStats && (
+                        <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 p-6 rounded-2xl border border-green-500/30">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <Clock className="text-green-500" size={24} />
+                                    <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Avg Minutes/Day</div>
+                                </div>
+                                <div className="text-4xl font-black text-green-500">{listeningStats.avgMinutesPerDay}</div>
+                                <div className="text-xs text-gray-500 mt-1">≈ {(listeningStats.avgMinutesPerDay / 60).toFixed(1)} hours/day</div>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 p-6 rounded-2xl border border-blue-500/30">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <TrendingUp className="text-blue-500" size={24} />
+                                    <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Avg Streams/Day</div>
+                                </div>
+                                <div className="text-4xl font-black text-blue-500">{listeningStats.avgStreamsPerDay}</div>
+                                <div className="text-xs text-gray-500 mt-1">over {listeningStats.daysCovered} days</div>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 p-6 rounded-2xl border border-purple-500/30">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <Music className="text-purple-500" size={24} />
+                                    <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Total Streams</div>
+                                </div>
+                                <div className="text-4xl font-black text-purple-500">{listeningStats.totalStreams}</div>
+                                <div className="text-xs text-gray-500 mt-1">in recent history</div>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-orange-500/10 to-red-500/10 p-6 rounded-2xl border border-orange-500/30">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <Volume2 className="text-orange-500" size={24} />
+                                    <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Total Time</div>
+                                </div>
+                                <div className="text-4xl font-black text-orange-500">{listeningStats.totalHours}h</div>
+                                <div className="text-xs text-gray-500 mt-1">{listeningStats.totalMinutes} minutes</div>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="flex flex-wrap gap-2 mb-10 border-b border-neutral-800 pb-4">
                         {[
@@ -823,16 +903,16 @@ const Stats = () => {
                                         <div className="mb-8 p-6 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-2xl border border-cyan-500/20 text-center">
                                             <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Overall Health</div>
                                             <div className={`text-6xl font-black mb-2 ${libraryHealth.statusColor === 'green' ? 'text-green-500' :
-                                                    libraryHealth.statusColor === 'blue' ? 'text-blue-500' :
-                                                        libraryHealth.statusColor === 'yellow' ? 'text-yellow-500' :
-                                                            'text-red-500'
+                                                libraryHealth.statusColor === 'blue' ? 'text-blue-500' :
+                                                    libraryHealth.statusColor === 'yellow' ? 'text-yellow-500' :
+                                                        'text-red-500'
                                                 }`}>
                                                 {libraryHealth.score}
                                             </div>
                                             <div className={`text-lg font-black uppercase tracking-wider ${libraryHealth.statusColor === 'green' ? 'text-green-400' :
-                                                    libraryHealth.statusColor === 'blue' ? 'text-blue-400' :
-                                                        libraryHealth.statusColor === 'yellow' ? 'text-yellow-400' :
-                                                            'text-red-400'
+                                                libraryHealth.statusColor === 'blue' ? 'text-blue-400' :
+                                                    libraryHealth.statusColor === 'yellow' ? 'text-yellow-400' :
+                                                        'text-red-400'
                                                 }`}>
                                                 {libraryHealth.status}
                                             </div>
