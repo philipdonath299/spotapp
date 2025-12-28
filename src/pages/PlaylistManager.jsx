@@ -61,6 +61,44 @@ const PlaylistManager = () => {
         }
     };
 
+    const fetchAIResponse = async (apiKey, prompt) => {
+        const models = [
+            { version: 'v1beta', id: 'gemini-1.5-flash' },
+            { version: 'v1beta', id: 'gemini-pro' },
+            { version: 'v1beta', id: 'gemini-1.5-pro' }
+        ];
+
+        let lastError = null;
+
+        for (const model of models) {
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/${model.version}/models/${model.id}:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }]
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.error) throw new Error(data.error.message);
+
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (text) return text;
+
+            } catch (err) {
+                console.warn(`Model ${model.id} failed:`, err.message);
+                lastError = err.message;
+            }
+        }
+        throw new Error(`All AI models failed. Last error: ${lastError}`);
+    };
+
     const generateAIDescription = async () => {
         setAiLoading(true);
         setStatus("AI is analyzing your playlist's vibe...");
@@ -77,32 +115,13 @@ const PlaylistManager = () => {
                 .map(i => `${i.track.name} by ${i.track.artists[0]?.name || 'Unknown'}`)
                 .join(', ');
 
-            const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: `Write a creative, catchy, and short description (max 150 chars) for a Spotify playlist named "${selectedPlaylist.name}" that contains these songs: ${tracks}. Do NOT use quotes.`
-                        }]
-                    }]
-                })
-            });
+            const prompt = `Write a creative, catchy, and short description (max 150 chars) for a Spotify playlist named "${selectedPlaylist.name}" that contains these songs: ${tracks}. Do NOT use quotes.`;
 
-            const data = await res.json();
+            const aiText = await fetchAIResponse(apiKey, prompt);
 
-            if (data.error) {
-                throw new Error(data.error.message || "API Error");
-            }
+            setDescription(aiText.replace(/^["']|["']$/g, ''));
+            setStatus("AI description generated!");
 
-            const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (aiText) {
-                setDescription(aiText.replace(/^["']|["']$/g, ''));
-                setStatus("AI description generated!");
-            } else {
-                throw new Error("No description returned");
-            }
         } catch (err) {
             console.error("AI Error:", err);
             setStatus(`AI Error: ${err.message}`);
