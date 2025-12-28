@@ -1,310 +1,401 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { spotifyFetch } from '../utils/spotify';
-import { ArrowLeft, Edit3, Wand2, Loader2, Save, X, CheckCircle, Sparkles } from 'lucide-react';
+import { ArrowLeft, Edit3, Wand2, Loader2, Save, X, CheckCircle, Sparkles, Music, BarChart3, Scissors } from 'lucide-react';
 
 const PlaylistManager = () => {
-    const [playlists, setPlaylists] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [editingId, setEditingId] = useState(null);
-    const [editName, setEditName] = useState('');
-    const [editDescription, setEditDescription] = useState('');
-    const [generatingFor, setGeneratingFor] = useState(null);
-    const [savingId, setSavingId] = useState(null);
-    const [error, setError] = useState(null);
-    const [successMessage, setSuccessMessage] = useState(null);
     const navigate = useNavigate();
+    const [playlists, setPlaylists] = useState([]);
+    const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+    const [view, setView] = useState('list'); // 'list' | 'editor'
+    const [activeTab, setActiveTab] = useState('details'); // 'details' | 'tools' | 'split'
+
+    // Editor State
+    const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [aiLoading, setAiLoading] = useState(false);
+    const [status, setStatus] = useState('');
+
+    // Split State
+    const [splitSize, setSplitSize] = useState(50);
 
     useEffect(() => {
-        loadPlaylists();
+        fetchPlaylists();
     }, []);
 
-    const loadPlaylists = async () => {
-        setLoading(true);
+    const fetchPlaylists = async () => {
         try {
             const data = await spotifyFetch('/me/playlists?limit=50');
-            if (data) {
-                setPlaylists(data.items);
-            }
+            if (data?.items) setPlaylists(data.items);
         } catch (err) {
-            setError('Failed to load playlists');
+            console.error("Failed to fetch playlists");
+        }
+    };
+
+    const handleSelect = (playlist) => {
+        setSelectedPlaylist(playlist);
+        setName(playlist.name);
+        setDescription(playlist.description || '');
+        setView('editor');
+        setActiveTab('details');
+        setStatus('');
+    };
+
+    const handleUpdateDetails = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setStatus('');
+        try {
+            await spotifyFetch(`/playlists/${selectedPlaylist.id}`, 'PUT', { name, description });
+            setStatus('Updated successfully!');
+            fetchPlaylists(); // Refresh list data
+        } catch (err) {
+            setStatus('Update failed.');
         } finally {
             setLoading(false);
         }
     };
 
-    const startEditing = (playlist) => {
-        setEditingId(playlist.id);
-        setEditName(playlist.name);
-        setEditDescription(playlist.description || '');
-        setError(null);
-        setSuccessMessage(null);
-    };
-
-    const cancelEditing = () => {
-        setEditingId(null);
-        setEditName('');
-        setEditDescription('');
-    };
-
-    const savePlaylist = async (playlistId) => {
-        setSavingId(playlistId);
+    const generateAIDescription = async () => {
+        setAiLoading(true);
+        setStatus("AI is analyzing your playlist's vibe...");
         try {
-            await spotifyFetch(`/playlists/${playlistId}`, 'PUT', {
-                name: editName,
-                description: editDescription
+            const tracksData = await spotifyFetch(`/playlists/${selectedPlaylist.id}/tracks?limit=20`);
+            const tracks = tracksData.items
+                .filter(item => item.track)
+                .map(i => `${i.track.name} by ${i.track.artists[0]?.name || 'Unknown'}`)
+                .join(', ');
+
+            const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: `Write a creative, catchy, and short description (max 150 chars) for a Spotify playlist named "${selectedPlaylist.name}" that contains these songs: ${tracks}. Do NOT use quotes.`
+                        }]
+                    }]
+                })
             });
 
-            // Update local state
-            setPlaylists(playlists.map(p =>
-                p.id === playlistId
-                    ? { ...p, name: editName, description: editDescription }
-                    : p
-            ));
-
-            setSuccessMessage('Playlist updated successfully!');
-            setTimeout(() => setSuccessMessage(null), 3000);
-            cancelEditing();
+            const data = await res.json();
+            const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (aiText) {
+                setDescription(aiText.replace(/^["']|["']$/g, ''));
+                setStatus("AI description generated!");
+            } else {
+                throw new Error("No description returned");
+            }
         } catch (err) {
-            setError('Failed to save playlist');
+            setStatus("AI generation failed.");
         } finally {
-            setSavingId(null);
+            setAiLoading(false);
         }
     };
 
-    const generateDescription = async (playlist) => {
-        setGeneratingFor(playlist.id);
-        setError(null);
+    // --- TOOLS: SHUFFLE, SORT, SPLIT ---
 
+    const getAllTracks = async () => {
+        setStatus('Fetching all tracks...');
+        let allTracks = [];
+        let nextUrl = `/playlists/${selectedPlaylist.id}/tracks?limit=100`;
+        while (nextUrl) {
+            const res = await spotifyFetch(nextUrl.replace('https://api.spotify.com/v1', ''));
+            if (res.items) {
+                allTracks = [...allTracks, ...res.items];
+                nextUrl = res.next;
+            } else {
+                nextUrl = null;
+            }
+        }
+        return allTracks.filter(t => t.track && !t.is_local);
+    };
+
+    const replaceTracks = async (newTrackUris) => {
+        setStatus('Updating playlist order...');
+
+        const chunks = [];
+        for (let i = 0; i < newTrackUris.length; i += 100) {
+            chunks.push(newTrackUris.slice(i, i + 100));
+        }
+
+        if (chunks.length === 0) {
+            await spotifyFetch(`/playlists/${selectedPlaylist.id}/tracks`, 'PUT', { uris: [] });
+            return;
+        }
+
+        await spotifyFetch(`/playlists/${selectedPlaylist.id}/tracks`, 'PUT', { uris: chunks[0] });
+
+        for (let i = 1; i < chunks.length; i++) {
+            await spotifyFetch(`/playlists/${selectedPlaylist.id}/tracks`, 'POST', { uris: chunks[i] });
+        }
+
+        setStatus('Playlist updated!');
+    };
+
+    const handleTrueShuffle = async () => {
+        setLoading(true);
+        setStatus('');
         try {
-            // Fetch playlist tracks
-            const tracksData = await spotifyFetch(`/playlists/${playlist.id}/tracks?limit=50`);
-
-            if (!tracksData?.items || tracksData.items.length === 0) {
-                throw new Error('No tracks found in this playlist');
+            const tracks = await getAllTracks();
+            for (let i = tracks.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [tracks[i], tracks[j]] = [tracks[j], tracks[i]];
             }
+            const uris = tracks.map(t => t.track.uri);
+            await replaceTracks(uris);
+        } catch (err) {
+            setStatus('Shuffle failed.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-            // Extract track and artist info
-            const tracks = tracksData.items
-                .filter(item => item.track)
-                .slice(0, 30) // Use first 30 tracks for analysis
-                .map(item => ({
-                    name: item.track.name,
-                    artist: item.track.artists[0]?.name || 'Unknown'
-                }));
+    const handleSmartSort = async (criteria) => {
+        setLoading(true);
+        setStatus('');
+        try {
+            const tracks = await getAllTracks();
+            setStatus('Analyzing audio features...');
 
-            // Generate AI description
-            const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-            if (!apiKey) {
-                throw new Error('Gemini API Key is missing');
-            }
+            const ids = tracks.map(t => t.track.id).filter(Boolean);
+            const featureMap = {};
 
-            const prompt = `Analyze this playlist and create a short, catchy description (max 100 characters):
-
-Playlist Name: "${playlist.name}"
-Tracks: ${tracks.map(t => `${t.name} by ${t.artist}`).join(', ')}
-
-Generate a description that captures the vibe, genre, mood, or theme. Be creative and concise.`;
-
-            const models = [
-                { version: 'v1beta', id: 'gemini-2.0-flash-exp' },
-                { version: 'v1beta', id: 'gemini-2.0-flash' },
-                { version: 'v1beta', id: 'gemini-flash-latest' }
-            ];
-
-            let description = null;
-            for (const model of models) {
-                try {
-                    const response = await fetch(
-                        `https://generativelanguage.googleapis.com/${model.version}/models/${model.id}:generateContent?key=${apiKey}`,
-                        {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                contents: [{
-                                    parts: [{ text: prompt }]
-                                }]
-                            })
-                        }
-                    );
-
-                    const data = await response.json();
-                    if (data.candidates?.[0]?.content?.parts[0]?.text) {
-                        description = data.candidates[0].content.parts[0].text.trim();
-                        // Remove quotes if present
-                        description = description.replace(/^["']|["']$/g, '');
-                        break;
-                    }
-                } catch (err) {
-                    console.warn(`Model ${model.id} failed:`, err.message);
+            for (let i = 0; i < ids.length; i += 100) {
+                const chunk = ids.slice(i, i + 100);
+                const res = await spotifyFetch(`/audio-features?ids=${chunk.join(',')}`);
+                if (res.audio_features) {
+                    res.audio_features.forEach(f => {
+                        if (f) featureMap[f.id] = f;
+                    });
                 }
             }
 
-            if (!description) {
-                throw new Error('Failed to generate description');
-            }
+            tracks.sort((a, b) => {
+                const featA = featureMap[a.track.id];
+                const featB = featureMap[b.track.id];
+                if (!featA && !featB) return 0;
+                if (!featA) return 1;
+                if (!featB) return -1;
 
-            // Update the editing state with generated description
-            setEditingId(playlist.id);
-            setEditName(playlist.name);
-            setEditDescription(description);
+                if (criteria === 'energy') return featB.energy - featA.energy;
+                if (criteria === 'danceability') return featB.danceability - featA.danceability;
+                if (criteria === 'tempo') return featB.tempo - featA.tempo;
+                if (criteria === 'valence') return featB.valence - featA.valence;
+                return 0;
+            });
 
+            const uris = tracks.map(t => t.track.uri);
+            await replaceTracks(uris);
         } catch (err) {
-            setError(err.message);
+            setStatus('Sort failed.');
         } finally {
-            setGeneratingFor(null);
+            setLoading(false);
         }
     };
 
-    if (loading) {
+    const handleSplitPlaylist = async () => {
+        if (splitSize < 5) {
+            setStatus('Split size too small.');
+            return;
+        }
+        setLoading(true);
+        setStatus('Fetching tracks to split...');
+        try {
+            const allTracks = await getAllTracks();
+            const totalParts = Math.ceil(allTracks.length / splitSize);
+            const me = await spotifyFetch('/me');
+
+            setStatus(`Creating ${totalParts} new playlists...`);
+
+            for (let i = 0; i < totalParts; i++) {
+                const chunk = allTracks.slice(i * splitSize, (i + 1) * splitSize);
+                const uris = chunk.map(t => t.track.uri);
+
+                const newPlaylist = await spotifyFetch(`/users/${me.id}/playlists`, 'POST', {
+                    name: `${selectedPlaylist.name} (Part ${i + 1})`,
+                    description: `Part ${i + 1} of split playlist based on ${selectedPlaylist.name}.`,
+                    public: false
+                });
+
+                // Add in chunks of 100
+                for (let k = 0; k < uris.length; k += 100) {
+                    await spotifyFetch(`/playlists/${newPlaylist.id}/tracks`, 'POST', {
+                        uris: uris.slice(k, k + 100)
+                    });
+                }
+            }
+            setStatus(`Successfully created ${totalParts} playlists!`);
+            fetchPlaylists();
+        } catch (err) {
+            console.error(err);
+            setStatus('Split failed.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (view === 'list') {
         return (
-            <div className="min-h-screen bg-black flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="min-h-screen bg-black text-white p-4 md:p-8 animate-fade-in">
+                <button
+                    onClick={() => navigate('/dashboard')}
+                    className="flex items-center text-gray-400 hover:text-white mb-8 transition-colors"
+                >
+                    <ArrowLeft className="mr-2" size={20} /> Back to Dashboard
+                </button>
+                <header className="mb-12">
+                    <h1 className="text-4xl font-bold mb-4 flex items-center gap-3">
+                        <Wand2 className="text-purple-500" /> Playlist Manager
+                    </h1>
+                    <p className="text-gray-400">Rename, describe, shuffle, sort, or split your playlists.</p>
+                </header>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {playlists.map(p => (
+                        <div key={p.id} onClick={() => handleSelect(p)} className="bg-[#181818] p-4 rounded-xl border border-neutral-800 hover:border-purple-500 cursor-pointer transition-all flex items-center gap-4 group">
+                            {p.images?.[0]?.url ? (
+                                <img src={p.images[0].url} className="w-16 h-16 rounded shadow-lg group-hover:scale-105 transition-transform" alt="" />
+                            ) : (
+                                <div className="w-16 h-16 bg-neutral-800 rounded flex items-center justify-center text-gray-500">?</div>
+                            )}
+                            <div className="truncate flex-1">
+                                <h3 className="font-bold truncate">{p.name}</h3>
+                                <p className="text-xs text-gray-500">{p.tracks.total} tracks</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-neutral-900 to-black text-white p-4 md:p-8 animate-fade-in">
-            <button
-                onClick={() => navigate('/dashboard')}
-                className="flex items-center text-gray-400 hover:text-white mb-8 transition-colors"
-            >
-                <ArrowLeft className="mr-2" size={20} /> Back to Dashboard
+        <div className="min-h-screen bg-black text-white p-4 md:p-8 animate-fade-in">
+            <button onClick={() => setView('list')} className="text-gray-400 hover:text-white mb-8 flex items-center">
+                <ArrowLeft className="mr-1" size={18} /> Back to Playlists
             </button>
 
-            <div className="max-w-6xl mx-auto">
-                <div className="text-center mb-12">
-                    <div className="inline-block p-3 bg-purple-500/10 rounded-full mb-4">
-                        <Edit3 className="text-purple-500" size={32} />
+            <div className="max-w-2xl mx-auto">
+                <div className="flex items-center gap-6 mb-8">
+                    {selectedPlaylist.images?.[0]?.url && (
+                        <img src={selectedPlaylist.images[0].url} className="w-32 h-32 rounded-lg shadow-2xl" alt="" />
+                    )}
+                    <div>
+                        <h1 className="text-3xl font-bold mb-2">{selectedPlaylist.name}</h1>
+                        <p className="text-gray-400 text-sm">{selectedPlaylist.tracks.total} tracks</p>
                     </div>
-                    <h1 className="text-4xl font-bold mb-4">Playlist Manager</h1>
-                    <p className="text-gray-400">Rename playlists and generate AI-powered descriptions</p>
                 </div>
 
-                {successMessage && (
-                    <div className="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center gap-2 text-green-500 animate-fade-in">
-                        <CheckCircle size={20} />
-                        {successMessage}
-                    </div>
-                )}
+                <div className="flex gap-4 border-b border-neutral-800 mb-8 overflow-x-auto">
+                    <button onClick={() => setActiveTab('details')} className={`pb-4 px-2 font-bold transition-colors whitespace-nowrap ${activeTab === 'details' ? 'text-purple-500 border-b-2 border-purple-500' : 'text-gray-500 hover:text-white'}`}>
+                        Edit Details
+                    </button>
+                    <button onClick={() => setActiveTab('tools')} className={`pb-4 px-2 font-bold transition-colors whitespace-nowrap ${activeTab === 'tools' ? 'text-purple-500 border-b-2 border-purple-500' : 'text-gray-500 hover:text-white'}`}>
+                        Smart Tools
+                    </button>
+                    <button onClick={() => setActiveTab('split')} className={`pb-4 px-2 font-bold transition-colors whitespace-nowrap ${activeTab === 'split' ? 'text-purple-500 border-b-2 border-purple-500' : 'text-gray-500 hover:text-white'}`}>
+                        Splitter
+                    </button>
+                </div>
 
-                {error && (
-                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 animate-fade-in">
-                        {error}
-                    </div>
-                )}
-
-                <div className="grid gap-4">
-                    {playlists.map((playlist, index) => {
-                        const isEditing = editingId === playlist.id;
-                        const isGenerating = generatingFor === playlist.id;
-                        const isSaving = savingId === playlist.id;
-
-                        return (
-                            <div
-                                key={playlist.id}
-                                className="bg-[#181818] rounded-xl border border-neutral-800 p-6 hover:border-neutral-700 transition-all animate-fade-in"
-                                style={{ animationDelay: `${index * 30}ms` }}
-                            >
-                                <div className="flex items-start gap-4">
-                                    {/* Playlist Image */}
-                                    <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 shadow-lg">
-                                        {playlist.images?.[0]?.url ? (
-                                            <img
-                                                src={playlist.images[0].url}
-                                                alt={playlist.name}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full bg-neutral-800 flex items-center justify-center">
-                                                <Sparkles className="text-neutral-600" size={24} />
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Playlist Info */}
-                                    <div className="flex-1 min-w-0">
-                                        {isEditing ? (
-                                            <div className="space-y-3">
-                                                <input
-                                                    type="text"
-                                                    value={editName}
-                                                    onChange={(e) => setEditName(e.target.value)}
-                                                    className="w-full bg-black border border-neutral-700 rounded-lg px-4 py-2 text-white font-bold focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none"
-                                                    placeholder="Playlist name"
-                                                />
-                                                <textarea
-                                                    value={editDescription}
-                                                    onChange={(e) => setEditDescription(e.target.value)}
-                                                    className="w-full bg-black border border-neutral-700 rounded-lg px-4 py-2 text-white text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none resize-none"
-                                                    placeholder="Playlist description"
-                                                    rows={2}
-                                                />
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={() => savePlaylist(playlist.id)}
-                                                        disabled={isSaving || !editName.trim()}
-                                                        className="flex items-center gap-2 bg-green-500 text-black px-4 py-2 rounded-full font-bold hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                                                    >
-                                                        {isSaving ? (
-                                                            <Loader2 className="animate-spin" size={16} />
-                                                        ) : (
-                                                            <Save size={16} />
-                                                        )}
-                                                        Save
-                                                    </button>
-                                                    <button
-                                                        onClick={cancelEditing}
-                                                        disabled={isSaving}
-                                                        className="flex items-center gap-2 bg-neutral-700 text-white px-4 py-2 rounded-full font-bold hover:bg-neutral-600 disabled:opacity-50 transition-all"
-                                                    >
-                                                        <X size={16} />
-                                                        Cancel
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <>
-                                                <h3 className="font-bold text-lg mb-1 truncate">
-                                                    {playlist.name}
-                                                </h3>
-                                                <p className="text-sm text-gray-400 mb-3 line-clamp-2">
-                                                    {playlist.description || 'No description'}
-                                                </p>
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={() => startEditing(playlist)}
-                                                        className="flex items-center gap-2 bg-neutral-700 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-neutral-600 transition-all"
-                                                    >
-                                                        <Edit3 size={14} />
-                                                        Edit
-                                                    </button>
-                                                    <button
-                                                        onClick={() => generateDescription(playlist)}
-                                                        disabled={isGenerating}
-                                                        className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 disabled:opacity-50 transition-all"
-                                                    >
-                                                        {isGenerating ? (
-                                                            <Loader2 className="animate-spin" size={14} />
-                                                        ) : (
-                                                            <Wand2 size={14} />
-                                                        )}
-                                                        {isGenerating ? 'Generating...' : 'AI Description'}
-                                                    </button>
-                                                </div>
-                                            </>
-                                        )}
-                                    </div>
-                                </div>
+                {activeTab === 'details' && (
+                    <div className="bg-[#181818] p-6 rounded-2xl border border-neutral-800 animate-slide-up">
+                        <form onSubmit={handleUpdateDetails} className="space-y-6">
+                            <div>
+                                <label className="block text-sm font-bold mb-2 text-gray-400">Name</label>
+                                <input value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-black border border-neutral-700 rounded-lg p-4 text-white focus:border-purple-500 outline-none transition-all" />
                             </div>
-                        );
-                    })}
-                </div>
+                            <div>
+                                <div className="flex justify-between mb-2">
+                                    <label className="block text-sm font-bold text-gray-400">Description</label>
+                                    <button type="button" onClick={generateAIDescription} disabled={aiLoading} className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1">
+                                        <Wand2 size={12} /> {aiLoading ? 'Magic working...' : 'Auto-Generate with AI'}
+                                    </button>
+                                </div>
+                                <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full bg-black border border-neutral-700 rounded-lg p-4 text-white focus:border-purple-500 outline-none transition-all h-32 resize-none" />
+                            </div>
 
-                {playlists.length === 0 && (
-                    <div className="text-center text-gray-400 py-12">
-                        No playlists found
+                            {status && <p className={`text-center ${status.includes('failed') ? 'text-red-500' : 'text-green-500'} animate-pulse`}>{status}</p>}
+
+                            <button type="submit" disabled={loading} className="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-purple-900/20">
+                                {loading ? 'Saving...' : 'Save Changes'}
+                            </button>
+                        </form>
+                    </div>
+                )}
+
+                {activeTab === 'tools' && (
+                    <div className="space-y-6 animate-slide-up">
+                        <div className="bg-[#181818] p-6 rounded-2xl border border-neutral-800">
+                            <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+                                <span className="p-2 bg-blue-500/10 text-blue-500 rounded-lg"><Music size={20} /></span>
+                                True Shuffle
+                            </h3>
+                            <p className="text-gray-400 text-sm mb-6">
+                                Permanently calculate a random order and update the playlist.
+                            </p>
+                            <button onClick={handleTrueShuffle} disabled={loading} className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all">
+                                {loading ? 'Shuffling...' : 'Randomize Order'}
+                            </button>
+                        </div>
+
+                        <div className="bg-[#181818] p-6 rounded-2xl border border-neutral-800">
+                            <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+                                <span className="p-2 bg-pink-500/10 text-pink-500 rounded-lg"><BarChart3 size={20} /></span>
+                                Smart Sort
+                            </h3>
+                            <p className="text-gray-400 text-sm mb-6">
+                                Reorder tracks based on their audio features.
+                            </p>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button onClick={() => handleSmartSort('energy')} disabled={loading} className="p-3 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-sm font-bold border border-neutral-700 transition-all">🔥 High Energy</button>
+                                <button onClick={() => handleSmartSort('danceability')} disabled={loading} className="p-3 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-sm font-bold border border-neutral-700 transition-all">💃 Danceability</button>
+                                <button onClick={() => handleSmartSort('tempo')} disabled={loading} className="p-3 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-sm font-bold border border-neutral-700 transition-all">🏃 Fast to Slow</button>
+                                <button onClick={() => handleSmartSort('valence')} disabled={loading} className="p-3 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-sm font-bold border border-neutral-700 transition-all">😊 Happy to Sad</button>
+                            </div>
+                        </div>
+                        {status && <p className="text-center text-green-500 font-bold">{status}</p>}
+                    </div>
+                )}
+
+                {activeTab === 'split' && (
+                    <div className="bg-[#181818] p-6 rounded-2xl border border-neutral-800 animate-slide-up">
+                        <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+                            <span className="p-2 bg-green-500/10 text-green-500 rounded-lg"><Scissors size={20} /></span>
+                            Playlist Splitter
+                        </h3>
+                        <p className="text-gray-400 text-sm mb-6">
+                            Split this {selectedPlaylist.tracks.total}-track playlist into smaller chunks.
+                        </p>
+
+                        <div className="mb-8">
+                            <label className="block text-sm font-bold mb-2 text-gray-400">Tracks per Playlist</label>
+                            <input
+                                type="number"
+                                value={splitSize}
+                                onChange={(e) => setSplitSize(parseInt(e.target.value))}
+                                min={5}
+                                max={500}
+                                className="w-full bg-black border border-neutral-700 rounded-lg p-4 text-white font-bold outline-none focus:border-green-500"
+                            />
+                            <p className="text-xs text-neutral-500 mt-2">
+                                This will create approx. {Math.ceil(selectedPlaylist.tracks.total / (splitSize || 1))} new playlists.
+                            </p>
+                        </div>
+
+                        <button
+                            onClick={handleSplitPlaylist}
+                            disabled={loading || splitSize < 5}
+                            className="w-full py-4 bg-green-600 hover:bg-green-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                        >
+                            {loading ? <Loader2 className="animate-spin" /> : <Scissors />}
+                            {loading ? 'Splitting...' : 'Split Playlist'}
+                        </button>
+
+                        {status && <p className="text-center text-green-500 font-bold mt-4">{status}</p>}
                     </div>
                 )}
             </div>
