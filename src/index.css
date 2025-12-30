@@ -3,54 +3,114 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --apple-bg: #000000;
+    --apple-card: #1c1c1e;
+    --apple-card-hover: #2c2c2e;
+    --apple-blue: #0a84ff;
+    --apple-green: #30d158;
+    --apple-red: #ff453a;
+    --apple-purple: #bf5af2;
+    --apple-orange: #ff9f0a;
+    --apple-gray: #8e8e93;
+    --apple-gray-2: #636366;
+    --apple-gray-3: #48484a;
+    --apple-gray-4: #3a3a3c;
+    --apple-gray-5: #2c2c2e;
+    --apple-gray-6: #1c1c1e;
+  }
+
   body {
-    @apply bg-black text-white overflow-x-hidden;
-    font-family: 'Circular Std', 'Helvetica Neue', sans-serif;
+    @apply bg-black text-white overflow-x-hidden antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     -webkit-tap-highlight-color: transparent;
-    /* Remove tap highlight on iOS */
     user-select: none;
-    /* Prevent text selection for app-like feel */
     touch-action: manipulation;
-    /* Improve touch response */
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply tracking-tight font-semibold;
   }
 }
 
-/* Custom Scrollbar */
+/* Apple Materials */
+.apple-glass {
+  background: rgba(28, 28, 30, 0.7);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.apple-glass-light {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Apple Buttons */
+.apple-button-primary {
+  @apply bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-6 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2;
+}
+
+.apple-button-secondary {
+  @apply bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-6 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 border border-white/10;
+}
+
+/* Apple Cards */
+.apple-card {
+  @apply bg-[#1c1c1e] rounded-[22px] border border-white/5 transition-all duration-300;
+}
+
+.apple-card-interactive {
+  @apply apple-card hover:bg-[#2c2c2e] hover:scale-[1.02] active:scale-[0.98] cursor-pointer;
+}
+
+/* Custom Scrollbar (Apple Style - Minimal) */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #121212;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #555;
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #888;
-}
-
-/* Glassmorphism Utilities */
-.glass-panel {
-  @apply bg-white bg-opacity-5 backdrop-blur-lg border border-white border-opacity-10 rounded-xl;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* Animations */
-@keyframes fadeIn {
+@keyframes apple-fade-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: scale(0.98) translateY(10px);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1) translateY(0);
   }
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
+.animate-apple-in {
+  animation: apple-fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Tab Bar */
+.apple-tab-bar {
+  background: rgba(18, 18, 18, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 0.5px solid rgba(255, 255, 255, 0.15);
 }

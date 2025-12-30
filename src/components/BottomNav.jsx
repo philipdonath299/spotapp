@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, BarChart3, Edit3, Trash2, Wand2 } from 'lucide-react';
+import { Home, BarChart3, Edit3, Trash2, Wand2, Layers } from 'lucide-react';
 
 const BottomNav = () => {
     const navigate = useNavigate();
@@ -11,33 +11,42 @@ const BottomNav = () => {
     const navItems = [
         { path: '/dashboard', icon: Home, label: 'Home' },
         { path: '/stats', icon: BarChart3, label: 'Stats' },
+        { path: '/discovery', icon: Layers, label: 'Explore' },
         { path: '/playlists', icon: Edit3, label: 'Manage' },
-        { path: '/cleanup', icon: Trash2, label: 'Cleanup' },
         { path: '/ai-generator', icon: Wand2, label: 'Magic' }
     ];
 
     return (
-        <div className="fixed bottom-6 left-4 right-4 md:hidden z-50 animate-slide-up">
-            <div className="bg-[#181818]/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-4 flex justify-between items-center px-6">
-                {navItems.map((item) => (
-                    <button
-                        key={item.path}
-                        onClick={() => navigate(item.path)}
-                        className={`flex flex-col items-center gap-1 transition-all duration-300 relative group ${isActive(item.path) ? 'scale-110' : 'opacity-60 hover:opacity-100'
-                            }`}
-                    >
-                        <div className={`p-2 rounded-xl transition-all ${isActive(item.path) ? 'bg-white/10 text-green-400' : 'text-white'
-                            }`}>
-                            <item.icon size={22} strokeWidth={isActive(item.path) ? 2.5 : 2} />
-                        </div>
-                        {isActive(item.path) && (
-                            <div className="absolute -bottom-2 w-1 h-1 bg-green-500 rounded-full" />
-                        )}
-                    </button>
-                ))}
+        <nav className="fixed bottom-0 left-0 right-0 z-50 apple-tab-bar pb-6 md:pb-4 border-t border-white/10">
+            <div className="max-w-2xl mx-auto flex justify-around items-center pt-3 px-6">
+                {navItems.map((item) => {
+                    const active = isActive(item.path);
+                    return (
+                        <button
+                            key={item.path}
+                            onClick={() => navigate(item.path)}
+                            className={`flex flex-col items-center gap-1.5 transition-all duration-300 relative group ${active ? 'text-blue-500' : 'text-gray-500 hover:text-gray-300'}`}
+                        >
+                            <div className={`p-1 rounded-xl transition-all duration-300 ${active ? 'bg-blue-500/10' : 'group-hover:bg-white/5'}`}>
+                                <item.icon
+                                    size={22}
+                                    strokeWidth={active ? 2.5 : 2}
+                                    className="transition-transform duration-300"
+                                />
+                            </div>
+                            <span className={`text-[10px] font-bold tracking-tight transition-all duration-300 ${active ? 'opacity-100' : 'opacity-70'}`}>
+                                {item.label}
+                            </span>
+                            {active && (
+                                <div className="absolute -bottom-1 w-1 h-1 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,1)]" />
+                            )}
+                        </button>
+                    );
+                })}
             </div>
-        </div>
+        </nav>
     );
 };
 
 export default BottomNav;
+```

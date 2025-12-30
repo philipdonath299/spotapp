@@ -184,9 +184,13 @@ const Recommendations = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
-                <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-xl text-green-400 animate-pulse font-medium">{statusMessage}</p>
+            <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 animate-apple-in">
+                <div className="w-20 h-20 bg-blue-500/10 rounded-[40px] flex items-center justify-center mb-10 border border-blue-500/20 shadow-2xl relative">
+                    <div className="absolute inset-0 rounded-[40px] border-2 border-blue-500 border-t-transparent animate-spin" />
+                    <RefreshCw className="text-blue-500 animate-pulse" size={32} strokeWidth={1.5} />
+                </div>
+                <p className="text-2xl font-black text-white tracking-tighter uppercase mb-2 leading-none">{statusMessage}</p>
+                <p className="text-gray-500 font-bold text-sm tracking-widest uppercase opacity-80 italic">Simulating taste clusters...</p>
             </div>
         );
     }
@@ -194,71 +198,69 @@ const Recommendations = () => {
     return (
         <div className="min-h-screen bg-black text-white p-4 md:p-8 animate-fade-in">
             <div className="max-w-7xl mx-auto">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-6">
                     <button
-                        onClick={() => navigate('/dashboard')}
-                        className="flex items-center text-neutral-400 hover:text-white transition-colors group"
+                        onClick={() => navigate('/playlists')}
+                        className="flex items-center text-blue-500 font-black text-xs bg-blue-500/10 px-6 py-2.5 rounded-full hover:bg-blue-500/20 transition-all uppercase tracking-widest"
                     >
-                        <ArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" size={20} /> Back to Playlists
+                        <ArrowLeft className="mr-2" size={16} strokeWidth={3} /> Playlists
                     </button>
 
                     {recommendations.length > 0 && (
                         <button
                             onClick={saveToPlaylist}
                             disabled={isSaving}
-                            className={`flex items-center gap-2 px-8 py-3.5 rounded-full font-bold transition-all shadow-2xl ${isSaving
-                                ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed border border-neutral-700'
-                                : 'bg-green-500 hover:bg-green-400 text-black hover:scale-105 active:scale-95 shadow-green-500/20'
+                            className={`flex items-center gap-3 px-10 py-5 rounded-3xl font-black transition-all shadow-[0_24px_48px_-12px_rgba(59,130,246,0.3)] uppercase tracking-widest text-sm border-2 ${isSaving
+                                ? 'bg-white/5 text-gray-600 cursor-not-allowed border-white/5'
+                                : 'bg-white text-black hover:bg-gray-200 hover:scale-[1.02] active:scale-95 border-transparent'
                                 }`}
                         >
-                            {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
-                            {isSaving ? 'Creating...' : 'Save All as Playlist'}
+                            {isSaving ? <Loader2 className="animate-spin" size={24} /> : <Plus size={24} strokeWidth={3} />}
+                            {isSaving ? 'Synching...' : 'Deploy to Library'}
                         </button>
                     )}
                 </div>
 
-                <header className="mb-8">
-                    <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold mb-4 tracking-tight leading-tight">
-                        Deep Discovery
-                    </h1>
-                    <p className="text-neutral-400 text-xl md:text-2xl font-medium max-w-2xl">
-                        Inspired by <span className="text-green-400">{playlistName}</span>
+                <header className="mb-14">
+                    <h1 className="text-5xl md:text-8xl font-black mb-4 tracking-tighter leading-none uppercase">Deep Discovery</h1>
+                    <p className="text-gray-400 text-xl font-bold tracking-tight max-w-2xl px-1">
+                        Synthesizing new sonic terrains from <span className="text-blue-500 underline decoration-2 underline-offset-8">{playlistName}</span>
                     </p>
                 </header>
 
                 {/* Obscurity Filter UI */}
-                <div className="bg-[#181818] p-6 rounded-2xl border border-neutral-800 mb-12 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-purple-500/10 text-purple-500 rounded-xl">
-                            <Sliders size={24} />
+                <div className="apple-glass p-10 rounded-[48px] border border-white/15 mb-16 flex flex-col md:flex-row items-center justify-between gap-10 shadow-2xl">
+                    <div className="flex items-center gap-6">
+                        <div className="p-4 bg-purple-500/10 text-purple-500 rounded-[28px] border border-purple-500/20 shadow-2xl">
+                            <Sliders size={32} strokeWidth={1.5} />
                         </div>
                         <div>
-                            <h3 className="font-bold text-lg">Discovery Depth</h3>
-                            <p className="text-zinc-400 text-sm">Find mainstream hits or crate-digger deep cuts.</p>
+                            <h3 className="font-black text-2xl tracking-tighter uppercase leading-none mb-1">Crate Depth</h3>
+                            <p className="text-gray-500 text-sm font-bold tracking-tight uppercase tracking-widest opacity-80">Mainstream ⇄ Underground</p>
                         </div>
                     </div>
 
-                    <div className="flex-1 w-full max-w-md flex flex-col gap-2">
+                    <div className="flex-1 w-full max-w-md flex flex-col gap-4">
                         <input
                             type="range"
                             min="0"
                             max="100"
                             value={obscurity}
                             onChange={(e) => setObscurity(Number(e.target.value))}
-                            className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                            className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-500 shadow-inner"
                         />
-                        <div className="flex justify-between text-xs font-bold text-neutral-500 uppercase tracking-wider">
-                            <span>Mainstream</span>
-                            <span className="text-purple-400">{obscurity}% Obscure</span>
-                            <span>Underground</span>
+                        <div className="flex justify-between text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
+                            <span>Popular</span>
+                            <span className="text-blue-500 px-3 py-1 bg-blue-500/10 rounded-full border border-blue-500/20">{obscurity}% Obscuration</span>
+                            <span>Obscure</span>
                         </div>
                     </div>
 
                     <button
                         onClick={fetchRecommendations}
-                        className="px-6 py-3 bg-neutral-700 hover:bg-neutral-600 rounded-xl font-bold transition-all flex items-center gap-2"
+                        className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-[24px] font-black transition-all flex items-center gap-3 border border-white/10 uppercase tracking-widest text-xs"
                     >
-                        <RefreshCw size={18} /> Refresh Mix
+                        <RefreshCw size={18} strokeWidth={2.5} /> Refresh Logic
                     </button>
                 </div>
 
@@ -273,38 +275,37 @@ const Recommendations = () => {
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8 pb-32">
                         {recommendations.map((track, index) => (
                             <div
                                 key={track.id}
-                                className="bg-neutral-900/40 rounded-2xl p-4 hover:bg-neutral-800/60 transition-all group border border-neutral-800/50 hover:border-neutral-700 shadow-sm animate-fade-in"
-                                style={{ animationDelay: `${index * 30}ms` }}
+                                className="apple-card-interactive p-5 group shadow-2xl animate-apple-in"
+                                style={{ animationDelay: `${index * 50}ms` }}
                             >
-                                <div className="relative aspect-square w-full mb-5 rounded-xl overflow-hidden shadow-lg group-hover:shadow-green-500/20 transition-all duration-500">
+                                <div className="relative aspect-square w-full mb-6 rounded-[32px] overflow-hidden shadow-2xl border border-white/10">
                                     <img
                                         src={track.album.images[0]?.url}
                                         alt={track.name}
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2000ms]"
                                     />
-                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center p-4">
                                         <button
                                             onClick={() => window.open(track.uri, '_blank')}
-                                            className="bg-green-500 text-black p-4 rounded-full hover:scale-110 transition-transform active:scale-90 shadow-2xl"
-                                            title="Play on Spotify"
+                                            className="bg-white text-black w-14 h-14 rounded-full hover:scale-110 transition-transform active:scale-90 shadow-2xl flex items-center justify-center"
                                         >
-                                            <Play fill="currentColor" size={28} />
+                                            <Play fill="black" size={24} className="ml-1" />
                                         </button>
                                     </div>
-                                    <div className="absolute top-2 right-2 bg-black/60 backdrop-blur text-white text-[10px] font-bold px-2 py-1 rounded border border-white/10">
-                                        POP: {track.popularity}
+                                    <div className="absolute top-4 right-4 apple-glass rounded-xl text-[10px] font-black px-3 py-1.5 border border-white/20 uppercase tracking-widest">
+                                        P: {track.popularity}
                                     </div>
                                 </div>
 
-                                <div className="px-1">
-                                    <h3 className="font-bold text-lg truncate mb-1 text-neutral-100" title={track.name}>
+                                <div className="px-1 text-center">
+                                    <h3 className="font-black text-lg truncate mb-1 text-white tracking-tighter uppercase leading-[1.1]" title={track.name}>
                                         {track.name}
                                     </h3>
-                                    <p className="text-neutral-400 text-sm truncate font-medium group-hover:text-neutral-300 transition-colors">
+                                    <p className="text-gray-500 text-[11px] truncate font-bold uppercase tracking-widest opacity-80 group-hover:text-blue-400 transition-colors">
                                         {track.artists.map(a => a.name).join(', ')}
                                     </p>
                                 </div>

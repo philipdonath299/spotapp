@@ -162,28 +162,28 @@ const AIGenerator = () => {
                 <ArrowLeft className="mr-2" size={20} /> Back to Dashboard
             </button>
 
-            <div className="max-w-2xl mx-auto text-center mb-12">
-                <div className="inline-block p-3 bg-green-500/10 rounded-full mb-4">
-                    <Wand2 className="text-green-500" size={32} />
+            <div className="max-w-3xl mx-auto text-center mb-16 px-4">
+                <div className="inline-block p-5 bg-blue-500/10 rounded-[32px] mb-8 border border-blue-500/20 shadow-2xl">
+                    <Wand2 className="text-blue-500" size={48} strokeWidth={1.5} />
                 </div>
-                <h1 className="text-4xl font-bold mb-4">AI Playlist Generator</h1>
-                <p className="text-gray-400">Describe the mood, activity, or vibe, and let AI build your perfect soundtrack.</p>
+                <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter leading-none uppercase">Magic Pro</h1>
+                <p className="text-gray-400 text-xl font-bold tracking-tight">Describe the mood, activity, or vibe, and let AI build your perfect soundtrack.</p>
             </div>
 
-            <div className="max-w-xl mx-auto bg-[#181818] p-6 rounded-xl border border-neutral-800 shadow-2xl mb-8">
+            <div className="max-w-2xl mx-auto apple-glass p-8 rounded-[40px] border border-white/15 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] mb-12 px-8">
                 <form onSubmit={generateAIPlaylist}>
                     <textarea
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
-                        placeholder="e.g. 90s underground hip-hop for a rainy night in Tokyo"
-                        className="w-full bg-black border border-neutral-700 rounded-lg p-4 text-white focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition-all resize-none h-32 mb-4"
+                        placeholder="e.g. 90s underground hip-hop for a rainy night in Tokyo..."
+                        className="w-full bg-black/40 border border-white/10 rounded-3xl p-6 text-white text-lg font-medium placeholder:text-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all resize-none h-40 mb-8 shadow-inner"
                     />
                     <button
                         type="submit"
                         disabled={loading || !prompt}
-                        className="w-full py-4 bg-green-500 text-black font-bold rounded-full hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                        className="w-full py-5 bg-blue-600 text-white font-black rounded-3xl hover:bg-blue-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 shadow-[0_20px_40px_-10px_rgba(37,99,235,0.4)] uppercase tracking-widest text-sm"
                     >
-                        {loading ? <Loader2 className="animate-spin" size={20} /> : <Wand2 size={20} />}
+                        {loading ? <Loader2 className="animate-spin" size={24} /> : <Wand2 size={24} />}
                         {loading ? 'Working Magic...' : 'Generate Playlist'}
                     </button>
                 </form>
@@ -213,35 +213,35 @@ const AIGenerator = () => {
             )}
 
             {results.length > 0 && (
-                <div className="max-w-4xl mx-auto space-y-4">
-                    <div className="flex justify-between items-center bg-[#181818] p-6 rounded-xl border border-neutral-800">
+                <div className="max-w-4xl mx-auto space-y-8 animate-apple-in px-4">
+                    <div className="flex flex-col md:flex-row justify-between items-center bg-white/5 p-8 rounded-[36px] border border-white/10 shadow-2xl gap-6">
                         <div>
-                            <h2 className="text-xl font-bold">Suggested Tracks</h2>
-                            <p className="text-sm text-gray-400">{results.length} songs brainstorming</p>
+                            <h2 className="text-3xl font-black tracking-tighter uppercase leading-none">Suggested Tracks</h2>
+                            <p className="text-gray-500 text-sm font-bold uppercase tracking-widest mt-2">{results.length} songs brainstorming</p>
                         </div>
                         <button
                             onClick={saveAsPlaylist}
                             disabled={loading}
-                            className="flex items-center gap-2 bg-white text-black px-6 py-2 rounded-full font-bold hover:bg-gray-200 transition-colors"
+                            className="flex items-center gap-3 bg-white text-black px-8 py-4 rounded-2xl font-black hover:bg-gray-200 transition-all shadow-xl uppercase tracking-widest text-xs"
                         >
-                            <Plus size={18} /> Save as Playlist
+                            <Plus size={20} strokeWidth={3} /> Save as Playlist
                         </button>
                     </div>
 
-                    <div className="grid gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20">
                         {results.map((track, index) => (
-                            <div key={track.id} className="flex items-center gap-4 bg-[#121212]/50 p-2 rounded-lg hover:bg-[#181818] transition-colors group">
-                                <span className="w-8 text-center text-gray-500">{index + 1}</span>
+                            <div key={track.id} className="flex items-center gap-5 apple-card-interactive p-4 group">
+                                <span className="w-8 text-center text-gray-500 font-black text-sm">{index + 1}</span>
                                 {track.album.images[0] ? (
-                                    <img src={track.album.images[0].url} className="w-12 h-12 rounded shadow" alt="" />
+                                    <img src={track.album.images[0].url} className="w-16 h-16 rounded-2xl shadow-2xl border border-white/10 group-hover:scale-110 transition-transform duration-700" alt="" />
                                 ) : (
-                                    <div className="w-12 h-12 bg-neutral-800 flex items-center justify-center rounded">
-                                        <Music size={20} className="text-neutral-600" />
+                                    <div className="w-16 h-16 bg-white/5 flex items-center justify-center rounded-2xl border border-white/10">
+                                        <Music size={24} className="text-gray-600" />
                                     </div>
                                 )}
                                 <div className="flex-1 truncate">
-                                    <div className="font-bold truncate">{track.name}</div>
-                                    <div className="text-sm text-gray-400 truncate">{track.artists.map(a => a.name).join(', ')}</div>
+                                    <div className="font-black truncate text-lg tracking-tighter uppercase group-hover:text-blue-400 transition-colors leading-none mb-1">{track.name}</div>
+                                    <div className="text-xs text-gray-500 font-bold truncate tracking-tight uppercase opacity-80">{track.artists.map(a => a.name).join(', ')}</div>
                                 </div>
                             </div>
                         ))}

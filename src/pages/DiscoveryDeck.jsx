@@ -200,56 +200,57 @@ const DiscoveryDeck = () => {
 
     if (!initDone) {
         return (
-            <div className="min-h-screen bg-black text-white p-6 flex flex-col items-center justify-center animate-fade-in relative">
-                <button onClick={() => navigate('/dashboard')} className="absolute top-6 left-6 flex items-center text-gray-400 hover:text-white transition-colors">
-                    <ArrowLeft className="mr-2" size={20} /> Exit
-                </button>
-                <header className="text-center mb-12">
-                    <h1 className="text-5xl font-extrabold mb-4 tracking-tighter bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                        Discovery Deck
-                    </h1>
-                    <p className="text-gray-400 text-lg">Swipe to discover your next obsession.</p>
+            <div className="py-12 animate-apple-in max-w-5xl mx-auto px-4">
+                <header className="mb-16">
+                    <button onClick={() => navigate('/dashboard')} className="mb-10 flex items-center text-blue-500 font-bold text-sm bg-blue-500/10 px-5 py-2 rounded-full hover:bg-blue-500/20 transition-all w-fit">
+                        <ArrowLeft size={16} className="mr-2" /> Dashboard
+                    </button>
+                    <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-6 leading-none">Discovery</h1>
+                    <p className="text-gray-400 text-xl font-medium tracking-tight max-w-lg">Swipe to find your new favorite frequency in the digital ocean.</p>
                 </header>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {VIBES.map(v => (
                         <button
                             key={v.id}
                             onClick={() => loadVibe(v.id)}
-                            className={`p-8 rounded-3xl bg-[#121212] border border-white/5 hover:border-${v.color}-500 transition-all text-left group overflow-hidden relative active:scale-95`}
+                            className="apple-card-interactive p-10 flex flex-col items-center text-center gap-8 group relative overflow-hidden"
                         >
-                            <div className={`w-14 h-14 rounded-2xl bg-${v.color}-500/10 text-${v.color}-400 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-${v.color}-500/20 transition-all`}>
-                                {React.cloneElement(v.icon, { size: 28 })}
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
+
+                            <div className={`w-20 h-20 rounded-[32px] bg-white/5 flex items-center justify-center text-white/80 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-500 shadow-2xl border border-white/10`}>
+                                {React.cloneElement(v.icon, { size: 40, strokeWidth: 1.5 })}
                             </div>
-                            <h2 className="text-2xl font-bold mb-2">{v.name}</h2>
-                            <p className="text-gray-500 text-sm leading-relaxed">{v.desc}</p>
-                            <div className={`absolute -right-8 -bottom-8 w-32 h-32 bg-${v.color}-500/5 blur-3xl rounded-full`} />
+                            <div>
+                                <h2 className="text-3xl font-extrabold mb-2 tracking-tighter uppercase">{v.name}</h2>
+                                <p className="text-gray-500 text-sm font-bold tracking-tight opacity-80">{v.desc}</p>
+                            </div>
                         </button>
                     ))}
                 </div>
-                {errorMsg && <p className="text-red-500 mt-10 font-bold bg-red-500/10 px-6 py-3 rounded-full border border-red-500/20">{errorMsg}</p>}
+                {errorMsg && <p className="text-red-500 mt-12 font-bold bg-red-500/10 px-8 py-5 rounded-[24px] border border-red-500/20 text-center animate-pulse">{errorMsg}</p>}
             </div>
         );
     }
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white">
-                <Loader2 className="animate-spin text-purple-500 mb-6" size={64} />
-                <p className="text-2xl font-black tracking-tighter animate-pulse text-gray-400">BUILDING YOUR DECK...</p>
+            <div className="min-h-screen flex flex-col items-center justify-center text-white">
+                <Loader2 className="animate-spin text-blue-500 mb-6" size={48} />
+                <p className="text-lg font-bold tracking-tight text-gray-400">Curating your deck...</p>
             </div>
         );
     }
 
     if (!currentTrack) {
         return (
-            <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-6 text-center">
-                <div className="w-24 h-24 bg-neutral-900 rounded-full flex items-center justify-center mb-8 border border-neutral-800">
-                    <Music2 size={48} className="text-neutral-700" />
+            <div className="min-h-screen flex flex-col items-center justify-center text-white p-6 text-center animate-apple-in">
+                <div className="w-24 h-24 bg-white/5 rounded-3xl flex items-center justify-center mb-8 border border-white/5 shadow-2xl">
+                    <Music2 size={48} className="text-gray-600" />
                 </div>
-                <h2 className="text-3xl font-black mb-4">Deck Empty</h2>
-                <p className="text-gray-400 mb-10 max-w-xs">{errorMsg || "We've filtered through your region and found no new playable tracks in this vibe."}</p>
-                <button onClick={() => setInitDone(false)} className="px-10 py-4 bg-white text-black font-black uppercase tracking-widest rounded-full hover:bg-gray-200 transition-all active:scale-95 shadow-xl">
+                <h2 className="text-4xl font-black mb-4 tracking-tighter">Deck Finished</h2>
+                <p className="text-gray-500 mb-10 max-w-xs font-medium">{errorMsg || "You've explored everything in this frequency for now."}</p>
+                <button onClick={() => setInitDone(false)} className="apple-button-primary px-12 py-4">
                     Try Another Vibe
                 </button>
             </div>
@@ -257,52 +258,52 @@ const DiscoveryDeck = () => {
     }
 
     return (
-        <div className="min-h-screen bg-black text-white p-4 flex flex-col animate-fade-in pb-20 items-center justify-center overflow-hidden relative">
-            <button onClick={() => setInitDone(false)} className="absolute top-8 left-8 z-20 flex items-center text-gray-400 hover:text-white transition-colors font-bold uppercase tracking-widest text-xs">
-                <ArrowLeft className="mr-2" size={16} /> Deck Select
-            </button>
+        <div className="py-8 animate-apple-in min-h-[85vh] flex flex-col">
+            <header className="mb-12 max-w-md mx-auto w-full px-4">
+                <button onClick={() => setInitDone(false)} className="flex items-center text-blue-500 font-bold text-sm bg-blue-500/10 px-5 py-2 rounded-full hover:bg-blue-500/20 transition-all w-fit">
+                    <ArrowLeft size={16} className="mr-2" /> Vibe Select
+                </button>
+            </header>
 
-            <div className="relative w-full max-w-[400px] aspect-[3.5/5]">
-                <div className={`relative w-full h-full bg-[#181818] rounded-[40px] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)] border border-white/5 transition-all duration-300 ease-out transform-gpu ${swipeDirection === 'left' ? '-translate-x-[150%] rotate-[-30deg] opacity-0 scale-75' : ''} ${swipeDirection === 'right' ? 'translate-x-[150%] rotate-[30deg] opacity-0 scale-75' : ''}`}>
-                    {currentTrack.album.images[0] && (
-                        <img src={currentTrack.album.images[0].url} className="absolute inset-0 w-full h-full object-cover pointer-events-none" alt="" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent pointer-events-none" />
+            <div className="flex-1 flex flex-col items-center justify-center relative pb-20 px-4">
+                <div className="relative w-full max-w-[400px] aspect-[10/14]">
+                    {/* Card Underlay (Stack effect) */}
+                    <div className="absolute inset-0 translate-y-6 scale-90 bg-white/5 rounded-[48px] border border-white/10 -z-10 shadow-2xl backdrop-blur-sm" />
+                    <div className="absolute inset-0 translate-y-3 scale-95 bg-white/10 rounded-[48px] border border-white/10 -z-10 shadow-xl backdrop-blur-sm" />
 
-                    <div className="absolute bottom-0 left-0 right-0 p-10 pt-40">
-                        <div className="mb-2 inline-flex items-center px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-widest text-white/70">
-                            Now Playing
+                    <div className={`relative w-full h-full bg-[#1c1c1e] rounded-[48px] overflow-hidden shadow-[0_40px_80px_-20px_rgba(0,0,0,0.7)] border border-white/15 transition-all duration-700 cubic-bezier(0.2, 1, 0.2, 1) transform-gpu ${swipeDirection === 'left' ? '-translate-x-[150%] rotate-[-25deg] opacity-0 scale-75' : ''} ${swipeDirection === 'right' ? 'translate-x-[150%] rotate-[25deg] opacity-0 scale-75' : ''}`}>
+                        {currentTrack.album.images[0] && (
+                            <img src={currentTrack.album.images[0].url} className="absolute inset-0 w-full h-full object-cover pointer-events-none transition-transform duration-[2000ms] group-hover:scale-110" alt="" />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
+
+                        <div className="absolute bottom-0 left-0 right-0 p-10 pt-40">
+                            <h2 className="text-4xl md:text-5xl font-black mb-3 tracking-tighter drop-shadow-2xl leading-[0.9] text-white uppercase">{currentTrack.name}</h2>
+                            <p className="text-xl text-gray-300 mb-10 font-bold tracking-tight opacity-95">{currentTrack.artists[0].name}</p>
+
+                            <button
+                                onClick={togglePreview}
+                                disabled={!currentTrack.preview_url}
+                                className={`w-full py-5 rounded-[24px] flex items-center justify-center gap-4 transition-all font-black tracking-[0.1em] uppercase shadow-2xl ${currentTrack.preview_url ? 'apple-glass-light hover:bg-white/15 hover:scale-[1.02] active:scale-95 text-white border border-white/20' : 'bg-white/5 text-gray-600 cursor-not-allowed border border-white/5'}`}
+                            >
+                                {currentTrack.preview_url ? (
+                                    <>
+                                        {isPlaying ? <Pause fill="white" size={24} /> : <Play fill="white" size={24} />}
+                                        {isPlaying ? 'Pause' : 'Preview'}
+                                    </>
+                                ) : 'Preview Unavailable'}
+                            </button>
                         </div>
-                        <h2 className="text-4xl font-black mb-3 tracking-tighter drop-shadow-2xl leading-[0.9]">{currentTrack.name}</h2>
-                        <p className="text-xl text-gray-300 mb-8 font-medium italic opacity-80">{currentTrack.artists[0].name}</p>
+                    </div>
 
-                        <button
-                            onClick={togglePreview}
-                            disabled={!currentTrack.preview_url}
-                            className={`w-full font-black py-5 rounded-3xl flex items-center justify-center gap-4 transition-all shadow-2xl ${currentTrack.preview_url ? 'bg-white text-black hover:scale-[1.02] active:scale-95' : 'bg-white/10 text-gray-500 cursor-not-allowed border border-white/5'}`}
-                        >
-                            {currentTrack.preview_url ? (
-                                <>
-                                    {isPlaying ? <Pause fill="black" size={24} /> : <Play fill="black" size={24} />}
-                                    {isPlaying ? 'PAUSE PREVIEW' : 'PLAY PREVIEW'}
-                                </>
-                            ) : (
-                                <>
-                                    <Music size={24} className="opacity-50" />
-                                    PREVIEW UNAVAILABLE
-                                </>
-                            )}
+                    <div className="absolute -bottom-16 md:-bottom-24 left-0 right-0 flex items-center justify-center gap-8 translate-y-4">
+                        <button onClick={() => handleSwipe('left')} className="w-20 h-20 rounded-full apple-glass-light text-red-500 border border-red-500/20 flex items-center justify-center shadow-2xl active:scale-90 hover:bg-red-500/20 transition-all group">
+                            <X size={36} strokeWidth={3} className="group-hover:rotate-12 transition-transform" />
+                        </button>
+                        <button onClick={() => handleSwipe('right')} className="w-20 h-20 rounded-full apple-glass-light text-green-500 border border-green-500/20 flex items-center justify-center shadow-2xl active:scale-90 hover:bg-green-500/20 transition-all group">
+                            <Heart size={36} fill="none" strokeWidth={2.5} className="group-hover:scale-125 transition-transform" />
                         </button>
                     </div>
-                </div>
-
-                <div className="absolute -bottom-24 left-0 right-0 flex items-center justify-center gap-8 px-4">
-                    <button onClick={() => handleSwipe('left')} className="flex-1 max-w-[80px] h-20 rounded-full bg-[#181818] text-red-500 border border-white/5 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center shadow-2xl active:scale-90 group">
-                        <X size={36} strokeWidth={3} className="group-hover:scale-110 transition-transform" />
-                    </button>
-                    <button onClick={() => handleSwipe('right')} className="flex-1 max-w-[80px] h-20 rounded-full bg-[#181818] text-green-500 border border-white/5 hover:bg-green-500 hover:text-white transition-all flex items-center justify-center shadow-2xl active:scale-90 group">
-                        <Heart size={36} fill="currentColor" className="group-hover:scale-110 transition-transform" />
-                    </button>
                 </div>
             </div>
         </div>

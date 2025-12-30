@@ -202,151 +202,164 @@ const MoodMix = () => {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white p-4 md:p-8 animate-fade-in pb-32">
-            <button
-                onClick={() => navigate('/dashboard')}
-                className="hidden md:flex items-center text-gray-400 hover:text-white mb-8 transition-colors"
-            >
-                <ArrowLeft className="mr-2" size={20} /> Back to Dashboard
-            </button>
-
-            <header className="mb-12 text-center md:text-left">
-                <h1 className="text-4xl font-bold mb-4 flex items-center justify-center md:justify-start gap-3">
-                    <Filter className="text-purple-500" /> Vibe Filter
-                </h1>
-                <p className="text-gray-400">Filter your liked songs by Genre, Year, and Popularity.</p>
-                <button
-                    onClick={fetchLikedSongs}
-                    disabled={loading}
-                    className="mt-4 flex items-center gap-2 text-xs text-purple-400 hover:text-purple-300 transition-colors"
-                >
-                    <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Rescan Liked Songs
-                </button>
+        <div className="py-8 animate-apple-in max-w-4xl mx-auto">
+            <header className="mb-14 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                <div>
+                    <button onClick={() => navigate('/dashboard')} className="mb-6 flex items-center text-blue-500 font-bold text-sm bg-blue-500/10 px-5 py-2 rounded-full hover:bg-blue-500/20 transition-all w-fit uppercase tracking-widest">
+                        <ArrowLeft size={16} className="mr-2" /> Dashboard
+                    </button>
+                    <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-none">Mood Mix</h1>
+                    <p className="text-gray-400 text-xl font-bold mt-2 tracking-tight">Engineer your perfect audio environment.</p>
+                </div>
+                {!loading && tracks.length > 0 && (
+                    <button
+                        onClick={fetchLikedSongs}
+                        className="p-4 rounded-full apple-glass shadow-2xl hover:bg-white/10 transition-all border border-white/15 active:scale-90 group"
+                        title="Rescan library"
+                    >
+                        <RefreshCw size={24} className="text-gray-400 group-hover:text-white transition-colors" />
+                    </button>
+                )}
             </header>
 
-            {loading && !tracks.length ? (
-                <div className="flex flex-col items-center justify-center py-20">
-                    <Loader2 className="animate-spin text-purple-500 mb-4" size={48} />
-                    <p className="text-xl font-bold">{status}</p>
+            {!tracks.length && !loading ? (
+                <div className="apple-card p-16 text-center flex flex-col items-center shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)]">
+                    <div className="w-24 h-24 bg-blue-500/10 rounded-[32px] flex items-center justify-center mb-10 border border-blue-500/20 shadow-2xl">
+                        <Sliders size={48} className="text-blue-500" strokeWidth={1.5} />
+                    </div>
+                    <h2 className="text-4xl font-black mb-4 tracking-tighter uppercase">Ready to Mix?</h2>
+                    <p className="text-gray-400 mb-10 max-w-sm font-bold text-lg tracking-tight">We'll analyze your liked songs to create perfect metadata-based filters for you.</p>
+                    <button onClick={fetchLikedSongs} className="apple-button-primary px-12 py-5 shadow-[0_20px_40px_-10px_rgba(37,99,235,0.4)] text-lg uppercase tracking-widest font-black">
+                        Scan Liked Songs
+                    </button>
+                    {status && <p className="mt-8 text-sm text-blue-400 font-black animate-pulse tracking-[0.2em]">{status}</p>}
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="space-y-8">
+                    {/* Filter Section */}
+                    <section className="apple-glass rounded-[48px] p-10 space-y-12 border border-white/15 shadow-2xl">
+                        <div>
+                            <div className="flex items-center gap-3 mb-8">
+                                <div className="p-2 bg-purple-500/10 rounded-xl">
+                                    <Music2 size={24} className="text-purple-500" />
+                                </div>
+                                <h3 className="text-sm font-black uppercase tracking-[0.2em] text-gray-400">Genre Frequency</h3>
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                                {availableGenres.map(g => (
+                                    <button
+                                        key={g}
+                                        onClick={() => setSelectedGenre(g)}
+                                        className={`px-6 py-3 rounded-2xl text-sm font-black transition-all border uppercase tracking-widest ${selectedGenre === g
+                                            ? 'bg-blue-500 border-blue-400 text-white shadow-[0_12px_24px_-4px_rgba(59,130,246,0.6)]'
+                                            : 'bg-white/5 border-white/10 text-gray-500 hover:bg-white/10 hover:text-gray-300'
+                                            }`}
+                                    >
+                                        {g}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
 
-                    {/* Controls */}
-                    <div className="bg-[#181818] p-6 rounded-2xl border border-neutral-800 h-fit">
-                        <h2 className="text-xl font-bold mb-6">Filter Options</h2>
-
-                        <div className="space-y-6">
-
-                            {/* Genre */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                             <div>
-                                <label className="font-bold flex items-center gap-2 mb-3">
-                                    <Tag size={18} className="text-pink-500" /> Genre
-                                </label>
-                                <div className="flex flex-wrap gap-2">
-                                    {availableGenres.map(g => (
+                                <div className="flex items-center gap-3 mb-8">
+                                    <div className="p-2 bg-orange-500/10 rounded-xl">
+                                        <Disc size={24} className="text-orange-500" />
+                                    </div>
+                                    <h3 className="text-sm font-black uppercase tracking-[0.2em] text-gray-400">Release Era</h3>
+                                </div>
+                                <div className="flex gap-2 p-1.5 bg-black/60 rounded-[24px] border border-white/10 shadow-inner">
+                                    {['All', '2020s', '2010s', 'Classics'].map(y => (
                                         <button
-                                            key={g}
-                                            onClick={() => setSelectedGenre(g)}
-                                            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${selectedGenre === g ? 'bg-pink-600 border-pink-600 text-white' : 'bg-transparent border-neutral-700 text-gray-400 hover:border-white'}`}
+                                            key={y}
+                                            onClick={() => setYearRange(y)}
+                                            className={`flex-1 py-3.5 rounded-[18px] text-[11px] font-black transition-all uppercase tracking-widest ${yearRange === y ? 'bg-white/10 text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'
+                                                }`}
                                         >
-                                            {g}
+                                            {y}
                                         </button>
                                     ))}
                                 </div>
                             </div>
-
-                            {/* Year */}
                             <div>
-                                <label className="font-bold flex items-center gap-2 mb-3">
-                                    <Calendar size={18} className="text-blue-500" /> Release Year
-                                </label>
-                                <select
-                                    value={yearRange}
-                                    onChange={(e) => setYearRange(e.target.value)}
-                                    className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500"
-                                >
-                                    <option value="All">Any Time</option>
-                                    <option value="2020s">2020s (New)</option>
-                                    <option value="2010s">2010s</option>
-                                    <option value="2000s">2000s</option>
-                                    <option value="Classics">Pre-2000s (Classics)</option>
-                                </select>
-                            </div>
-
-                            {/* Popularity */}
-                            <div>
-                                <label className="font-bold flex items-center gap-2 mb-3">
-                                    <TrendingUp size={18} className="text-green-500" /> Popularity
-                                </label>
-                                <div className="flex gap-2 bg-neutral-800 p-1 rounded-lg">
+                                <div className="flex items-center gap-3 mb-8">
+                                    <div className="p-2 bg-green-500/10 rounded-xl">
+                                        <Activity size={24} className="text-green-500" />
+                                    </div>
+                                    <h3 className="text-sm font-black uppercase tracking-[0.2em] text-gray-400">Popularity</h3>
+                                </div>
+                                <div className="flex gap-2 p-1.5 bg-black/60 rounded-[24px] border border-white/10 shadow-inner">
                                     {['All', 'Top Hits', 'Deep Cuts'].map(p => (
                                         <button
                                             key={p}
                                             onClick={() => setPopularity(p)}
-                                            className={`flex-1 py-2 rounded-md text-sm font-bold transition-all ${popularity === p ? 'bg-green-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
-                                            title={p === 'Top Hits' ? 'Popularity > 70' : p === 'Deep Cuts' ? 'Popularity < 50' : 'All songs'}
+                                            className={`flex-1 py-3.5 rounded-[18px] text-[11px] font-black transition-all uppercase tracking-widest ${popularity === p ? 'bg-white/10 text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'
+                                                }`}
                                         >
                                             {p}
                                         </button>
                                     ))}
                                 </div>
                             </div>
-
                         </div>
+                    </section>
 
-                        <div className="mt-8">
-                            <div className="text-center mb-4">
-                                <span className="text-4xl font-bold">{filteredTracks.length}</span>
-                                <p className="text-gray-400 text-sm">matches found</p>
+                    {/* Results Section */}
+                    <section className="animate-apple-in">
+                        <div className="flex items-center justify-between mb-8 px-4">
+                            <div>
+                                <h3 className="text-3xl font-black tracking-tighter uppercase leading-none">Your Mix</h3>
+                                <p className="text-sm text-gray-500 font-bold uppercase tracking-widest mt-1">{filteredTracks.length} tracks matching criteria</p>
                             </div>
-
-                            <button
-                                onClick={handleCreatePlaylist}
-                                disabled={loading || filteredTracks.length === 0}
-                                className="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {loading ? <Loader2 className="animate-spin" /> : <Save />}
-                                {loading ? 'Saving...' : 'Save as Playlist'}
-                            </button>
-                            {status && <p className="text-center mt-3 text-sm text-green-400 animate-pulse">{status}</p>}
+                            {filteredTracks.length > 0 && (
+                                <button
+                                    onClick={handleCreatePlaylist}
+                                    disabled={loading}
+                                    className="apple-button-primary py-3 px-8 text-sm uppercase tracking-widest font-black"
+                                >
+                                    {loading ? <Loader2 className="animate-spin" size={18} /> : 'Save Mix'}
+                                </button>
+                            )}
                         </div>
-                    </div>
 
-                    {/* Results List */}
-                    <div className="lg:col-span-2">
-                        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                            Filtered Collection
-                        </h3>
-
-                        {filteredTracks.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                {filteredTracks.slice(0, 50).map((item, i) => (
-                                    <div key={i} className="bg-white/5 p-3 rounded-lg flex items-center gap-3 hover:bg-white/10 transition-colors">
-                                        {item.track.album.images[2] && (
-                                            <img src={item.track.album.images[2].url} className="w-12 h-12 rounded" alt="" />
-                                        )}
-                                        <div className="overflow-hidden">
-                                            <p className="font-bold truncate">{item.track.name}</p>
-                                            <p className="text-xs text-gray-400 truncate">{item.track.artists[0].name}</p>
-                                            <div className="flex gap-2 mt-1">
-                                                <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-gray-300">{item.year}</span>
-                                                {item.genre[0] && <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-gray-300 truncate max-w-[80px]">{item.genre[0]}</span>}
-                                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {filteredTracks.slice(0, 50).map(t => (
+                                <div key={t.track.id} className="apple-card-interactive p-4 flex items-center gap-5 group shadow-lg">
+                                    <div className="w-16 h-16 rounded-[20px] overflow-hidden relative shadow-2xl border border-white/10">
+                                        <img src={t.track.album.images[0]?.url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="text-lg font-black truncate tracking-tighter uppercase group-hover:text-blue-400 transition-colors leading-[1.1]">{t.track.name}</h4>
+                                        <p className="text-xs text-gray-500 font-bold truncate tracking-tight mt-1 opacity-80">{t.track.artists[0].name}</p>
+                                    </div>
+                                    <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100">
+                                        <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-xl flex items-center justify-center border border-white/20 shadow-2xl">
+                                            <Play fill="white" size={18} className="ml-1" />
                                         </div>
                                     </div>
-                                ))}
-                                {filteredTracks.length > 50 && (
-                                    <div className="flex items-center justify-center text-gray-500 text-sm">
-                                        + {filteredTracks.length - 50} more...
-                                    </div>
-                                )}
+                                </div>
+                            ))}
+                        </div>
+                        {filteredTracks.length === 0 && (
+                            <div className="py-24 text-center apple-glass rounded-[48px] border border-white/15 shadow-2xl">
+                                <p className="text-gray-400 font-black text-2xl tracking-tighter uppercase mb-2">No matches found</p>
+                                <p className="text-sm text-gray-600 font-bold uppercase tracking-widest">Try loosening your frequency filters.</p>
                             </div>
-                        ) : (
-                            <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-neutral-800 rounded-2xl text-gray-500">
-                                <Music2 size={48} className="mb-4 opacity-50" />
-                                <p>No songs match these filters.</p>
-                                <p className="text-sm">Try selecting "All" for some options to widen the search.</p>
+                        )}
+                    </section>
+                </div>
+            )}
+
+            {loading && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex flex-col items-center justify-center animate-fade-in">
+                    <div className="apple-glass p-12 rounded-[40px] flex flex-col items-center max-w-sm text-center">
+                        <Loader2 className="animate-spin text-blue-500 mb-6" size={48} />
+                        <h2 className="text-2xl font-bold tracking-tight mb-2">Analyzing Library</h2>
+                        <p className="text-gray-500 font-medium text-sm mb-6">{status}</p>
+                        {analyzing && (
+                            <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                <div className="h-full bg-blue-500 transition-all duration-300" style={{ width: '40%' }} />
                             </div>
                         )}
                     </div>
