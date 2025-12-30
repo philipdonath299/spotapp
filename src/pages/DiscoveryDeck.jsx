@@ -81,6 +81,11 @@ const DiscoveryDeck = () => {
     const findOrCreatePlaylist = async () => {
         try {
             const me = await spotifyFetch('/me');
+            if (!me || !me.id) {
+                console.error("User profile fetch failed:", me);
+                return; // Cannot create playlist without user ID
+            }
+
             const playlists = await spotifyFetch('/me/playlists?limit=50');
             const found = playlists.items.find(p => p.name === "My Discovery Deck");
 

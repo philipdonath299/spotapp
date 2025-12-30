@@ -80,9 +80,15 @@ const MoodMix = () => {
                 features: featuresMap[item.track.id]
             })).filter(t => t.features); // Only keep tracks with features
 
+            console.log(`Debug: Fetched ${allTracks.length}, Enriched ${enrichedTracks.length}`);
+
             setTracks(enrichedTracks);
             if (enrichedTracks.length === 0) {
-                setStatus('No songs with audio features found.');
+                if (allTracks.length === 0) {
+                    setStatus('No Liked Songs found. Go like some music first!');
+                } else {
+                    setStatus(`Found ${allTracks.length} songs but analysis failed (0 features).`);
+                }
             } else {
                 setStatus('');
             }
