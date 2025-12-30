@@ -89,7 +89,7 @@ const DiscoveryDeck = () => {
             }
         } catch (err) {
             console.error(err);
-            setErrorMsg("Failed to connect to Spotify.");
+            setErrorMsg(`Error: ${err.message}`);
         } finally {
             setLoading(false);
         }
