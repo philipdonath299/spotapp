@@ -36,40 +36,35 @@ const DiscoveryDeck = () => {
         };
     }, []);
 
-    // Auto-play preview when track changes
-    useEffect(() => {
-        if (currentTrack?.preview_url) {
-            // Stop any existing audio
-            if (audio) {
-                audio.pause();
-                audio.src = "";
-            }
-
-            const newAudio = new Audio(currentTrack.preview_url);
-            newAudio.volume = 0.5;
-
-            // Interaction-based play
-            const playPromise = newAudio.play();
-            if (playPromise !== undefined) {
-                playPromise.then(() => {
-                    setIsPlaying(true);
-                }).catch(e => {
-                    console.warn("Auto-play blocked:", e);
-                    setIsPlaying(false);
-                });
-            }
-
-            newAudio.onended = () => setIsPlaying(false);
-            setAudio(newAudio);
-        } else {
-            // If no preview, stop current audio
-            if (audio) {
-                audio.pause();
-                setAudio(null);
-                setIsPlaying(false);
-            }
+    // Start preview helper (to be called from interaction handlers)
+    const playPreview = (track, existingAudio) => {
+        if (!track?.preview_url) {
+            setIsPlaying(false);
+            return null;
         }
-    }, [currentTrack]);
+
+        if (existingAudio) {
+            existingAudio.pause();
+            existingAudio.src = "";
+        }
+
+        const newAudio = new Audio(track.preview_url);
+        newAudio.volume = 0.5;
+
+        const playPromise = newAudio.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                setIsPlaying(true);
+            }).catch(e => {
+                console.warn("Auto-play blocked:", e);
+                setIsPlaying(false);
+            });
+        }
+
+        newAudio.onended = () => setIsPlaying(false);
+        setAudio(newAudio);
+        return newAudio;
+    };
 
     const initDiscovery = async () => {
         try {
@@ -117,10 +112,10 @@ const DiscoveryDeck = () => {
             if (res?.items) {
                 const tracks = res.items
                     .map(i => i.track)
-                    .filter(t => t && t.id && !t.is_local);
+                    .filter(t => t && t.id && !t.is_local && t.preview_url); // ONLY tracks with previews
 
                 if (tracks.length === 0) {
-                    throw new Error("This vibe has no songs available right now.");
+                    throw new Error("No tracks with previews found in this vibe. Try another!");
                 }
 
                 // Shuffle for variety
@@ -131,6 +126,8 @@ const DiscoveryDeck = () => {
 
                 setQueue(tracks);
                 setCurrentTrack(tracks[0]);
+                // Start first track immediately (this is inside a click handler's call stack)
+                playPreview(tracks[0], audio);
             } else {
                 setErrorMsg("Failed to load tracks from this category.");
             }
@@ -159,8 +156,14 @@ const DiscoveryDeck = () => {
         setTimeout(() => {
             const nextQueue = queue.slice(1);
             setQueue(nextQueue);
-            setCurrentTrack(nextQueue[0] || null);
+            const nextTrack = nextQueue[0] || null;
+            setCurrentTrack(nextTrack);
             setSwipeDirection(null);
+
+            // Play next track (still part of the click interaction chain via setTimeout)
+            if (nextTrack) {
+                playPreview(nextTrack, audio);
+            }
         }, 300);
     };
 
