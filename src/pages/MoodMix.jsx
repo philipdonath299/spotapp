@@ -33,12 +33,23 @@ const MoodMix = () => {
         try {
             // 1. Fetch last 100 liked songs (can increase to 250/500 if needed)
             let allTracks = [];
+            let errorCount = 0;
+
             // Fetch 2 pages of 50
             for (let offset of [0, 50, 100, 150]) {
-                const res = await spotifyFetch(`/me/tracks?limit=50&offset=${offset}`);
-                if (res?.items) {
-                    allTracks = [...allTracks, ...res.items];
+                try {
+                    const res = await spotifyFetch(`/me/tracks?limit=50&offset=${offset}`);
+                    if (res?.items) {
+                        allTracks = [...allTracks, ...res.items];
+                    }
+                } catch (e) {
+                    console.warn(`Failed to fetch offset ${offset}:`, e);
+                    errorCount++;
                 }
+            }
+
+            if (allTracks.length === 0) {
+                throw new Error("Could not fetch any songs. Check connection.");
             }
 
             // 2. Extract IDs for Audio Features
@@ -50,12 +61,16 @@ const MoodMix = () => {
 
             // 3. Fetch Audio Features in chunks of 100
             for (let i = 0; i < trackIds.length; i += 100) {
-                const chunk = trackIds.slice(i, i + 100);
-                const featureRes = await spotifyFetch(`/audio-features?ids=${chunk.join(',')}`);
-                if (featureRes?.audio_features) {
-                    featureRes.audio_features.forEach(f => {
-                        if (f) featuresMap[f.id] = f;
-                    });
+                try {
+                    const chunk = trackIds.slice(i, i + 100);
+                    const featureRes = await spotifyFetch(`/audio-features?ids=${chunk.join(',')}`);
+                    if (featureRes?.audio_features) {
+                        featureRes.audio_features.forEach(f => {
+                            if (f) featuresMap[f.id] = f;
+                        });
+                    }
+                } catch (e) {
+                    console.warn("Failed to fetch features chunk:", e);
                 }
             }
 
@@ -67,13 +82,13 @@ const MoodMix = () => {
 
             setTracks(enrichedTracks);
             if (enrichedTracks.length === 0) {
-                setStatus('No liked songs found (or analysis failed). Try liking more songs!');
+                setStatus('No songs with audio features found.');
             } else {
                 setStatus('');
             }
         } catch (err) {
             console.error(err);
-            setStatus('Failed to load songs.');
+            setStatus(`Error: ${err.message}`);
         } finally {
             setLoading(false);
             setAnalyzing(false);

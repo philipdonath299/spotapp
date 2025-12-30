@@ -12,6 +12,7 @@ const DiscoveryDeck = () => {
     const [swipeDirection, setSwipeDirection] = useState(null); // 'left' | 'right'
     const [isPlaying, setIsPlaying] = useState(false);
     const [audio, setAudio] = useState(null);
+    const [errorMsg, setErrorMsg] = useState('');
 
     useEffect(() => {
         initDiscovery();
@@ -36,19 +37,31 @@ const DiscoveryDeck = () => {
         }
     };
 
-    const fetchRecommendations = async () => {
+    const fetchRecommendations = async (forceFallback = false) => {
         try {
-            // Seed with top artists
-            const topArtists = await spotifyFetch('/me/top/artists?limit=5&time_range=short_term');
-
+            setErrorMsg('');
             let url = '/recommendations?limit=50';
+            let usedFallback = forceFallback;
 
-            if (topArtists?.items?.length > 0) {
-                const seeds = topArtists.items.map(a => a.id).join(',');
-                url += `&seed_artists=${seeds}`;
-            } else {
+            if (!forceFallback) {
+                try {
+                    // Seed with top artists
+                    const topArtists = await spotifyFetch('/me/top/artists?limit=3&time_range=short_term');
+                    if (topArtists?.items?.length > 0) {
+                        const seeds = topArtists.items.map(a => a.id).join(',');
+                        url += `&seed_artists=${seeds}`;
+                    } else {
+                        usedFallback = true;
+                    }
+                } catch (e) {
+                    console.warn("Top artists fetch failed, using fallback.");
+                    usedFallback = true;
+                }
+            }
+
+            if (usedFallback) {
                 // Fallback to Pop if no top artists found (new account)
-                url += `&seed_genres=pop`;
+                url += `&seed_genres=pop,dance,hip-hop`;
             }
 
             const res = await spotifyFetch(url);
@@ -56,9 +69,12 @@ const DiscoveryDeck = () => {
             if (res?.tracks) {
                 setQueue(res.tracks);
                 setCurrentTrack(res.tracks[0]);
+            } else {
+                setErrorMsg("No recommendations returned.");
             }
         } catch (err) {
             console.error("Fetch recommendations failed:", err);
+            setErrorMsg(err.message || "Failed to fetch music.");
         }
     };
 
@@ -151,13 +167,23 @@ const DiscoveryDeck = () => {
             <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-6 text-center">
                 <Music2 size={64} className="text-neutral-700 mb-6" />
                 <h2 className="text-2xl font-bold mb-2">Out of cards!</h2>
-                <p className="text-gray-400 mb-6">You've swiped through all our recommendations for now.</p>
-                <button
-                    onClick={() => { setLoading(true); fetchRecommendations(); }}
-                    className="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors"
-                >
-                    Refresh Deck
-                </button>
+                <p className="text-gray-400 mb-6">
+                    {errorMsg ? `Error: ${errorMsg}` : "You've swiped through all our recommendations for now."}
+                </p>
+                <div className="flex gap-4">
+                    <button
+                        onClick={() => { setLoading(true); fetchRecommendations(); }}
+                        className="px-6 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors"
+                    >
+                        Try Again
+                    </button>
+                    <button
+                        onClick={() => { setLoading(true); fetchRecommendations(true); }}
+                        className="px-6 py-3 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-500 transition-colors"
+                    >
+                        Use Safe Mode (Pop)
+                    </button>
+                </div>
             </div>
         );
     }
