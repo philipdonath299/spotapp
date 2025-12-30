@@ -132,7 +132,7 @@ export async function spotifyFetch(endpoint, method = 'GET', body = null) {
   const text = await res.text();
 
   if (!res.ok) {
-    throw new Error(`API Error ${res.status}: ${text}`);
+    throw new Error(`API Error ${res.status} on ${endpoint}: ${text}`);
   }
 
   return text ? JSON.parse(text) : {};
