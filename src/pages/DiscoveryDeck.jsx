@@ -101,13 +101,13 @@ const DiscoveryDeck = () => {
             // 1. Search for a playlist matching the query
             let searchRes = await spotifyFetch(`/search?q=${encodeURIComponent(query)}&type=playlist&limit=5`);
 
-            // Try to find a Spotify-owned one first in the results
-            let playlist = searchRes?.playlists?.items?.find(p => p.owner.display_name === 'Spotify') || searchRes?.playlists?.items[0];
+            // Try to find a Spotify-owned one first in the results (with safety checks)
+            let playlist = searchRes?.playlists?.items?.find(p => p && p.owner && p.owner.display_name === 'Spotify') || searchRes?.playlists?.items?.[0];
 
             if (!playlist) {
                 // Try a broader search if the specific one fails
-                searchRes = await spotifyFetch(`/search?q=${encodeURIComponent(query.replace('Global', '').trim())}&type=playlist&limit=1`);
-                playlist = searchRes?.playlists?.items[0];
+                searchRes = await spotifyFetch(`/search?q=${encodeURIComponent(query.replace('Global', '').trim())}&type=playlist&limit=5`);
+                playlist = searchRes?.playlists?.items?.find(p => p && p.owner && p.owner.display_name === 'Spotify') || searchRes?.playlists?.items?.[0];
             }
 
             if (!playlist) {
