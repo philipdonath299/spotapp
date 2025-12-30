@@ -50,164 +50,130 @@ const Dashboard = () => {
     const Widget = ({ title, icon: Icon, colorClass, onClick, desc, span = false }) => (
         <button
             onClick={onClick}
-            className={`apple-card-interactive p-6 flex flex-col justify-between group relative overflow-hidden text-left ${span ? 'md:col-span-2' : ''}`}
+            className={`ios26-card-interactive p-6 flex flex-col justify-between group relative overflow-hidden text-left ${span ? 'md:col-span-2' : ''}`}
         >
-            <div className={`absolute top-0 right-0 w-32 h-32 bg-${colorClass}-500/10 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-700`} />
+            <div className={`absolute -top-10 -right-10 w-32 h-32 bg-${colorClass}-500/10 blur-[60px] rounded-full group-hover:scale-150 transition-transform duration-1000`} />
 
-            <div className={`w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-10 border border-white/10 group-hover:bg-white/15 transition-all duration-300 shadow-lg`}>
-                <Icon size={28} className={`text-${colorClass}-500`} strokeWidth={1.5} />
+            <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-10 border border-white/5 group-hover:bg-white/10 transition-all duration-500`}>
+                <Icon size={24} className={`text-${colorClass}-400`} strokeWidth={2} />
             </div>
 
-            <div>
-                <h3 className="text-xl font-bold tracking-tight mb-1 group-hover:text-white transition-colors">{title}</h3>
-                <p className="text-sm text-gray-500 font-medium group-hover:text-gray-400 transition-colors">{desc}</p>
+            <div className="relative z-10 transition-transform duration-500 group-hover:translate-x-1">
+                <h3 className="text-xl font-black tracking-tighter mb-1 uppercase">{title}</h3>
+                <p className="text-[10px] text-white/30 font-black uppercase tracking-widest">{desc}</p>
             </div>
         </button>
     );
 
     return (
-        <div className="py-8 animate-apple-in">
-            {/* Apple Style Header */}
-            <header className="flex justify-between items-end mb-12">
-                <div>
-                    <p className="text-blue-500 font-bold text-xs uppercase tracking-[0.2em] mb-2">Welcome back</p>
-                    <h1 className="text-5xl md:text-6xl font-extrabold tracking-tighter leading-none">
+        <div className="py-12 animate-ios26-in">
+            {/* iOS 26 Header */}
+            <header className="flex justify-between items-center mb-16 relative">
+                <div className="relative z-10">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-3 ml-1">Frequency Index</p>
+                    <h1 className="text-7xl md:text-8xl font-black tracking-tighter leading-[0.85] text-white">
                         {profile?.display_name?.split(' ')[0]}
                     </h1>
                 </div>
-                <div className="flex items-center gap-4">
+
+                <div className="flex items-center gap-6 relative z-10">
                     <button
                         onClick={() => loadData(true)}
-                        className={`p-3.5 rounded-full apple-glass-light hover:bg-white/10 transition-all active:scale-90 border border-white/10 shadow-lg ${refreshing ? 'animate-spin' : ''}`}
+                        className={`w-14 h-14 rounded-full ios26-glass flex items-center justify-center hover:bg-white/10 transition-all active:scale-90 border border-white/10 group ${refreshing ? 'animate-spin' : ''}`}
                     >
-                        <RefreshCw size={20} className="text-gray-400" />
+                        <RefreshCw size={22} className="text-white/60 group-hover:text-white transition-colors" />
                     </button>
                     {profile?.images?.[0]?.url && (
-                        <div className="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-blue-500 to-purple-600 shadow-xl">
-                            <img src={profile.images[0].url} className="w-full h-full rounded-full border-2 border-black object-cover" alt="Profile" />
+                        <div className="w-20 h-20 rounded-[32px] p-1 bg-gradient-to-tr from-white/20 to-transparent rotate-3 hover:rotate-0 transition-all duration-700 shadow-2xl overflow-hidden">
+                            <img src={profile.images[0].url} className="w-full h-full rounded-[28px] object-cover" alt="Profile" />
                         </div>
                     )}
                 </div>
+
+                {/* Ambient glow behind title */}
+                <div className="absolute -left-20 -top-20 w-80 h-80 bg-blue-500/10 blur-[120px] rounded-full -z-10" />
             </header>
 
-            {/* Vibe Check Widget (Hero Style) */}
+            {/* Spatial Hero Section */}
             {topArtist && (
-                <div
-                    onClick={() => navigate('/stats')}
-                    className="apple-card-interactive mb-12 p-10 flex flex-col md:flex-row items-center justify-between gap-10 relative overflow-hidden group shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]"
-                >
-                    <div className="z-10 flex-1">
-                        <div className="flex items-center gap-2 mb-6">
-                            <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_12px_rgba(239,68,68,0.5)]" />
-                            <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-400">Current Frequency</p>
+                <section className="mb-20 relative px-1">
+                    <div
+                        onClick={() => navigate('/stats')}
+                        className="ios26-card-interactive p-12 flex flex-col md:flex-row items-center justify-between gap-12 group"
+                    >
+                        <div className="z-10 flex-1 text-center md:text-left">
+                            <div className="flex items-center justify-center md:justify-start gap-3 mb-8">
+                                <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_20px_rgba(10,132,255,0.8)]" />
+                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Power Rotation</p>
+                            </div>
+                            <h2 className="text-7xl md:text-9xl font-black tracking-tighter mb-6 leading-none group-hover:scale-[1.02] transition-transform duration-700">
+                                {topArtist.name}
+                            </h2>
+                            <p className="text-white/40 font-black uppercase tracking-widest text-xs">Primary influence this cycle</p>
                         </div>
-                        <h2 className="text-6xl md:text-7xl font-black tracking-tighter mb-4 group-hover:text-blue-400 transition-all duration-500 leading-none">
-                            {topArtist.name}
-                        </h2>
-                        <p className="text-gray-400 font-medium text-xl md:text-2xl">Your top artist this month</p>
+
+                        {topArtist.images?.[0] && (
+                            <div className="w-64 h-64 md:w-80 md:h-80 relative group">
+                                <div className="absolute inset-0 bg-blue-500/20 blur-[60px] rounded-full scale-75 group-hover:scale-110 transition-transform duration-1000" />
+                                <div className="relative w-full h-full rounded-[64px] overflow-hidden shadow-[0_40px_80px_-20px_rgba(0,0,0,0.8)] ring-1 ring-white/20 -rotate-3 group-hover:rotate-0 transition-all duration-1000">
+                                    <img src={topArtist.images[0].url} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-1000" alt="" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                                </div>
+                            </div>
+                        )}
                     </div>
-
-                    {topArtist.images?.[0] && (
-                        <div className="w-56 h-56 md:w-64 md:h-64 rounded-[40px] overflow-hidden shadow-2xl relative group-hover:rotate-2 transition-transform duration-700">
-                            <img src={topArtist.images[0].url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" alt="" />
-                            <div className="absolute inset-0 ring-1 ring-inset ring-white/20 rounded-[40px]" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                        </div>
-                    )}
-
-                    {/* Background decoration */}
-                    <div className="absolute left-0 bottom-0 w-full h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-40" />
-                </div>
+                </section>
             )}
 
-            {/* Widgets Section */}
-            <div className="mb-12">
-                <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-3xl font-bold tracking-tight">Studio Tools</h2>
+            {/* Grid Layout Overhaul */}
+            <div className="mb-24">
+                <div className="flex items-baseline gap-4 mb-10 px-2">
+                    <h2 className="text-4xl font-black tracking-tighter uppercase">Studio</h2>
+                    <div className="h-px flex-1 bg-white/5" />
                 </div>
 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                    <Widget
-                        title="Magic Pro"
-                        desc="AI Playlists"
-                        icon={Wand2}
-                        colorClass="blue"
-                        onClick={() => navigate('/ai-generator')}
-                    />
-                    <Widget
-                        title="Explore"
-                        desc="Discovery Deck"
-                        icon={Layers}
-                        colorClass="purple"
-                        onClick={() => navigate('/discovery')}
-                    />
-                    <Widget
-                        title="Mood Mix"
-                        desc="Custom Vibes"
-                        icon={Sliders}
-                        colorClass="pink"
-                        onClick={() => navigate('/mood-mix')}
-                    />
-                    <Widget
-                        title="Vault"
-                        desc="Manage library"
-                        icon={Edit3}
-                        colorClass="orange"
-                        onClick={() => navigate('/playlists')}
-                    />
-                    <Widget
-                        title="Analytics"
-                        desc="Deep insights"
-                        icon={BarChart3}
-                        colorClass="green"
-                        span
-                        onClick={() => navigate('/stats')}
-                    />
-                    <Widget
-                        title="Cleanup"
-                        desc="Fix messy library"
-                        icon={Trash2}
-                        colorClass="red"
-                        onClick={() => navigate('/cleanup')}
-                    />
-                    <Widget
-                        title="Receipt"
-                        desc="Monthly log"
-                        icon={Receipt}
-                        colorClass="gray"
-                        onClick={() => navigate('/receipt')}
-                    />
+                    <Widget title="Magic" desc="AI Synth" icon={Wand2} colorClass="blue" onClick={() => navigate('/ai-generator')} />
+                    <Widget title="Explore" desc="Discovery" icon={Layers} colorClass="purple" onClick={() => navigate('/discovery')} />
+                    <Widget title="Mood" desc="Filters" icon={Sliders} colorClass="pink" onClick={() => navigate('/mood-mix')} />
+                    <Widget title="Vault" desc="Sync" icon={Edit3} colorClass="orange" onClick={() => navigate('/playlists')} />
+                    <Widget title="Analytics" desc="Neural Stats" icon={BarChart3} colorClass="green" span onClick={() => navigate('/stats')} />
+                    <Widget title="Cleanup" desc="Refactor" icon={Trash2} colorClass="red" onClick={() => navigate('/cleanup')} />
+                    <Widget title="Receipt" desc="Ledger" icon={Receipt} colorClass="gray" onClick={() => navigate('/receipt')} />
                 </div>
             </div>
 
-            {/* Recent Section */}
-            <section className="pb-20">
-                <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-3xl font-bold tracking-tight">Jump Back In</h2>
-                    <button className="text-blue-500 font-bold text-sm bg-blue-500/10 px-4 py-1.5 rounded-full hover:bg-blue-500/20 transition-all">See All</button>
+            {/* Fluid Playlist Section */}
+            <section className="pb-32">
+                <div className="flex items-baseline gap-4 mb-10 px-2">
+                    <h2 className="text-4xl font-black tracking-tighter uppercase">Archive</h2>
+                    <button className="text-[10px] font-black uppercase tracking-widest text-blue-500 hover:text-blue-400 transition-colors">Expand</button>
+                    <div className="h-px flex-1 bg-white/5" />
                 </div>
 
-                <div className="flex overflow-x-auto gap-8 pb-8 no-scrollbar -mx-4 px-4">
+                <div className="flex overflow-x-auto gap-10 pb-12 no-scrollbar -mx-4 px-6">
                     {playlists.slice(0, 10).map(playlist => (
                         <div
                             key={playlist.id}
                             onClick={() => navigate(`/recommendations/${playlist.id}`)}
-                            className="min-w-[180px] cursor-pointer group"
+                            className="min-w-[200px] cursor-pointer group"
                         >
-                            <div className="aspect-square rounded-[36px] overflow-hidden mb-4 relative shadow-[0_12px_24px_-8px_rgba(0,0,0,0.5)] bg-[#1c1c1e] border border-white/5">
+                            <div className="aspect-square rounded-[56px] overflow-hidden mb-6 relative ios26-glass ring-1 ring-white/10 group-active:scale-90 transition-all duration-700 shadow-2xl">
                                 {playlist.images?.[0]?.url ? (
-                                    <img src={playlist.images[0].url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                                    <img src={playlist.images[0].url} className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000" alt="" />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center font-bold text-gray-500">?</div>
+                                    <div className="w-full h-full flex items-center justify-center font-black text-white/20 text-3xl">ARC</div>
                                 )}
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center backdrop-blur-[2px]">
-                                    <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-xl flex items-center justify-center border border-white/30 shadow-2xl scale-75 group-hover:scale-100 transition-transform duration-500">
-                                        <Play fill="white" size={28} className="ml-1" />
+                                <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-all duration-700 flex items-center justify-center backdrop-blur-md">
+                                    <div className="w-16 h-16 rounded-full ios26-liquid flex items-center justify-center border border-white/20 shadow-2xl scale-50 group-hover:scale-100 transition-transform duration-700">
+                                        <Play fill="white" size={24} className="ml-1" />
                                     </div>
                                 </div>
                             </div>
-                            <h3 className="font-bold truncate text-base mb-1 px-1 group-hover:text-blue-400 transition-colors uppercase tracking-tight">{playlist.name}</h3>
-                            <p className="text-sm text-gray-500 font-medium px-1">{playlist.tracks.total} tracks</p>
+                            <div className="px-2 transition-transform duration-500 group-hover:translate-x-1">
+                                <h3 className="font-black truncate text-lg mb-1 tracking-tighter uppercase group-hover:text-blue-500 transition-colors">{playlist.name}</h3>
+                                <p className="text-[9px] text-white/30 font-black uppercase tracking-[0.2em]">{playlist.tracks.total} units</p>
+                            </div>
                         </div>
                     ))}
                 </div>

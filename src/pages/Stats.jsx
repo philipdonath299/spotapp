@@ -502,30 +502,32 @@ const Stats = () => {
     }
 
     return (
-        <div className="min-h-screen bg-black text-white p-4 md:p-8 relative">
-            <div className="py-8 animate-apple-in max-w-6xl mx-auto px-4">
-                <header className="mb-12">
-                    <button onClick={() => navigate('/dashboard')} className="mb-6 flex items-center text-blue-500 font-bold text-sm hover:underline">
-                        <ArrowLeft size={16} className="mr-1" /> Dashboard
+        <div className="min-h-screen bg-[#050505] text-white p-4 md:p-8 relative">
+            <div className="py-12 animate-ios26-in max-w-6xl mx-auto px-4">
+                <header className="mb-20">
+                    <button onClick={() => navigate('/dashboard')} className="mb-10 flex items-center text-blue-500 font-black text-[10px] uppercase tracking-widest hover:text-blue-400 transition-colors">
+                        <ArrowLeft size={16} className="mr-2" /> Index
                     </button>
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
                         <div>
-                            <h1 className="text-5xl font-extrabold tracking-tighter">Your Frequency</h1>
-                            <p className="text-gray-500 text-xl font-medium mt-1">Listening health and patterns.</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Statistical Analysis</p>
+                            <h1 className="text-7xl md:text-8xl font-black tracking-tighter leading-none text-white">
+                                Frequency
+                            </h1>
                         </div>
 
-                        <div className="flex gap-1 p-1 bg-black/40 rounded-2xl border border-white/5 backdrop-blur-xl">
+                        <div className="ios26-tabs flex p-1.5 shadow-2xl">
                             {[
-                                { id: 'short_term', label: 'Month' },
-                                { id: 'medium_term', label: '6 Months' },
-                                { id: 'long_term', label: 'All Time' }
+                                { id: 'short_term', label: 'MONTH' },
+                                { id: 'medium_term', label: '6 MONTHS' },
+                                { id: 'long_term', label: 'TOTAL' }
                             ].map((range) => (
                                 <button
                                     key={range.id}
                                     onClick={() => setTimeRange(range.id)}
-                                    className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${timeRange === range.id
-                                        ? 'bg-white/10 text-white shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-300'
+                                    className={`px-6 py-2 rounded-[18px] text-[10px] font-black transition-all duration-500 tracking-widest ${timeRange === range.id
+                                        ? 'bg-white text-black scale-105 shadow-xl'
+                                        : 'text-white/40 hover:text-white/80'
                                         }`}
                                 >
                                     {range.label}
@@ -535,96 +537,102 @@ const Stats = () => {
                     </div>
                 </header>
 
-                {/* Core Stats Overview */}
+                {/* iOS 26 Stats Grid */}
                 {listeningStats && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-                        <div className="apple-card p-6 border-l-4 border-l-blue-500">
-                            <div className="flex items-center gap-2 mb-3 text-blue-500">
-                                <Clock size={16} />
-                                <span className="text-[10px] font-black uppercase tracking-widest opacity-70">Activity</span>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-20">
+                        <div className="ios26-card p-8 group relative overflow-hidden">
+                            <div className="absolute -top-10 -right-10 w-24 h-24 bg-blue-500/10 blur-[50px] rounded-full group-hover:scale-150 transition-transform duration-1000" />
+                            <div className="flex items-center gap-3 mb-6">
+                                <Clock size={18} className="text-blue-500" />
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 group-hover:text-blue-500 transition-colors">Activity</span>
                             </div>
-                            <div className="text-3xl font-black tracking-tighter">{listeningStats.avgMinutesPerDay}m</div>
-                            <div className="text-[10px] text-gray-500 font-bold mt-1">DAILY AVERAGE</div>
+                            <div className="text-4xl md:text-5xl font-black tracking-tighter text-white">{listeningStats.avgMinutesPerDay}m</div>
+                            <div className="text-[9px] text-white/10 font-black tracking-widest mt-2 uppercase">Mean Daily Rotation</div>
                         </div>
 
-                        <div className="apple-card p-6 border-l-4 border-l-green-500">
-                            <div className="flex items-center gap-2 mb-3 text-green-500">
-                                <Activity size={16} />
-                                <span className="text-[10px] font-black uppercase tracking-widest opacity-70">Focus</span>
+                        <div className="ios26-card p-8 group relative overflow-hidden">
+                            <div className="absolute -top-10 -right-10 w-24 h-24 bg-green-500/10 blur-[50px] rounded-full group-hover:scale-150 transition-transform duration-1000" />
+                            <div className="flex items-center gap-3 mb-6">
+                                <Activity size={18} className="text-green-500" />
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 group-hover:text-green-500 transition-colors">Neural</span>
                             </div>
-                            <div className="text-3xl font-black tracking-tighter">{listeningStats.avgStreamsPerDay}</div>
-                            <div className="text-[10px] text-gray-500 font-bold mt-1">STREAMS / DAY</div>
+                            <div className="text-4xl md:text-5xl font-black tracking-tighter text-white">{listeningStats.avgStreamsPerDay}</div>
+                            <div className="text-[9px] text-white/10 font-black tracking-widest mt-2 uppercase">Streams per Cycle</div>
                         </div>
 
-                        <div className="apple-card p-6 border-l-4 border-l-purple-500">
-                            <div className="flex items-center gap-2 mb-3 text-purple-500">
-                                <Music size={16} />
-                                <span className="text-[10px] font-black uppercase tracking-widest opacity-70">Volume</span>
+                        <div className="ios26-card p-8 group relative overflow-hidden">
+                            <div className="absolute -top-10 -right-10 w-24 h-24 bg-purple-500/10 blur-[50px] rounded-full group-hover:scale-150 transition-transform duration-1000" />
+                            <div className="flex items-center gap-3 mb-6">
+                                <Music size={18} className="text-purple-500" />
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 group-hover:text-purple-500 transition-colors">Volume</span>
                             </div>
-                            <div className="text-3xl font-black tracking-tighter">{listeningStats.totalStreams}</div>
-                            <div className="text-[10px] text-gray-500 font-bold mt-1">TOTAL TRACKS</div>
+                            <div className="text-4xl md:text-5xl font-black tracking-tighter text-white">{listeningStats.totalStreams}</div>
+                            <div className="text-[9px] text-white/10 font-black tracking-widest mt-2 uppercase">Total Units</div>
                         </div>
 
-                        <div className="apple-card p-6 border-l-4 border-l-orange-500">
-                            <div className="flex items-center gap-2 mb-3 text-orange-500">
-                                <Volume2 size={16} />
-                                <span className="text-[10px] font-black uppercase tracking-widest opacity-70">Endurance</span>
+                        <div className="ios26-card p-8 group relative overflow-hidden">
+                            <div className="absolute -top-10 -right-10 w-24 h-24 bg-orange-500/10 blur-[50px] rounded-full group-hover:scale-150 transition-transform duration-1000" />
+                            <div className="flex items-center gap-3 mb-6">
+                                <Volume2 size={18} className="text-orange-500" />
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 group-hover:text-orange-500 transition-colors">Index</span>
                             </div>
-                            <div className="text-3xl font-black tracking-tighter">{listeningStats.totalHours}h</div>
-                            <div className="text-[10px] text-gray-500 font-bold mt-1">LISTEN TIME</div>
+                            <div className="text-4xl md:text-5xl font-black tracking-tighter text-white">{listeningStats.totalHours}h</div>
+                            <div className="text-[9px] text-white/10 font-black tracking-widest mt-2 uppercase">Cumulative Pulse</div>
                         </div>
                     </div>
                 )}
 
-                <div className="flex flex-wrap gap-2 mb-10 overflow-x-auto pb-2 scrollbar-hide">
-                    {[
-                        { id: 'artists', label: 'Artists', icon: User },
-                        { id: 'tracks', label: 'Songs', icon: Music },
-                        { id: 'albums', label: 'Albums', icon: Disc },
-                        { id: 'recent', label: 'History', icon: Clock },
-                        { id: 'insights', label: 'Profile', icon: Activity },
-                        { id: 'rediscover', label: 'Memories', icon: Sparkles }
-                    ].map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab.id
-                                ? 'bg-blue-500 text-white shadow-lg'
-                                : 'bg-white/5 text-gray-500 hover:text-gray-300'
-                                }`}
-                        >
-                            <tab.icon size={16} />
-                            {tab.label}
-                        </button>
-                    ))}
+                <div className="flex items-center justify-center gap-2 mb-16 overflow-x-auto pb-4 no-scrollbar">
+                    <div className="ios26-tabs flex p-1.5 shadow-2xl">
+                        {[
+                            { id: 'artists', label: 'ARTISTS', icon: User },
+                            { id: 'tracks', label: 'SONGS', icon: Music },
+                            { id: 'albums', label: 'ALBUMS', icon: Disc },
+                            { id: 'insights', label: 'PROFILE', icon: Activity },
+                            { id: 'recent', label: 'HISTORY', icon: Clock }
+                        ].map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`flex items-center gap-2 px-6 py-2.5 rounded-[18px] text-[10px] font-black transition-all duration-500 tracking-widest whitespace-nowrap ${activeTab === tab.id
+                                    ? 'bg-white text-black scale-105 shadow-xl'
+                                    : 'text-white/40 hover:text-white/80'
+                                    }`}
+                            >
+                                <tab.icon size={14} className={activeTab === tab.id ? 'text-black' : 'text-white/40'} />
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 <div className="min-h-[400px]">
                     {activeTab === 'recent' && (
-                        <section className="animate-apple-in">
-                            <div className="apple-card p-8 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                        <section className="animate-ios26-in">
+                            <div className="ios26-card p-10 mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8 relative overflow-hidden">
+                                <div className="absolute inset-0 bg-blue-500/5 blur-[100px] -z-10" />
                                 <div>
-                                    <h3 className="text-2xl font-bold tracking-tight">Recent Sessions</h3>
-                                    <p className="text-sm text-gray-500 font-medium">Your activity over the last 50 tracks.</p>
+                                    <h3 className="text-4xl font-black tracking-tighter uppercase mb-2">History</h3>
+                                    <p className="text-[10px] text-white/30 font-black uppercase tracking-widest">Recent playback analytics</p>
                                 </div>
-                                <div className="bg-white/5 px-6 py-4 rounded-2xl border border-white/5">
-                                    <div className="text-[10px] text-gray-500 uppercase font-black mb-1">Total Listen Time</div>
-                                    <div className="text-2xl font-black text-blue-500">{getTotalRecentTime()}</div>
+                                <div className="ios26-liquid px-8 py-5 rounded-[32px] border border-white/10 shadow-2xl">
+                                    <div className="text-[9px] text-white/40 uppercase font-black tracking-widest mb-1">Rotation Time</div>
+                                    <div className="text-3xl font-black text-blue-500 tracking-tighter">{getTotalRecentTime()}</div>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {recentTracks.map((item, index) => (
                                     <div
                                         key={item.played_at + index}
                                         onClick={() => fetchTrackInsights(item.track)}
-                                        className="apple-card-interactive p-3 flex items-center gap-4"
+                                        className="ios26-card-interactive p-4 flex items-center gap-5"
                                     >
-                                        <div className="w-12 h-12 rounded-xl overflow-hidden shadow-md">
-                                            <img src={item.track.album.images[2]?.url} className="w-full h-full object-cover" alt="" />
+                                        <div className="w-16 h-16 rounded-[22px] overflow-hidden shadow-2xl ring-1 ring-white/10">
+                                            <img src={item.track.album.images[1]?.url} className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700" alt="" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className="font-bold truncate text-sm tracking-tight">{item.track.name}</div>
-                                            <div className="text-[11px] text-gray-500 font-medium truncate italic opacity-80">{item.track.artists?.[0]?.name || 'Unknown Artist'}</div>
+                                            <div className="font-black truncate text-sm tracking-tighter uppercase group-hover:text-blue-500 transition-colors">{item.track.name}</div>
+                                            <div className="text-[10px] text-white/30 font-black uppercase tracking-widest truncate">{item.track.artists?.[0]?.name || 'Unknown Artist'}</div>
                                         </div>
                                     </div>
                                 ))}
@@ -633,19 +641,22 @@ const Stats = () => {
                     )}
 
                     {activeTab === 'artists' && (
-                        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 animate-apple-in">
+                        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-ios26-in">
                             {topArtists.map((artist) => (
                                 <div
                                     key={artist.id}
                                     onClick={() => fetchArtistInsights(artist)}
-                                    className="apple-card-interactive p-4 flex items-center gap-5"
+                                    className="ios26-card-interactive p-6 flex items-center gap-6"
                                 >
-                                    <img src={artist.images[1]?.url} className="w-16 h-16 rounded-full object-cover shadow-lg border border-white/5" alt="" />
+                                    <div className="relative">
+                                        <div className="absolute inset-0 bg-blue-500/20 blur-2xl rounded-full scale-0 group-hover:scale-100 transition-transform duration-700" />
+                                        <img src={artist.images[1]?.url} className="w-20 h-20 rounded-full object-cover shadow-2xl relative z-10 border-2 border-white/5 group-hover:border-blue-500/50 transition-all duration-700" alt="" />
+                                    </div>
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="text-lg font-bold truncate tracking-tight">{artist.name}</h3>
-                                        <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-2">{artist.genres.slice(0, 1).join('')}</p>
-                                        <div className="w-full bg-black/40 h-1 rounded-full overflow-hidden">
-                                            <div className="bg-blue-500 h-full" style={{ width: `${artist.popularity}%` }} />
+                                        <h3 className="text-xl font-black truncate tracking-tighter uppercase mb-1">{artist.name}</h3>
+                                        <p className="text-[10px] text-white/30 font-black uppercase tracking-widest mb-4">{artist.genres.slice(0, 1).join('')}</p>
+                                        <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                                            <div className="bg-blue-500 h-full transition-all duration-1000 group-hover:bg-blue-400" style={{ width: `${artist.popularity}%` }} />
                                         </div>
                                     </div>
                                 </div>
@@ -654,38 +665,42 @@ const Stats = () => {
                     )}
 
                     {activeTab === 'tracks' && (
-                        <section className="space-y-2 animate-apple-in">
+                        <section className="space-y-3 animate-ios26-in">
                             {topTracks.map((track) => (
                                 <div
                                     key={track.id}
                                     onClick={() => fetchTrackInsights(track)}
-                                    className="apple-card-interactive p-3 flex items-center gap-4"
+                                    className="ios26-card-interactive p-4 flex items-center gap-6 group"
                                 >
-                                    <img src={track.album.images[2]?.url} className="w-12 h-12 rounded-xl shadow-md" alt="" />
-                                    <div className="flex-1 min-w-0">
-                                        <div className="text-base font-bold truncate tracking-tight">{track.name}</div>
-                                        <div className="text-xs text-gray-500 truncate font-medium">{track.artists?.[0]?.name || 'Unknown Artist'}</div>
+                                    <div className="w-16 h-16 rounded-[24px] overflow-hidden shadow-2xl ring-1 ring-white/10 group-hover:scale-110 transition-transform duration-700">
+                                        <img src={track.album.images[1]?.url} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700" alt="" />
                                     </div>
-                                    <div className="text-[10px] font-mono text-gray-500 bg-white/5 py-1 px-2 rounded-lg">{formatDuration(track.duration_ms)}</div>
+                                    <div className="flex-1 min-w-0 transition-transform duration-500 group-hover:translate-x-1">
+                                        <div className="text-lg font-black truncate tracking-tighter uppercase group-hover:text-blue-500 transition-colors">{track.name}</div>
+                                        <div className="text-[10px] text-white/30 font-black uppercase tracking-widest">{track.artists?.[0]?.name || 'Unknown Artist'}</div>
+                                    </div>
+                                    <div className="text-[10px] font-black tracking-widest text-white/20 group-hover:text-blue-500 transition-colors uppercase border border-white/5 group-hover:border-blue-500/30 px-3 py-1.5 rounded-full">{formatDuration(track.duration_ms)}</div>
                                 </div>
                             ))}
                         </section>
                     )}
 
                     {activeTab === 'albums' && (
-                        <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 animate-apple-in">
+                        <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 animate-ios26-in">
                             {topAlbums.map((album) => (
                                 <div
                                     key={album.id}
                                     onClick={() => fetchAlbumInsights(album)}
                                     className="group cursor-pointer"
                                 >
-                                    <div className="relative aspect-square mb-3 shadow-2xl overflow-hidden rounded-2xl border border-white/5 group-active:scale-95 transition-all">
-                                        <img src={album.images[0]?.url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
-                                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div className="relative aspect-square mb-5 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] overflow-hidden rounded-[40px] border border-white/5 active:scale-95 transition-all duration-700">
+                                        <img src={album.images[0]?.url} className="w-full h-full object-cover grayscale-[0.4] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000" alt="" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                                     </div>
-                                    <h4 className="font-bold text-xs truncate mb-0.5 tracking-tight group-hover:text-blue-400 transition-colors uppercase">{album.name}</h4>
-                                    <p className="text-[10px] text-gray-500 truncate font-medium italic opacity-80">{album.artists[0].name}</p>
+                                    <div className="px-2 transition-transform duration-500 group-hover:translate-x-1">
+                                        <h4 className="font-black text-sm truncate mb-1 tracking-tighter uppercase group-hover:text-blue-500 transition-colors">{album.name}</h4>
+                                        <p className="text-[9px] text-white/30 font-black uppercase tracking-widest truncate">{album.artists[0].name}</p>
+                                    </div>
                                 </div>
                             ))}
                         </section>
@@ -693,24 +708,31 @@ const Stats = () => {
 
                     {/* Playlists Tab */}
                     {activeTab === 'playlists' && (
-                        <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 animate-apple-in">
+                        <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 animate-ios26-in">
                             {playlists.map((playlist) => (
                                 <div
                                     key={playlist.id}
                                     onClick={() => navigate(`/recommendations/${playlist.id}`)}
                                     className="group cursor-pointer"
                                 >
-                                    <div className="relative aspect-square mb-3 shadow-2xl overflow-hidden rounded-[24px] border border-white/5 group-active:scale-95 transition-all">
+                                    <div className="relative aspect-square mb-5 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] overflow-hidden rounded-[56px] border border-white/5 group-active:scale-95 transition-all duration-700">
                                         {playlist.images?.[0]?.url ? (
-                                            <img src={playlist.images[0].url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                                            <img src={playlist.images[0].url} className="w-full h-full object-cover grayscale-[0.4] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000" alt="" />
                                         ) : (
                                             <div className="w-full h-full bg-white/5 flex items-center justify-center">
-                                                <Music className="w-10 h-10 text-gray-600" />
+                                                <Music className="w-10 h-10 text-white/10" />
                                             </div>
                                         )}
+                                        <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-all duration-700 flex items-center justify-center backdrop-blur-md">
+                                            <div className="w-16 h-16 rounded-full ios26-liquid flex items-center justify-center border border-white/20 shadow-2xl scale-50 group-hover:scale-100 transition-transform duration-700">
+                                                <PlaySquare fill="white" size={24} className="ml-0.5" />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <h4 className="font-bold text-xs truncate mb-0.5 tracking-tight group-hover:text-blue-400 transition-colors uppercase">{playlist.name}</h4>
-                                    <p className="text-[10px] text-gray-500 truncate font-medium">{playlist.tracks.total} tracks</p>
+                                    <div className="px-2 transition-transform duration-500 group-hover:translate-x-1">
+                                        <h4 className="font-black text-sm truncate mb-1 tracking-tighter uppercase group-hover:text-blue-500 transition-colors">{playlist.name}</h4>
+                                        <p className="text-[9px] text-white/30 font-black uppercase tracking-widest truncate">{playlist.tracks.total} units</p>
+                                    </div>
                                 </div>
                             ))}
                         </section>
@@ -718,41 +740,44 @@ const Stats = () => {
 
                     {/* Insights Tab */}
                     {activeTab === 'insights' && (
-                        <section className="space-y-8 animate-apple-in">
+                        <section className="space-y-12 animate-ios26-in">
                             {/* Music Taste Gravity */}
-                            <div className="apple-card p-8">
-                                <div className="flex items-center gap-3 mb-8">
-                                    <Activity className="text-blue-500" size={24} />
+                            <div className="ios26-card p-12 relative overflow-hidden">
+                                <div className="absolute -top-20 -left-20 w-96 h-96 bg-blue-500/5 blur-[120px] rounded-full -z-10" />
+                                <div className="flex items-center gap-4 mb-12">
+                                    <div className="w-12 h-12 rounded-2xl ios26-liquid flex items-center justify-center">
+                                        <Activity className="text-blue-500" size={24} />
+                                    </div>
                                     <div>
-                                        <h3 className="text-2xl font-bold tracking-tight">Audio Profile</h3>
-                                        <p className="text-sm text-gray-500 font-medium">Core frequency and sonic consistency.</p>
+                                        <h3 className="text-4xl font-black tracking-tighter uppercase mb-2">Neural Profile</h3>
+                                        <p className="text-[10px] text-white/30 font-black uppercase tracking-widest">Acoustic frequency and sonic consistency</p>
                                     </div>
                                 </div>
 
                                 {tasteGravity.coreGenres?.length > 0 ? (
-                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                                         <div className="lg:col-span-1 space-y-4">
-                                            <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 border-b border-white/5 pb-2">Top Frequencies</div>
-                                            <div className="space-y-2">
+                                            <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] mb-4 border-b border-white/5 pb-2">Core Frequencies</div>
+                                            <div className="space-y-3">
                                                 {tasteGravity.coreGenres.map((item, i) => (
-                                                    <div key={item.genre} className="flex justify-between items-center bg-white/5 px-4 py-3 rounded-xl">
-                                                        <span className="text-white font-bold text-sm uppercase">{item.genre}</span>
-                                                        <span className="text-blue-500 font-black text-sm">{item.percentage}%</span>
+                                                    <div key={item.genre} className="flex justify-between items-center ios26-glass px-6 py-4 rounded-2xl group hover:bg-white/10 transition-all duration-500">
+                                                        <span className="text-white font-black text-xs uppercase tracking-tight">{item.genre}</span>
+                                                        <span className="text-blue-500 font-black text-sm tracking-tighter">{item.percentage}%</span>
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
                                         <div className="lg:col-span-2">
-                                            <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4 border-b border-white/5 pb-2">Frequency Map</div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] mb-6 border-b border-white/5 pb-2">Atmospheric Density</div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 {tasteGravity.genres?.map((item, i) => (
-                                                    <div key={item.genre} className="bg-white/5 p-4 rounded-2xl hover:bg-white/10 transition-all group">
-                                                        <div className="flex items-center justify-between mb-3">
-                                                            <span className="font-bold text-[11px] uppercase tracking-wider text-gray-400">{item.genre}</span>
-                                                            <span className="text-blue-500 font-black text-sm">{item.percentage}%</span>
+                                                    <div key={item.genre} className="ios26-glass p-5 rounded-3xl hover:bg-white/[0.04] transition-all duration-500 group">
+                                                        <div className="flex items-center justify-between mb-4">
+                                                            <span className="font-black text-[9px] uppercase tracking-[0.2em] text-white/40 group-hover:text-white/60 transition-colors">{item.genre}</span>
+                                                            <span className="text-blue-500 font-black text-xs tracking-tighter">{item.percentage}%</span>
                                                         </div>
-                                                        <div className="w-full bg-black/40 h-1.5 rounded-full overflow-hidden">
-                                                            <div className="bg-blue-500 h-full transition-all duration-1000 group-hover:scale-x-105 origin-left" style={{ width: `${item.percentage}%` }} />
+                                                        <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                                                            <div className="bg-blue-500 h-full transition-all duration-1000 group-hover:bg-blue-400 group-hover:scale-x-105 origin-left" style={{ width: `${item.percentage}%` }} />
                                                         </div>
                                                     </div>
                                                 ))}
@@ -760,76 +785,79 @@ const Stats = () => {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="text-center py-20 bg-white/5 rounded-3xl">
-                                        <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Awaiting more listening data...</p>
+                                    <div className="text-center py-24 ios26-glass rounded-3xl">
+                                        <p className="text-white/20 font-black uppercase tracking-[0.3em] text-[10px]">Awaiting further telemetry...</p>
                                     </div>
                                 )}
                             </div>
 
                             {/* Song Lifespan Tracker */}
-                            <div className="apple-card p-8">
-                                <div className="flex items-center gap-3 mb-8">
-                                    <Clock className="text-purple-500" size={24} />
+                            <div className="ios26-card p-12 relative overflow-hidden">
+                                <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-purple-500/5 blur-[120px] rounded-full -z-10" />
+                                <div className="flex items-center gap-4 mb-12">
+                                    <div className="w-12 h-12 rounded-2xl ios26-liquid flex items-center justify-center">
+                                        <Clock className="text-purple-500" size={24} />
+                                    </div>
                                     <div>
-                                        <h3 className="text-2xl font-bold tracking-tight">Sonic Lifespan</h3>
-                                        <p className="text-sm text-gray-500 font-medium">Tracking how long tracks stay in your rotation.</p>
+                                        <h3 className="text-4xl font-black tracking-tighter uppercase mb-2">Sonic Aging</h3>
+                                        <p className="text-[10px] text-white/30 font-black uppercase tracking-widest">Telemetric analysis of track retention</p>
                                     </div>
                                 </div>
 
                                 {lifespanData.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {lifespanData.slice(0, 8).map((item) => (
-                                            <div key={item.track.id} className="bg-white/5 p-4 rounded-2xl flex items-center gap-4 group hover:bg-white/10 transition-all">
-                                                <img src={item.track.album.images[2]?.url} className="w-14 h-14 rounded-lg shadow-lg" alt="" />
-                                                <div className="flex items-center gap-4">
-                                                    <img src={item.track.album.images[2]?.url} className="w-14 h-14 rounded-lg" alt="" />
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="font-bold text-sm truncate">{item.track.name}</div>
-                                                        <div className="text-xs text-gray-400 truncate">{item.track.artists[0].name}</div>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <div className="text-xs text-gray-500 uppercase font-black mb-1">Age</div>
-                                                        <div className="text-lg font-black text-blue-500">{item.age}d</div>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <div className="text-xs text-gray-500 uppercase font-black mb-1">Plays</div>
-                                                        <div className="text-lg font-black text-green-500">{item.playCount}</div>
-                                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {lifespanData.slice(0, 10).map((item) => (
+                                            <div key={item.track.id} className="ios26-glass p-5 rounded-3xl flex items-center gap-6 group hover:bg-white/[0.04] transition-all duration-500">
+                                                <div className="w-16 h-16 rounded-[22px] overflow-hidden shadow-2xl ring-1 ring-white/10 group-hover:scale-110 transition-all duration-700">
+                                                    <img src={item.track.album.images[1]?.url} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all" alt="" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="font-black text-sm truncate tracking-tighter uppercase group-hover:text-purple-500 transition-colors">{item.track.name}</div>
+                                                    <div className="text-[9px] text-white/30 font-black uppercase tracking-widest truncate">{item.track.artists[0].name}</div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="text-[8px] text-white/20 uppercase font-black tracking-widest mb-1">Index</div>
+                                                    <div className="text-xl font-black text-purple-500 tracking-tighter group-hover:scale-110 transition-transform">{item.age}d</div>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="text-center py-12 text-gray-500">
-                                        <p>Not enough listening history to track lifespans yet.</p>
+                                    <div className="text-center py-24 ios26-glass rounded-3xl">
+                                        <p className="text-white/20 font-black uppercase tracking-[0.3em] text-[10px]">Processing temporal data...</p>
                                     </div>
                                 )}
                             </div>
 
                             {/* Overplayed Warning */}
                             {overplayedTracks.length > 0 && (
-                                <div className="bg-gradient-to-br from-red-500/10 to-orange-500/10 p-8 rounded-3xl border border-red-500/30">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <Flame className="text-red-500" size={28} />
+                                <div className="ios26-card p-10 relative overflow-hidden group border-red-500/20">
+                                    <div className="absolute -top-20 -right-20 w-80 h-80 bg-red-500/5 blur-[100px] rounded-full -z-10 group-hover:scale-110 transition-transform duration-1000" />
+                                    <div className="flex items-center gap-4 mb-10">
+                                        <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20">
+                                            <Flame className="text-red-500" size={24} />
+                                        </div>
                                         <div>
-                                            <h3 className="text-2xl font-black text-red-400">⚠️ Overplayed Warning</h3>
-                                            <p className="text-sm text-gray-400">You're playing these a LOT - take a break before you ruin them!</p>
+                                            <h3 className="text-4xl font-black tracking-tighter uppercase text-red-500 mb-1">Rotation Decay</h3>
+                                            <p className="text-[10px] text-white/30 font-black uppercase tracking-widest">Acoustic saturation threshold exceeded</p>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-3">
+                                    <div className="space-y-4">
                                         {overplayedTracks.map((item) => (
-                                            <div key={item.track.id} className="bg-black/40 p-4 rounded-2xl border border-red-500/30 hover:border-red-500/50 transition-all">
-                                                <div className="flex items-center gap-4">
-                                                    <img src={item.track.album.images[2]?.url} className="w-14 h-14 rounded-lg" alt="" />
+                                            <div key={item.track.id} className="ios26-glass p-5 rounded-3xl border border-red-500/10 hover:border-red-500/30 transition-all duration-500 group">
+                                                <div className="flex items-center gap-6">
+                                                    <div className="w-16 h-16 rounded-[22px] overflow-hidden shadow-2xl ring-1 ring-white/10 group-hover:scale-110 transition-all duration-700">
+                                                        <img src={item.track.album.images[1]?.url} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all" alt="" />
+                                                    </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="font-bold text-sm truncate">{item.track.name}</div>
-                                                        <div className="text-xs text-gray-400 truncate">{item.track.artists[0].name}</div>
+                                                        <div className="font-black text-sm truncate tracking-tighter uppercase text-white group-hover:text-red-500 transition-colors">{item.track.name}</div>
+                                                        <div className="text-[9px] text-white/30 font-black uppercase tracking-widest truncate">{item.track.artists[0].name}</div>
                                                     </div>
                                                     <div className="text-right">
-                                                        <div className="text-xs text-red-400 uppercase font-black mb-1">Danger Zone</div>
-                                                        <div className="text-2xl font-black text-red-500">{item.count} plays</div>
-                                                        <div className="text-[10px] text-gray-500 uppercase">in 3 days</div>
+                                                        <div className="text-[8px] text-red-500/40 uppercase font-black tracking-widest mb-1">Density</div>
+                                                        <div className="text-2xl font-black text-red-500 tracking-tighter">{item.count}</div>
+                                                        <div className="text-[9px] text-white/10 uppercase font-black tracking-widest">Cycles / 72h</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -840,12 +868,15 @@ const Stats = () => {
 
                             {/* Underground Radar */}
                             {undergroundArtists.length > 0 && (
-                                <div className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 p-8 rounded-3xl border border-indigo-500/30">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <Sparkles className="text-indigo-400" size={28} />
+                                <div className="ios26-card p-10 relative overflow-hidden group border-indigo-500/20">
+                                    <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-indigo-500/5 blur-[100px] rounded-full -z-10 group-hover:scale-110 transition-transform duration-1000" />
+                                    <div className="flex items-center gap-4 mb-10">
+                                        <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+                                            <Sparkles className="text-indigo-400" size={24} />
+                                        </div>
                                         <div>
-                                            <h3 className="text-2xl font-black text-indigo-400">🎯 Underground Radar</h3>
-                                            <p className="text-sm text-gray-400">Hidden gems with under 100K followers that match your taste</p>
+                                            <h3 className="text-4xl font-black tracking-tighter uppercase text-indigo-400 mb-1">Underground</h3>
+                                            <p className="text-[10px] text-white/30 font-black uppercase tracking-widest">Low-frequency high-potential signals</p>
                                         </div>
                                     </div>
 
@@ -854,20 +885,20 @@ const Stats = () => {
                                             <div
                                                 key={artist.id}
                                                 onClick={() => fetchArtistInsights(artist)}
-                                                className="bg-black/40 p-4 rounded-2xl border border-indigo-500/30 hover:border-indigo-500/50 transition-all cursor-pointer group"
+                                                className="ios26-glass p-5 rounded-3xl border border-indigo-500/10 hover:border-indigo-500/30 transition-all duration-500 cursor-pointer group"
                                             >
-                                                <div className="flex items-center gap-4">
-                                                    <img src={artist.images[1]?.url} className="w-16 h-16 rounded-full shadow-lg" alt="" />
+                                                <div className="flex items-center gap-5">
+                                                    <img src={artist.images[1]?.url} className="w-16 h-16 rounded-full object-cover shadow-2xl border border-white/5 opacity-80 group-hover:opacity-100 transition-all group-hover:scale-105" alt="" />
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="font-bold text-sm truncate group-hover:text-indigo-400 transition-colors">
+                                                        <div className="font-black text-sm truncate tracking-tighter uppercase text-white group-hover:text-indigo-400 transition-colors">
                                                             {artist.name}
-                                                            {artist.isHiddenGem && <span className="ml-2 text-yellow-400">💎</span>}
+                                                            {artist.isHiddenGem && <span className="ml-2">💎</span>}
                                                         </div>
-                                                        <div className="text-xs text-gray-400 truncate">{artist.genres.slice(0, 2).join(', ')}</div>
+                                                        <div className="text-[9px] text-white/30 font-black uppercase tracking-widest truncate">{artist.genres.slice(0, 1).join('')}</div>
                                                     </div>
                                                     <div className="text-right">
-                                                        <div className="text-xs text-indigo-400 uppercase font-black mb-1">Followers</div>
-                                                        <div className="text-lg font-black text-indigo-300">
+                                                        <div className="text-[8px] text-indigo-400/40 uppercase font-black tracking-widest mb-1">Impact</div>
+                                                        <div className="text-xl font-black text-indigo-300 tracking-tighter">
                                                             {artist.listenerCount >= 1000
                                                                 ? (artist.listenerCount / 1000).toFixed(1) + 'K'
                                                                 : artist.listenerCount}
@@ -882,27 +913,31 @@ const Stats = () => {
 
                             {/* Library Health Score */}
                             {libraryHealth && (
-                                <div className="bg-[#181818] p-8 rounded-3xl border border-neutral-800">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <Activity className="text-cyan-500" size={28} />
+                                <div className="ios26-card p-10 relative overflow-hidden group border-cyan-500/20">
+                                    <div className="absolute inset-0 bg-cyan-500/[0.02] -z-10" />
+                                    <div className="flex items-center gap-4 mb-10">
+                                        <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
+                                            <Activity className="text-cyan-500" size={24} />
+                                        </div>
                                         <div>
-                                            <h3 className="text-2xl font-black">📊 Library Health Score</h3>
-                                            <p className="text-sm text-gray-400">Analysis of your listening diversity</p>
+                                            <h3 className="text-4xl font-black tracking-tighter uppercase text-white mb-1">Integrity</h3>
+                                            <p className="text-[10px] text-white/30 font-black uppercase tracking-widest">Systemic efficiency and signal diversity</p>
                                         </div>
                                     </div>
 
                                     {/* Overall Score */}
-                                    <div className="mb-8 p-6 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-2xl border border-cyan-500/20 text-center">
-                                        <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Overall Health</div>
-                                        <div className={`text-4xl md:text-6xl font-black mb-2 ${libraryHealth.statusColor === 'green' ? 'text-green-500' :
-                                            libraryHealth.statusColor === 'blue' ? 'text-blue-500' :
+                                    <div className="mb-12 p-10 ios26-liquid rounded-[40px] border border-white/10 text-center shadow-2xl relative overflow-hidden group">
+                                        <div className="absolute inset-0 bg-cyan-500/[0.03] blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                                        <div className="text-[9px] font-black text-white/30 uppercase tracking-[0.4em] mb-6 relative z-10">Total Efficiency Score</div>
+                                        <div className={`text-7xl md:text-9xl font-black mb-4 tracking-tighter relative z-10 drop-shadow-2xl transition-transform duration-1000 group-hover:scale-105 ${libraryHealth.statusColor === 'green' ? 'text-green-500' :
+                                            libraryHealth.statusColor === 'blue' ? 'text-cyan-500' :
                                                 libraryHealth.statusColor === 'yellow' ? 'text-yellow-500' :
                                                     'text-red-500'
                                             }`}>
                                             {libraryHealth.score}
                                         </div>
-                                        <div className={`text-lg font-black uppercase tracking-wider ${libraryHealth.statusColor === 'green' ? 'text-green-400' :
-                                            libraryHealth.statusColor === 'blue' ? 'text-blue-400' :
+                                        <div className={`text-xl font-black uppercase tracking-[0.3em] relative z-10 ${libraryHealth.statusColor === 'green' ? 'text-green-400' :
+                                            libraryHealth.statusColor === 'blue' ? 'text-cyan-400' :
                                                 libraryHealth.statusColor === 'yellow' ? 'text-yellow-400' :
                                                     'text-red-400'
                                             }`}>
@@ -911,46 +946,46 @@ const Stats = () => {
                                     </div>
 
                                     {/* Diversity Metrics */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                        <div className="bg-[#121212] p-6 rounded-2xl border border-neutral-800">
-                                            <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Artist Diversity</div>
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span className="text-2xl font-black text-cyan-500">{libraryHealth.artistDiversity}%</span>
-                                                <span className="text-xs text-gray-500">{libraryHealth.uniqueArtists}/{libraryHealth.totalTracks} unique</span>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                                        <div className="ios26-glass p-8 rounded-[32px] border border-white/5 hover:bg-white/[0.04] transition-all duration-500">
+                                            <div className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] mb-4">Artist Frequency</div>
+                                            <div className="flex items-center justify-between mb-4">
+                                                <span className="text-4xl font-black text-cyan-500 tracking-tighter">{libraryHealth.artistDiversity}%</span>
+                                                <span className="text-[9px] text-white/20 font-black uppercase tracking-widest">{libraryHealth.uniqueArtists} / {libraryHealth.totalTracks}</span>
                                             </div>
-                                            <div className="w-full bg-black h-2 rounded-full overflow-hidden">
-                                                <div className="bg-gradient-to-r from-cyan-500 to-blue-500 h-full transition-all duration-1000" style={{ width: `${libraryHealth.artistDiversity}%` }} />
+                                            <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+                                                <div className="bg-gradient-to-r from-cyan-500 to-blue-500 h-full transition-all duration-1000 scale-x-105 origin-left" style={{ width: `${libraryHealth.artistDiversity}%` }} />
                                             </div>
                                         </div>
 
-                                        <div className="bg-[#121212] p-6 rounded-2xl border border-neutral-800">
-                                            <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Album Diversity</div>
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span className="text-2xl font-black text-purple-500">{libraryHealth.albumDiversity}%</span>
-                                                <span className="text-xs text-gray-500">{libraryHealth.uniqueAlbums}/{libraryHealth.totalTracks} unique</span>
+                                        <div className="ios26-glass p-8 rounded-[32px] border border-white/5 hover:bg-white/[0.04] transition-all duration-500">
+                                            <div className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] mb-4">Album Density</div>
+                                            <div className="flex items-center justify-between mb-4">
+                                                <span className="text-4xl font-black text-purple-500 tracking-tighter">{libraryHealth.albumDiversity}%</span>
+                                                <span className="text-[9px] text-white/20 font-black uppercase tracking-widest">{libraryHealth.uniqueAlbums} / {libraryHealth.totalTracks}</span>
                                             </div>
-                                            <div className="w-full bg-black h-2 rounded-full overflow-hidden">
-                                                <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-full transition-all duration-1000" style={{ width: `${libraryHealth.albumDiversity}%` }} />
+                                            <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+                                                <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-full transition-all duration-1000 scale-x-105 origin-left" style={{ width: `${libraryHealth.albumDiversity}%` }} />
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Repeated Artists Warning */}
                                     {libraryHealth.repeatedArtists.length > 0 && (
-                                        <div className="bg-yellow-500/10 p-6 rounded-2xl border border-yellow-500/30">
-                                            <div className="flex items-center gap-2 mb-4">
+                                        <div className="ios26-glass p-8 rounded-[32px] border border-yellow-500/20 bg-yellow-500/[0.02]">
+                                            <div className="flex items-center gap-3 mb-6">
                                                 <Flame className="text-yellow-500" size={20} />
-                                                <h4 className="text-sm font-black text-yellow-400 uppercase tracking-wider">Too Many Similar Tracks</h4>
+                                                <h4 className="font-black text-[10px] text-yellow-500 uppercase tracking-[0.3em]">Redundancy Detected</h4>
                                             </div>
-                                            <div className="space-y-2">
+                                            <div className="space-y-3">
                                                 {libraryHealth.repeatedArtists.map((item, i) => (
-                                                    <div key={i} className="flex items-center justify-between text-sm">
-                                                        <span className="text-gray-300 font-bold">{item.artist}</span>
-                                                        <span className="text-yellow-500 font-black">{item.count} tracks in top 50</span>
+                                                    <div key={i} className="flex items-center justify-between ios26-glass px-5 py-3 rounded-2xl">
+                                                        <span className="text-white font-black text-xs uppercase tracking-tight">{item.artist}</span>
+                                                        <span className="text-yellow-500 font-black text-sm tracking-tighter">{item.count} units</span>
                                                     </div>
                                                 ))}
                                             </div>
-                                            <p className="text-xs text-gray-500 mt-4">💡 Try exploring more artists to improve diversity!</p>
+                                            <p className="text-[9px] text-white/20 font-black uppercase tracking-widest mt-6 text-center">Protocol: Increase sonic variation</p>
                                         </div>
                                     )}
                                 </div>
@@ -962,94 +997,104 @@ const Stats = () => {
 
                 {/* Rediscover Tab */}
                 {activeTab === 'rediscover' && (
-                    <section className="animate-apple-in">
-                        <div className="apple-glass p-10 rounded-[40px] mb-8 flex flex-col items-center text-center">
-                            <div className="w-16 h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6">
+                    <section className="animate-ios26-in">
+                        <div className="ios26-card p-12 rounded-[56px] mb-10 flex flex-col items-center text-center relative overflow-hidden">
+                            <div className="absolute inset-0 bg-purple-500/5 blur-[100px] -z-10" />
+                            <div className="w-20 h-20 ios26-liquid rounded-[28px] flex items-center justify-center mb-8 border border-white/20 shadow-2xl">
                                 <Sparkles className="text-purple-400" size={32} />
                             </div>
-                            <h3 className="text-3xl font-extrabold tracking-tighter mb-2">Memories</h3>
-                            <p className="text-gray-500 font-medium">Rediscover the sounds that shaped your past.</p>
+                            <h3 className="text-4xl font-black tracking-tighter uppercase mb-2 text-white">Archives</h3>
+                            <p className="text-[10px] text-white/30 font-black uppercase tracking-widest">Resonant frequencies from your temporal history</p>
                         </div>
 
                         {rediscoverTracks.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {rediscoverTracks.map((track) => (
                                     <div
                                         key={track.id}
                                         onClick={() => fetchTrackInsights(track)}
-                                        className="apple-card-interactive p-4 flex items-center gap-4 group"
+                                        className="ios26-card-interactive p-4 flex items-center gap-6"
                                     >
-                                        <div className="w-14 h-14 rounded-xl overflow-hidden shadow-lg">
-                                            <img src={track.album.images[2]?.url} className="w-full h-full object-cover" alt="" />
+                                        <div className="w-16 h-16 rounded-[24px] overflow-hidden shadow-2xl ring-1 ring-white/10 group-hover:scale-110 transition-transform duration-700">
+                                            <img src={track.album.images[1]?.url} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700" alt="" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className="font-bold text-sm truncate tracking-tight group-hover:text-purple-400 transition-colors">{track.name}</div>
-                                            <div className="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-1">
-                                                Added {track.monthsSinceAdded} months ago
+                                            <div className="font-black text-sm truncate tracking-tighter uppercase group-hover:text-purple-500 transition-colors">{track.name}</div>
+                                            <div className="text-[9px] text-white/30 font-black uppercase tracking-widest mt-1">
+                                                Active {track.monthsSinceAdded}m ago
                                             </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="py-20 text-center apple-glass rounded-[40px]">
-                                <p className="text-gray-500 font-bold">Your memory is perfect. No forgotten tracks found.</p>
+                            <div className="py-24 text-center ios26-glass rounded-[56px] border border-white/5">
+                                <p className="text-white/20 font-black uppercase tracking-[0.3em] text-[10px]">No dormant signals detected...</p>
                             </div>
                         )}
                     </section>
                 )}
             </div>
-            {/* Artist Modal */}
+
+            {/* Modals - Spatial iOS 26 Redesign */}
             {selectedArtist && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-black/60 backdrop-blur-2xl animate-fade-in" onClick={() => setSelectedArtist(null)}>
-                    <div className="bg-[#1c1c1e] w-full max-w-2xl max-h-[90vh] rounded-[40px] border border-white/10 overflow-hidden shadow-2xl animate-apple-in flex flex-col" onClick={e => e.stopPropagation()}>
-                        <div className="relative h-64 shrink-0">
-                            <img src={selectedArtist.images[0]?.url} className="w-full h-full object-cover" alt="" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#1c1c1e] via-transparent" />
-                            <button onClick={() => setSelectedArtist(null)} className="absolute top-6 right-6 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white/70 hover:text-white transition-colors border border-white/10">
-                                <X size={20} />
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-3xl" onClick={() => setSelectedArtist(null)}>
+                    <div
+                        className="ios26-liquid w-full max-w-2xl max-h-[90vh] rounded-[48px] border border-white/20 overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] animate-ios26-in flex flex-col relative"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="relative h-80 shrink-0">
+                            <img src={selectedArtist.images[0]?.url} className="w-full h-full object-cover grayscale-[0.2]" alt="" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/20 to-transparent" />
+                            <button onClick={() => setSelectedArtist(null)} className="absolute top-8 right-8 w-12 h-12 rounded-full bg-white/10 backdrop-blur-2xl flex items-center justify-center text-white/80 hover:text-white transition-all border border-white/20 hover:scale-110 active:scale-95 shadow-2xl">
+                                <X size={24} />
                             </button>
-                            <div className="absolute bottom-6 left-8">
-                                <h2 className="text-4xl font-bold tracking-tighter mb-2">{selectedArtist.name}</h2>
-                                <div className="flex gap-2">
-                                    <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-400/30">Verified</span>
-                                    <span className="bg-white/10 text-white/70 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/10">{selectedArtist.genres[0]}</span>
+                            <div className="absolute bottom-10 left-10 right-10">
+                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500 mb-3 ml-1">Artist Profile</p>
+                                <h2 className="text-5xl md:text-6xl font-black tracking-tighter mb-4 text-white leading-none">{selectedArtist.name}</h2>
+                                <div className="flex flex-wrap gap-3">
+                                    <span className="bg-white/10 text-white font-black px-4 py-1.5 rounded-full text-[9px] uppercase tracking-widest border border-white/10 backdrop-blur-xl">
+                                        {selectedArtist.genres[0]}
+                                    </span>
+                                    <span className="bg-blue-500 text-white font-black px-4 py-1.5 rounded-full text-[9px] uppercase tracking-widest border border-blue-400/30">
+                                        Verified
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="p-8 overflow-y-auto custom-scrollbar flex-1 space-y-10">
-                            <div className="grid grid-cols-4 gap-3">
-                                <div className="bg-white/5 p-4 rounded-2xl text-center border border-white/5">
-                                    <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Fanbase</div>
-                                    <div className="text-xl font-bold">{(selectedArtist.followers.total / 1000000).toFixed(1)}M</div>
-                                </div>
-                                <div className="bg-white/5 p-4 rounded-2xl text-center border border-white/5">
-                                    <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Pop Index</div>
-                                    <div className="text-xl font-bold">{selectedArtist.popularity}%</div>
-                                </div>
-                                <div className="bg-white/5 p-4 rounded-2xl text-center border border-white/5">
-                                    <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Saves</div>
-                                    <div className="text-xl font-bold">{artistDetails?.likedCount || 0}</div>
-                                </div>
-                                <div className="bg-white/5 p-4 rounded-2xl text-center border border-white/5">
-                                    <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Status</div>
-                                    <div className="text-xl font-bold text-blue-500">{artistDetails?.tier?.split(' ')[0]}</div>
-                                </div>
+                        <div className="p-10 overflow-y-auto no-scrollbar flex-1 space-y-12">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {[
+                                    { label: 'Followers', value: `${(selectedArtist.followers.total / 1000000).toFixed(1)}M`, color: 'text-white' },
+                                    { label: 'Popularity', value: `${selectedArtist.popularity}%`, color: 'text-blue-500' },
+                                    { label: 'Liked', value: artistDetails?.likedCount || 0, color: 'text-white' },
+                                    { label: 'Tier', value: artistDetails?.tier?.split(' ')[0] || 'Unranked', color: 'text-blue-500' }
+                                ].map((stat) => (
+                                    <div key={stat.label} className="ios26-glass p-6 rounded-3xl text-center border border-white/5">
+                                        <div className="text-[9px] font-black text-white/30 uppercase tracking-widest mb-1.5">{stat.label}</div>
+                                        <div className={`text-2xl font-black tracking-tighter ${stat.color}`}>{stat.value}</div>
+                                    </div>
+                                ))}
                             </div>
 
                             <section>
-                                <h3 className="text-sm font-black uppercase tracking-widest text-gray-500 mb-4 border-b border-white/5 pb-2">Global Spotlight</h3>
-                                <div className="space-y-2">
+                                <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Global Rotation</h3>
+                                    <Activity size={14} className="text-blue-500" />
+                                </div>
+                                <div className="space-y-3">
                                     {artistDetails?.globalTopTracks?.map((t, i) => (
-                                        <div key={t.id} onClick={() => fetchTrackInsights(t)} className="apple-card-interactive p-2 px-4 flex items-center gap-4 text-left">
-                                            <span className="text-[10px] font-mono text-gray-500 w-4">{i + 1}</span>
-                                            <img src={t.album.images[2]?.url} className="w-10 h-10 rounded-lg" alt="" />
+                                        <div key={t.id} onClick={() => fetchTrackInsights(t)} className="ios26-card-interactive p-3 px-5 flex items-center gap-5 text-left group">
+                                            <span className="text-[10px] font-black text-white/20 w-4">{i + 1}</span>
+                                            <img src={t.album.images[2]?.url} className="w-12 h-12 rounded-[14px] shadow-lg grayscale-[0.3] group-hover:grayscale-0 transition-all" alt="" />
                                             <div className="flex-1 min-w-0">
-                                                <div className="text-sm font-bold truncate tracking-tight">{t.name}</div>
-                                                <div className="text-[10px] text-gray-500 font-medium">Global Heat: {t.popularity}%</div>
+                                                <div className="text-sm font-black truncate tracking-tighter uppercase text-white group-hover:text-blue-500 transition-colors">{t.name}</div>
+                                                <div className="text-[9px] text-white/30 font-black uppercase tracking-widest">Index: {t.popularity}%</div>
                                             </div>
-                                            <ArrowLeft size={14} className="rotate-180 opacity-20" />
+                                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center translate-x-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500">
+                                                <ArrowLeft size={14} className="rotate-180 text-blue-500" />
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -1061,38 +1106,42 @@ const Stats = () => {
 
             {/* Album Modal */}
             {selectedAlbum && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-2xl animate-fade-in" onClick={() => setSelectedAlbum(null)}>
-                    <div className="bg-[#1c1c1e] w-full max-w-3xl max-h-[85vh] rounded-[40px] border border-white/10 overflow-hidden shadow-2xl animate-apple-in flex flex-col md:flex-row" onClick={e => e.stopPropagation()}>
-                        <div className="w-full md:w-[45%] relative">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-3xl" onClick={() => setSelectedAlbum(null)}>
+                    <div
+                        className="ios26-liquid w-full max-w-4xl max-h-[85vh] rounded-[56px] border border-white/20 overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] animate-ios26-in flex flex-col md:flex-row relative"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="w-full md:w-[45%] relative h-80 md:h-auto overflow-hidden">
                             <img src={selectedAlbum.images[0]?.url} className="w-full h-full object-cover" alt="" />
-                            <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/60 to-transparent" />
-                            <div className="absolute bottom-8 left-8 right-8">
-                                <h2 className="text-3xl font-bold tracking-tighter mb-1 leading-tight">{selectedAlbum.name}</h2>
-                                <p className="text-blue-500 font-bold text-sm tracking-tight mb-4">{selectedAlbum.artists[0].name}</p>
-                                <div className="flex gap-4 text-[10px] font-black text-white/40 uppercase tracking-widest">
-                                    <span>{new Date(selectedAlbum.release_date).getFullYear()}</span>
-                                    <span>{albumDetails?.tracks?.length} Tracks</span>
+                            <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#050505] to-transparent" />
+                            <div className="absolute bottom-12 left-12 right-12">
+                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500 mb-4 ml-1">Discography</p>
+                                <h2 className="text-5xl font-black tracking-tighter mb-4 leading-none text-white">{selectedAlbum.name}</h2>
+                                <p className="text-white font-black text-lg tracking-tight mb-8 uppercase opacity-80">{selectedAlbum.artists[0].name}</p>
+                                <div className="flex gap-6 text-[10px] font-black text-white/30 uppercase tracking-widest">
+                                    <span className="flex items-center gap-2"><Calendar size={12} /> {new Date(selectedAlbum.release_date).getFullYear()}</span>
+                                    <span className="flex items-center gap-2"><Disc size={12} /> {albumDetails?.tracks?.length} UNITS</span>
                                 </div>
                             </div>
                         </div>
-                        <div className="flex-1 p-8 flex flex-col min-h-0 bg-[#1c1c1e]">
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">Tracklist</h3>
-                                <button onClick={() => setSelectedAlbum(null)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-500 hover:text-white transition-colors">
-                                    <X size={16} />
+                        <div className="flex-1 p-12 flex flex-col min-h-0 bg-[#050505]/40 relative">
+                            <div className="flex justify-between items-center mb-10 border-b border-white/5 pb-6">
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Track Telemetry</h3>
+                                <button onClick={() => setSelectedAlbum(null)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/40 hover:text-white transition-all border border-white/5 shadow-xl hover:scale-110">
+                                    <X size={20} />
                                 </button>
                             </div>
-                            <div className="flex-1 overflow-y-auto space-y-1 custom-scrollbar pr-2">
+                            <div className="flex-1 overflow-y-auto no-scrollbar space-y-2 pr-2">
                                 {albumDetailsLoading ? (
                                     <div className="h-full flex items-center justify-center"><Loader2 className="animate-spin text-blue-500" /></div>
                                 ) : (
                                     albumDetails?.tracks?.map((t, i) => (
-                                        <div key={t.id} onClick={() => fetchTrackInsights(t)} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group cursor-pointer">
-                                            <span className="text-[10px] font-mono text-gray-500 w-4">{i + 1}</span>
+                                        <div key={t.id} onClick={() => fetchTrackInsights(t)} className="flex items-center gap-6 p-4 rounded-2xl hover:bg-white/[0.04] transition-all group cursor-pointer border border-transparent hover:border-white/5">
+                                            <span className="text-[9px] font-black text-white/20 w-4">{i + 1}</span>
                                             <div className="flex-1 min-w-0">
-                                                <div className={`text-sm font-bold truncate ${t.isTopTrack ? 'text-blue-400' : 'text-gray-300'} group-hover:text-blue-400 transition-colors`}>{t.name}</div>
+                                                <div className={`text-sm font-black truncate uppercase tracking-tighter ${t.isTopTrack ? 'text-blue-500' : 'text-white'} group-hover:text-blue-400 transition-colors`}>{t.name}</div>
                                             </div>
-                                            <span className="text-[10px] font-mono text-gray-500">{formatDuration(t.duration_ms)}</span>
+                                            <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">{formatDuration(t.duration_ms)}</span>
                                         </div>
                                     ))
                                 )}
@@ -1104,45 +1153,63 @@ const Stats = () => {
 
             {/* Track Modal */}
             {selectedTrack && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-2xl animate-fade-in" onClick={() => setSelectedTrack(null)}>
-                    <div className="bg-[#1c1c1e] w-full max-w-xl rounded-[40px] border border-white/10 overflow-hidden shadow-2xl animate-apple-in" onClick={e => e.stopPropagation()}>
-                        <div className="p-10">
-                            <div className="flex items-center gap-8 mb-10">
-                                <div className="relative group">
-                                    <img src={selectedTrack.album?.images[0]?.url || selectedAlbum?.images[0]?.url} className="w-40 h-40 rounded-3xl shadow-2xl group-active:scale-95 transition-transform cursor-pointer" alt="" />
-                                    <div className="absolute inset-0 bg-black/20 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-3xl" onClick={() => setSelectedTrack(null)}>
+                    <div
+                        className="ios26-liquid w-full max-w-xl rounded-[64px] border border-white/20 overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] animate-ios26-in"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="p-12">
+                            <div className="flex flex-col items-center text-center mb-12">
+                                <div className="relative group mb-10">
+                                    <div className="absolute inset-0 bg-blue-500/30 blur-[60px] rounded-full opacity-0 group-hover:opacity-100 transition-all duration-1000 scale-110" />
+                                    <img
+                                        src={selectedTrack.album?.images[0]?.url || selectedAlbum?.images[0]?.url}
+                                        className="w-56 h-56 rounded-[48px] shadow-[0_30px_60px_-15px_rgba(0,0,0,1)] group-active:scale-95 transition-all duration-700 cursor-pointer relative z-10 border border-white/10"
+                                        alt=""
+                                    />
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="bg-blue-500/10 text-blue-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-400/20 inline-block mb-4">Song Detail</div>
-                                    <h2 className="text-3xl font-bold tracking-tighter mb-1 truncate">{selectedTrack.name}</h2>
-                                    <p className="text-xl text-gray-400 font-bold mb-4">{selectedTrack.artists?.[0]?.name || 'Unknown Artist'}</p>
-                                    <div className="flex gap-2">
-                                        {isTrackLiked && <div className="p-2.5 rounded-2xl bg-white/5 text-pink-500 border border-white/10"><Heart size={20} fill="currentColor" /></div>}
-                                        <div className="flex-1 bg-white/5 p-2 px-4 rounded-2xl border border-white/10 flex items-center justify-between">
-                                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Pop Status</span>
-                                            <span className="text-lg font-black">{selectedTrack.popularity}%</span>
+                                <div className="w-full">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500 mb-4">Frequency Insight</p>
+                                    <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-2 truncate uppercase text-white">{selectedTrack.name}</h2>
+                                    <p className="text-xl text-white/40 font-black mb-8 uppercase tracking-tight">{selectedTrack.artists?.[0]?.name || 'Unknown Artist'}</p>
+
+                                    <div className="flex gap-4 justify-center">
+                                        <div className="ios26-glass flex-1 p-6 rounded-[32px] border border-white/5 group hover:bg-white/[0.04] transition-all">
+                                            <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] mb-2 block">Population Index</span>
+                                            <span className="text-3xl font-black text-white tracking-tighter">{selectedTrack.popularity}%</span>
                                         </div>
+                                        {isTrackLiked && (
+                                            <div className="ios26-glass p-6 rounded-[32px] border border-white/5 flex items-center justify-center group hover:bg-white/[0.04] transition-all">
+                                                <Heart size={28} className="text-pink-500" fill="currentColor" />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="space-y-8">
+                            <div className="space-y-10">
                                 <section>
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-gray-500 mb-4 border-b border-white/5 pb-2">Track Metrics</h3>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="bg-white/5 p-5 rounded-3xl text-center border border-white/5">
-                                            <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 opacity-60">Global Power</div>
-                                            <div className="text-3xl font-black text-blue-500">{selectedTrack.popularity}%</div>
+                                    <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Telemetry Analysis</h3>
+                                        <Activity size={14} className="text-blue-500" />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="ios26-glass p-6 rounded-[28px] text-center border border-white/5 group hover:bg-white/[0.04] transition-all">
+                                            <div className="text-[9px] font-black text-white/20 uppercase tracking-widest mb-1.5 opacity-60">Sonic Power</div>
+                                            <div className="text-4xl font-black text-blue-500 tracking-tighter group-hover:scale-110 transition-transform">{selectedTrack.popularity}%</div>
                                         </div>
-                                        <div className="bg-white/5 p-5 rounded-3xl text-center border border-white/5">
-                                            <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 opacity-60">Reach</div>
-                                            <div className="text-3xl font-black text-green-500">{(selectedTrack.popularity * 0.8).toFixed(0)}</div>
+                                        <div className="ios26-glass p-6 rounded-[28px] text-center border border-white/5 group hover:bg-white/[0.04] transition-all">
+                                            <div className="text-[9px] font-black text-white/20 uppercase tracking-widest mb-1.5 opacity-60">Reach Index</div>
+                                            <div className="text-4xl font-black text-green-500 tracking-tighter group-hover:scale-110 transition-transform">{(selectedTrack.popularity * 0.8).toFixed(0)}</div>
                                         </div>
                                     </div>
                                 </section>
 
-                                <button onClick={() => setSelectedTrack(null)} className="w-full py-4 bg-white text-black font-black uppercase tracking-widest rounded-2xl hover:bg-gray-200 transition-all active:scale-95 shadow-xl mt-4">
-                                    Dismiss
+                                <button
+                                    onClick={() => setSelectedTrack(null)}
+                                    className="w-full py-5 bg-white text-black font-black uppercase tracking-[0.2em] text-xs rounded-3xl hover:bg-gray-200 transition-all active:scale-[0.98] shadow-[0_20px_40px_-10px_rgba(255,255,255,0.2)] mt-4"
+                                >
+                                    Eject Segment
                                 </button>
                             </div>
                         </div>

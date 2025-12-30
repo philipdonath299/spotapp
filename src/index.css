@@ -4,77 +4,154 @@
 
 @layer base {
   :root {
-    --apple-bg: #000000;
-    --apple-card: #1c1c1e;
-    --apple-card-hover: #2c2c2e;
-    --apple-blue: #0a84ff;
-    --apple-green: #30d158;
-    --apple-red: #ff453a;
-    --apple-purple: #bf5af2;
-    --apple-orange: #ff9f0a;
-    --apple-gray: #8e8e93;
-    --apple-gray-2: #636366;
-    --apple-gray-3: #48484a;
-    --apple-gray-4: #3a3a3c;
-    --apple-gray-5: #2c2c2e;
-    --apple-gray-6: #1c1c1e;
+    /* iOS 26 Liquid Metal Palette */
+    --ios26-bg: #000000;
+    --ios26-accent: #0a84ff;
+    --ios26-accent-rgb: 10, 132, 255;
+    --ios26-surface: #0a0a0b;
+    --ios26-glass: rgba(15, 15, 17, 0.45);
+    --ios26-border: rgba(255, 255, 255, 0.08);
+    --ios26-text-primary: #ffffff;
+    --ios26-text-secondary: rgba(255, 255, 255, 0.55);
+
+    /* Cosmic Accents */
+    --ios26-blue: #007aff;
+    --ios26-indigo: #5e5ce6;
+    --ios26-purple: #bf5af2;
+    --ios26-pink: #ff375f;
+    --ios26-red: #ff453a;
+    --ios26-orange: #ff9f0a;
+    --ios26-yellow: #ffd60a;
+    --ios26-green: #30d158;
+    --ios26-teal: #64d2ff;
+    --ios26-cyan: #70d7ff;
   }
 
   body {
     @apply bg-black text-white overflow-x-hidden antialiased;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
     touch-action: manipulation;
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply tracking-tight font-semibold;
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(10, 132, 255, 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(191, 90, 242, 0.05) 0%, transparent 40%);
+    background-attachment: fixed;
   }
 }
 
-/* Apple Materials */
-.apple-glass {
-  background: rgba(28, 28, 30, 0.7);
-  backdrop-filter: blur(25px) saturate(180%);
-  -webkit-backdrop-filter: blur(25px) saturate(180%);
+/* iOS 26 Hyper-Materials */
+.ios26-island {
+  background: rgba(10, 10, 12, 0.7);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid var(--ios26-border);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+.ios26-glass {
+  background: var(--ios26-glass);
+  backdrop-filter: blur(30px) saturate(220%) brightness(1.1);
+  -webkit-backdrop-filter: blur(30px) saturate(220%) brightness(1.1);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.02);
+}
+
+.ios26-liquid {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+  backdrop-filter: blur(50px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.6);
 }
 
-.apple-glass-light {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* iOS 26 Interactive Elements */
+.ios26-button-primary {
+  @apply relative overflow-hidden transition-all duration-500 active:scale-90 font-bold tracking-tight;
+  background: linear-gradient(135deg, #0a84ff 0%, #0070e0 100%);
+  border-radius: 20px;
+  box-shadow: 0 8px 16px rgba(10, 132, 255, 0.2);
 }
 
-/* Apple Buttons */
-.apple-button-primary {
-  @apply bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-6 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2;
+.ios26-button-primary::after {
+  content: '';
+  @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
 }
 
-.apple-button-secondary {
-  @apply bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-6 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 border border-white/10;
+.ios26-button-primary:hover::after {
+  @apply opacity-100;
 }
 
-/* Apple Cards */
-.apple-card {
-  @apply bg-[#1c1c1e] rounded-[22px] border border-white/5 transition-all duration-300;
+.ios26-card {
+  @apply rounded-[32px] border border-white/5 transition-all duration-700 relative overflow-hidden;
+  background: rgba(20, 20, 22, 0.3);
+  backdrop-filter: blur(20px);
 }
 
-.apple-card-interactive {
-  @apply apple-card hover:bg-[#2c2c2e] hover:scale-[1.02] active:scale-[0.98] cursor-pointer;
+.ios26-card-interactive {
+  @apply ios26-card hover:bg-white/[0.04] hover:scale-[1.01] active:scale-[0.98] cursor-pointer;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
-/* Custom Scrollbar (Apple Style - Minimal) */
+.ios26-card-interactive::before {
+  content: '';
+  @apply absolute inset-0 opacity-0 transition-opacity duration-700 bg-gradient-to-br from-blue-500/10 to-transparent;
+}
+
+.ios26-card-interactive:hover::before {
+  @apply opacity-100;
+}
+
+/* Kinetic Physics */
+@keyframes ios26-float {
+
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-10px) scale(1.02);
+  }
+}
+
+@keyframes ios26-orbit {
+  from {
+    transform: rotate(0deg) translateX(100px) rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg) translateX(100px) rotate(-360deg);
+  }
+}
+
+.animate-ios26-in {
+  animation: ios26-in 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes ios26-in {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+    filter: blur(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* Orbitals */
+.ios26-orbital {
+  @apply absolute -z-10 blur-[80px] rounded-full opacity-20 pointer-events-none transition-all duration-1000;
+}
+
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -82,35 +159,50 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 100px;
+  border: 1px solid rgba(0, 0, 0, 0.5);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.25);
 }
 
-/* Animations */
-@keyframes apple-fade-in {
-  from {
-    opacity: 0;
-    transform: scale(0.98) translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+/* Typography */
+h1 {
+  @apply text-6xl font-black tracking-tighter leading-none;
 }
 
-.animate-apple-in {
-  animation: apple-fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+h2 {
+  @apply text-4xl font-extrabold tracking-tight;
 }
 
-/* Tab Bar */
-.apple-tab-bar {
-  background: rgba(18, 18, 18, 0.85);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-top: 0.5px solid rgba(255, 255, 255, 0.15);
+h3 {
+  @apply text-2xl font-bold tracking-tight;
+}
+
+p {
+  @apply leading-relaxed text-white/60 font-medium;
+}
+
+/* Dynamic Island Style Navigation */
+.dynamic-nav {
+  @apply ios26-island rounded-[32px] px-8 py-3 mb-6 transition-all duration-500;
+}
+
+/* Glass Tabs */
+.ios26-tabs {
+  background: rgba(255, 255, 255, 0.03);
+  @apply border border-white/5 p-1.5 rounded-[22px] backdrop-blur-xl;
+}
+
+.ios26-tab-active {
+  @apply bg-white text-black shadow-2xl scale-[1.05] font-black;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Apple Pro-Motion Blur */
+.blur-mega {
+  backdrop-filter: blur(100px) saturate(200%);
+  -webkit-backdrop-filter: blur(100px) saturate(200%);
 }

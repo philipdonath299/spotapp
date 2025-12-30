@@ -56,10 +56,10 @@ const PlaylistManager = () => {
         setStatus('');
         try {
             await spotifyFetch(`/playlists/${selectedPlaylist.id}`, 'PUT', { name, description });
-            setStatus('Updated successfully!');
+            setStatus('Handshake Success.');
             fetchPlaylists(); // Refresh list data
         } catch (err) {
-            setStatus('Update failed.');
+            setStatus('Protocol Failure.');
         } finally {
             setLoading(false);
         }
@@ -106,10 +106,10 @@ const PlaylistManager = () => {
 
     const generateAIDescription = async () => {
         setAiLoading(true);
-        setStatus("AI is analyzing your playlist's vibe...");
+        setStatus("Analyzing Acoustic Signature...");
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
         if (!apiKey) {
-            setStatus("Missing API Key. Check your .env file.");
+            setStatus("API Key Missing.");
             setAiLoading(false);
             return;
         }
@@ -125,11 +125,11 @@ const PlaylistManager = () => {
             const aiText = await fetchAIResponse(apiKey, prompt);
 
             setDescription(aiText.replace(/^["']|["']$/g, ''));
-            setStatus("AI description generated!");
+            setStatus("Logic Rendered.");
 
         } catch (err) {
             console.error("AI Error:", err);
-            setStatus(`AI Error: ${err.message}`);
+            setStatus(`Logic Error.`);
         } finally {
             setAiLoading(false);
         }
@@ -153,7 +153,7 @@ const PlaylistManager = () => {
     };
 
     const replaceTracks = async (newTrackUris) => {
-        setStatus('Updating playlist order...');
+        setStatus('Rearranging Signal...');
 
         const chunks = [];
         for (let i = 0; i < newTrackUris.length; i += 100) {
@@ -171,12 +171,12 @@ const PlaylistManager = () => {
             await spotifyFetch(`/playlists/${selectedPlaylist.id}/tracks`, 'POST', { uris: chunks[i] });
         }
 
-        setStatus('Playlist updated!');
+        setStatus('Sequence Optimized.');
     };
 
     const handleTrueShuffle = async () => {
         setLoading(true);
-        setStatus('');
+        setStatus('Entropy Generation...');
         try {
             const tracks = await fetchTracksForPlaylist(selectedPlaylist.id);
             for (let i = tracks.length - 1; i > 0; i--) {
@@ -186,7 +186,7 @@ const PlaylistManager = () => {
             const uris = tracks.map(t => t.track.uri);
             await replaceTracks(uris);
         } catch (err) {
-            setStatus('Shuffle failed.');
+            setStatus('Chaos Failed.');
         } finally {
             setLoading(false);
         }
@@ -194,10 +194,10 @@ const PlaylistManager = () => {
 
     const handleSmartSort = async (criteria) => {
         setLoading(true);
-        setStatus('');
+        setStatus('Sonic Decomposition...');
         try {
             const tracks = await fetchTracksForPlaylist(selectedPlaylist.id);
-            setStatus('Analyzing audio features...');
+            setStatus('Sonic Decomposition...');
 
             const ids = tracks.map(t => t.track.id).filter(Boolean);
             const featureMap = {};
@@ -229,7 +229,7 @@ const PlaylistManager = () => {
             const uris = tracks.map(t => t.track.uri);
             await replaceTracks(uris);
         } catch (err) {
-            setStatus('Sort failed.');
+            setStatus('Sort Failed.');
         } finally {
             setLoading(false);
         }
@@ -237,25 +237,25 @@ const PlaylistManager = () => {
 
     const handleSplitPlaylist = async () => {
         if (splitSize < 5) {
-            setStatus('Split size too small.');
+            setStatus('Underflow Error.');
             return;
         }
         setLoading(true);
-        setStatus('Fetching tracks to split...');
+        setStatus('Fissioning Stream...');
         try {
             const allTracks = await fetchTracksForPlaylist(selectedPlaylist.id);
             const totalParts = Math.ceil(allTracks.length / splitSize);
             const me = await spotifyFetch('/me');
 
-            setStatus(`Creating ${totalParts} new playlists...`);
+            setStatus('Protocol Engaged.');
 
             for (let i = 0; i < totalParts; i++) {
                 const chunk = allTracks.slice(i * splitSize, (i + 1) * splitSize);
                 const uris = chunk.map(t => t.track.uri);
 
                 const newPlaylist = await spotifyFetch(`/users/${me.id}/playlists`, 'POST', {
-                    name: `${selectedPlaylist.name} (Part ${i + 1})`,
-                    description: `Part ${i + 1} of split playlist based on ${selectedPlaylist.name}.`,
+                    name: `${selectedPlaylist.name} [DECOUPLED ${i + 1}]`,
+                    description: `Automated Logic Render. Part ${i + 1} of ${selectedPlaylist.name}.`,
                     public: false
                 });
 
@@ -266,11 +266,11 @@ const PlaylistManager = () => {
                     });
                 }
             }
-            setStatus(`Successfully created ${totalParts} playlists!`);
+            setStatus('Fission Complete.');
             fetchPlaylists();
         } catch (err) {
             console.error(err);
-            setStatus('Split failed.');
+            setStatus('Split Protocol Failed.');
         } finally {
             setLoading(false);
         }
@@ -289,7 +289,7 @@ const PlaylistManager = () => {
     const handleMergePlaylists = async () => {
         if (selectedMergePlaylists.size === 0) return;
         setLoading(true);
-        setStatus('Merging playlists...');
+        setStatus('Initiating Fusion...');
         try {
             const currentTracks = await fetchTracksForPlaylist(selectedPlaylist.id);
             const existingUris = new Set(currentTracks.map(t => t.track.uri));
@@ -308,12 +308,12 @@ const PlaylistManager = () => {
             }
 
             if (newUris.length === 0) {
-                setStatus('No new tracks to merge!');
+                setStatus('No Unseen Signals.');
                 setLoading(false);
                 return;
             }
 
-            setStatus(`Adding ${newUris.length} new tracks...`);
+            setStatus('Fusion Protocol Engaged...');
 
             // Add in chunks
             for (let i = 0; i < newUris.length; i += 100) {
@@ -323,12 +323,12 @@ const PlaylistManager = () => {
                 });
             }
 
-            setStatus(`Successfully merged ${newUris.length} tracks!`);
+            setStatus('Fusion Successful.');
             setSelectedMergePlaylists(new Set()); // Clear selection
 
         } catch (err) {
             console.error(err);
-            setStatus('Merge failed.');
+            setStatus('Fusion Failed.');
         } finally {
             setLoading(false);
         }
@@ -336,14 +336,14 @@ const PlaylistManager = () => {
 
     const handleClonePlaylist = async () => {
         setLoading(true);
-        setStatus('Creating copy...');
+        setStatus('Duplicating Stream...');
         try {
             const me = await spotifyFetch('/me');
             const tracks = await fetchTracksForPlaylist(selectedPlaylist.id);
             const uris = tracks.map(t => t.track.uri);
 
             const newPlaylist = await spotifyFetch(`/users/${me.id}/playlists`, 'POST', {
-                name: `Copy of ${selectedPlaylist.name}`,
+                name: `${selectedPlaylist.name} (B-SIDE)`,
                 description: selectedPlaylist.description || '',
                 public: false
             });
@@ -354,10 +354,10 @@ const PlaylistManager = () => {
                     uris: uris.slice(i, i + 100)
                 });
             }
-            setStatus('Playlist cloned successfully!');
+            setStatus('Duplication Complete.');
             fetchPlaylists(); // Update sidebar list
         } catch (err) {
-            setStatus('Clone failed.');
+            setStatus('Cloning Protocol Failed.');
             console.error(err);
         } finally {
             setLoading(false);
@@ -366,14 +366,14 @@ const PlaylistManager = () => {
 
     const handleReverseOrder = async () => {
         setLoading(true);
-        setStatus('Reversing...');
+        setStatus('Inverting Logic...');
         try {
             const tracks = await fetchTracksForPlaylist(selectedPlaylist.id);
             const reversedUris = tracks.map(t => t.track.uri).reverse();
             await replaceTracks(reversedUris);
-            setStatus('Order reversed!');
+            setStatus('Order Inverted.');
         } catch (err) {
-            setStatus('Reverse failed.');
+            setStatus('Inversion Failed.');
         } finally {
             setLoading(false);
         }
@@ -381,7 +381,7 @@ const PlaylistManager = () => {
 
     const handleScanArtists = async () => {
         setLoading(true);
-        setStatus('Analyzing artists...');
+        setStatus('Metabolic Scan...');
         try {
             const tracks = await fetchTracksForPlaylist(selectedPlaylist.id);
             const artistCounts = {};
@@ -396,9 +396,9 @@ const PlaylistManager = () => {
                 .slice(0, 50) // Top 50 artists
                 .map(([name, count]) => ({ name, count }));
             setTopArtists(sorted);
-            setStatus(`Found ${sorted.length} top artists.`);
+            setStatus(`Scan Complete.`);
         } catch (err) {
-            setStatus('Scan failed.');
+            setStatus('Scan Failure.');
         } finally {
             setLoading(false);
         }
@@ -407,7 +407,7 @@ const PlaylistManager = () => {
     const handleRemoveArtist = async (artistName) => {
         if (!confirm(`Remove all songs by ${artistName}?`)) return;
         setLoading(true);
-        setStatus(`Removing ${artistName}...`);
+        setStatus(`Purging ${artistName}...`);
         try {
             const tracks = await fetchTracksForPlaylist(selectedPlaylist.id);
             // Invert logic: Keep tracks that are NOT by this artist
@@ -425,9 +425,9 @@ const PlaylistManager = () => {
 
             // Update local list UI
             setTopArtists(prev => prev.filter(p => p.name !== artistName));
-            setStatus(`Removed tracks by ${artistName}!`);
+            setStatus('Purge Complete.');
         } catch (err) {
-            setStatus('Removal failed.');
+            setStatus('Purge Failed.');
             console.error(err);
         } finally {
             setLoading(false);
@@ -436,30 +436,37 @@ const PlaylistManager = () => {
 
     if (view === 'list') {
         return (
-            <div className="py-8 animate-apple-in max-w-6xl mx-auto px-4">
-                <header className="mb-12">
-                    <button onClick={() => navigate('/dashboard')} className="mb-6 flex items-center text-blue-500 font-bold text-sm hover:underline">
-                        <ArrowLeft size={16} className="mr-1" /> Dashboard
+            <div className="py-20 animate-ios26-in max-w-6xl mx-auto px-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full -z-10 animate-ios26-float" />
+
+                <header className="mb-24">
+                    <button onClick={() => navigate('/dashboard')} className="mb-10 flex items-center text-blue-500 font-black text-[10px] uppercase tracking-[0.3em] hover:text-blue-400 transition-colors">
+                        <ArrowLeft size={16} className="mr-2" /> Index
                     </button>
-                    <h1 className="text-5xl font-extrabold tracking-tighter">Playlists</h1>
-                    <p className="text-gray-500 text-xl font-medium mt-1">Management and curation tools.</p>
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Stream Curation Protocol</p>
+                            <h1 className="text-7xl md:text-8xl font-black tracking-tighter leading-none text-white">
+                                Playlists
+                            </h1>
+                        </div>
+                    </div>
                 </header>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
                     {playlists.map(p => (
-                        <div key={p.id} onClick={() => handleSelect(p)} className="group cursor-pointer">
-                            <div className="relative aspect-square mb-3 shadow-2xl overflow-hidden rounded-[32px] border border-white/5 group-active:scale-95 transition-all">
+                        <div key={p.id} onClick={() => handleSelect(p)} className="ios26-card-interactive p-4 group">
+                            <div className="relative aspect-square mb-6 rounded-[28px] overflow-hidden shadow-2xl ring-1 ring-white/10">
                                 {p.images?.[0]?.url ? (
-                                    <img src={p.images[0].url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                                    <img src={p.images[0].url} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" alt="" />
                                 ) : (
                                     <div className="w-full h-full bg-white/5 flex items-center justify-center">
-                                        <Music className="w-10 h-10 text-gray-600" />
+                                        <Music className="w-10 h-10 text-white/10" />
                                     </div>
                                 )}
-                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
-                            <h3 className="font-bold text-sm truncate mb-0.5 tracking-tight group-hover:text-blue-400 transition-colors uppercase">{p.name}</h3>
-                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{p.tracks.total} tracks</p>
+                            <h3 className="font-black text-sm truncate mb-1 tracking-tighter uppercase text-white group-hover:text-blue-500 transition-colors leading-none">{p.name}</h3>
+                            <p className="text-[9px] text-white/30 font-black uppercase tracking-widest mt-2">{p.tracks.total} Units</p>
                         </div>
                     ))}
                 </div>
@@ -468,39 +475,39 @@ const PlaylistManager = () => {
     }
 
     return (
-        <div className="py-8 animate-apple-in max-w-4xl mx-auto px-4">
-            <header className="mb-10">
-                <button onClick={() => setView('list')} className="mb-6 flex items-center text-blue-500 font-bold text-sm hover:underline">
-                    <ArrowLeft size={16} className="mr-1" /> All Playlists
+        <div className="py-20 animate-ios26-in max-w-5xl mx-auto px-6 relative overflow-hidden">
+            <header className="mb-16">
+                <button onClick={() => setView('list')} className="mb-10 flex items-center text-blue-500 font-black text-[10px] uppercase tracking-[0.3em] hover:text-blue-400 transition-colors">
+                    <ArrowLeft size={16} className="mr-2" /> Archive
                 </button>
-                <div className="flex items-center gap-8">
-                    <div className="w-40 h-40 shadow-2xl rounded-[40px] overflow-hidden border border-white/10 shrink-0">
+                <div className="flex items-center gap-10">
+                    <div className="w-48 h-48 shadow-2xl rounded-[48px] overflow-hidden shrink-0 ring-1 ring-white/20">
                         {selectedPlaylist.images?.[0]?.url ? (
                             <img src={selectedPlaylist.images[0].url} className="w-full h-full object-cover" alt="" />
                         ) : (
-                            <div className="w-full h-full bg-white/5 flex items-center justify-center"><Music size={40} className="text-gray-600" /></div>
+                            <div className="w-full h-full bg-white/5 flex items-center justify-center"><Music size={48} className="text-white/10" /></div>
                         )}
                     </div>
                     <div>
-                        <h1 className="text-4xl font-extrabold tracking-tighter mb-2">{selectedPlaylist.name}</h1>
-                        <p className="text-gray-500 text-lg font-medium">{selectedPlaylist.tracks.total} tracks • {selectedPlaylist.owner.display_name}</p>
+                        <h1 className="text-5xl font-black tracking-tighter text-white uppercase leading-none mb-4">{selectedPlaylist.name}</h1>
+                        <p className="text-[10px] text-white/30 font-black uppercase tracking-[0.4em]">{selectedPlaylist.tracks.total} Units • Node: {selectedPlaylist.owner.display_name.toUpperCase()}</p>
                     </div>
                 </div>
             </header>
 
-            <div className="flex gap-2 mb-10 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="ios26-tabs p-1.5 flex gap-2 mb-16 overflow-x-auto no-scrollbar">
                 {[
-                    { id: 'details', label: 'Details', icon: Edit3 },
-                    { id: 'tools', label: 'Magic Tools', icon: Wand2 },
-                    { id: 'split', label: 'Splitter', icon: Scissors },
-                    { id: 'merge', label: 'Merge', icon: Merge }
+                    { id: 'details', label: 'Identity', icon: Edit3 },
+                    { id: 'tools', label: 'Logic Tools', icon: Wand2 },
+                    { id: 'split', label: 'Fission', icon: Scissors },
+                    { id: 'merge', label: 'Fusion', icon: Merge }
                 ].map((tab) => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab.id
-                            ? 'bg-blue-500 text-white shadow-lg'
-                            : 'bg-white/5 text-gray-500 hover:text-gray-300'
+                        className={`flex items-center gap-4 px-8 py-4 rounded-[18px] text-[10px] font-black transition-all uppercase tracking-[0.2em] whitespace-nowrap ${activeTab === tab.id
+                            ? 'bg-white text-black shadow-2xl scale-105'
+                            : 'text-white/30 hover:text-white'
                             }`}
                     >
                         <tab.icon size={16} />
@@ -509,131 +516,131 @@ const PlaylistManager = () => {
                 ))}
             </div>
 
-            <div className="min-h-[400px]">
+            <div className="min-h-[500px]">
                 {activeTab === 'details' && (
-                    <div className="apple-glass p-10 rounded-[40px] animate-apple-in">
-                        <form onSubmit={handleUpdateDetails} className="space-y-8">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-4">Playlist Name</label>
+                    <div className="ios26-card p-12 animate-ios26-in border-white/5 bg-white/[0.02]">
+                        <form onSubmit={handleUpdateDetails} className="space-y-12">
+                            <div className="space-y-4">
+                                <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] ml-2">Stream Identity</label>
                                 <input
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className="w-full bg-black/40 border border-white/5 rounded-2xl p-4 text-white font-bold outline-none focus:border-blue-500 focus:bg-black/60 transition-all"
+                                    className="w-full bg-black/40 border border-white/10 rounded-[28px] p-6 text-white font-black uppercase tracking-widest outline-none focus:border-blue-500 focus:bg-black/60 transition-all text-xl"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <div className="flex justify-between items-center px-4">
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Description</label>
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center px-2">
+                                    <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em]">Signal Descriptor</label>
                                     <button
                                         type="button"
                                         onClick={generateAIDescription}
                                         disabled={aiLoading}
-                                        className="text-[10px] font-black text-blue-500 uppercase tracking-widest hover:text-blue-400 flex items-center gap-1"
+                                        className="text-[9px] font-black text-blue-500 uppercase tracking-[0.3em] hover:text-blue-400 flex items-center gap-2 transition-colors"
                                     >
-                                        <Wand2 size={12} /> {aiLoading ? 'Thinking...' : 'AI Enhance'}
+                                        <Wand2 size={12} /> {aiLoading ? 'Decompiling...' : 'AI Logic Render'}
                                     </button>
                                 </div>
                                 <textarea
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    className="w-full bg-black/40 border border-white/5 rounded-2xl p-4 text-white font-medium outline-none focus:border-blue-500 focus:bg-black/60 transition-all h-32 resize-none"
+                                    className="w-full bg-black/40 border border-white/10 rounded-[28px] p-6 text-white font-black uppercase tracking-widest outline-none focus:border-blue-500 focus:bg-black/60 transition-all h-40 resize-none text-sm leading-relaxed"
                                 />
                             </div>
 
-                            {status && <p className={`text-center text-sm font-bold ${status.includes('failed') ? 'text-red-500' : 'text-blue-500'}`}>{status}</p>}
+                            {status && <p className={`text-center text-[9px] font-black uppercase tracking-[0.4em] animate-pulse ${status.includes('fail') ? 'text-red-500' : 'text-blue-500'}`}>{status}</p>}
 
-                            <button type="submit" disabled={loading} className="w-full py-4 bg-white text-black font-black uppercase tracking-widest rounded-2xl hover:bg-gray-200 transition-all active:scale-95 shadow-xl">
-                                {loading ? 'Syncing...' : 'Save and Sync'}
+                            <button type="submit" disabled={loading} className="w-full py-6 ios26-liquid text-white font-black uppercase tracking-[0.3em] rounded-[24px] hover:scale-[1.02] active:scale-95 transition-all shadow-2xl border border-white/20 text-[10px]">
+                                {loading ? 'Synchronizing Stream' : 'Apply Security Protocol'}
                             </button>
                         </form>
                     </div>
                 )}
 
                 {activeTab === 'tools' && (
-                    <div className="space-y-6 animate-apple-in">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="apple-card p-6 flex flex-col justify-between">
+                    <div className="space-y-8 animate-ios26-in">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="ios26-card p-10 flex flex-col justify-between group">
                                 <div>
-                                    <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-500 mb-4">
-                                        <Music size={20} />
+                                    <div className="w-14 h-14 ios26-liquid rounded-[22px] flex items-center justify-center text-blue-500 mb-8 border border-white/20 shadow-2xl">
+                                        <Music size={24} />
                                     </div>
-                                    <h3 className="text-xl font-bold tracking-tight mb-1">True Shuffle</h3>
-                                    <p className="text-xs text-gray-500 font-medium mb-6">Algorithmically randomizes Every. Single. Song. No bias.</p>
+                                    <h3 className="text-3xl font-black tracking-tighter mb-2 uppercase text-white">Quantum Shuffle</h3>
+                                    <p className="text-[10px] text-white/30 font-black uppercase tracking-[0.2em] mb-10 leading-relaxed">Absolute entropy render. Breaks all algorithmic patterns across every track unit.</p>
                                 </div>
-                                <button onClick={handleTrueShuffle} disabled={loading} className="w-full py-3 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest text-xs rounded-xl transition-all border border-white/5">
-                                    {loading ? 'Rolling...' : 'Randomize Order'}
+                                <button onClick={handleTrueShuffle} disabled={loading} className="w-full py-5 ios26-glass hover:bg-white/10 text-white font-black uppercase tracking-[0.3em] text-[10px] rounded-[20px] transition-all border border-white/5">
+                                    {loading ? 'Rolling Logic' : 'Execute Shuffle'}
                                 </button>
                             </div>
 
-                            <div className="apple-card p-6 flex flex-col justify-between">
+                            <div className="ios26-card p-10 flex flex-col justify-between group">
                                 <div>
-                                    <div className="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center text-purple-500 mb-4">
-                                        <Copy size={20} />
+                                    <div className="w-14 h-14 ios26-liquid rounded-[22px] flex items-center justify-center text-purple-500 mb-8 border border-white/20 shadow-2xl">
+                                        <Copy size={24} />
                                     </div>
-                                    <h3 className="text-xl font-bold tracking-tight mb-1">Mirror</h3>
-                                    <p className="text-xs text-gray-500 font-medium mb-6">Clone this playlist into a fresh copy instantly.</p>
+                                    <h3 className="text-3xl font-black tracking-tighter mb-2 uppercase text-white">Mirroring</h3>
+                                    <p className="text-[10px] text-white/30 font-black uppercase tracking-[0.2em] mb-10 leading-relaxed">Full state duplication. Create a perfect redundant side-channel for this stream.</p>
                                 </div>
-                                <button onClick={handleClonePlaylist} disabled={loading} className="w-full py-3 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest text-xs rounded-xl transition-all border border-white/5">
-                                    {loading ? 'Copying...' : 'Make Clone'}
+                                <button onClick={handleClonePlaylist} disabled={loading} className="w-full py-5 ios26-glass hover:bg-white/10 text-white font-black uppercase tracking-[0.3em] text-[10px] rounded-[20px] transition-all border border-white/5">
+                                    {loading ? 'Duplicating' : 'Clone Stream'}
                                 </button>
                             </div>
                         </div>
 
-                        <div className="apple-card p-8">
-                            <div className="flex items-center gap-3 mb-6">
-                                <BarChart3 className="text-pink-500" size={24} />
-                                <h3 className="text-xl font-bold tracking-tighter">Sonic Sorter</h3>
+                        <div className="ios26-card p-12 relative overflow-hidden">
+                            <div className="flex items-center gap-4 mb-10">
+                                <BarChart3 className="text-blue-500" size={24} />
+                                <h3 className="text-2xl font-black tracking-tighter uppercase text-white">Spectral Sorter</h3>
                             </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                 {[
-                                    { id: 'energy', label: 'Energy', icon: '🔥' },
-                                    { id: 'danceability', label: 'Flow', icon: '💃' },
-                                    { id: 'tempo', label: 'BPM', icon: '🏃' },
-                                    { id: 'valence', label: 'Mood', icon: '😊' }
+                                    { id: 'energy', label: 'Energy', icon: '⚡' },
+                                    { id: 'danceability', label: 'Flow', icon: '🌊' },
+                                    { id: 'tempo', label: 'BPM', icon: '⏱️' },
+                                    { id: 'valence', label: 'Mood', icon: '🧠' }
                                 ].map(tool => (
                                     <button
                                         key={tool.id}
                                         onClick={() => handleSmartSort(tool.id)}
                                         disabled={loading}
-                                        className="flex flex-col items-center justify-center p-4 bg-black/40 rounded-2xl border border-white/5 hover:border-blue-500/30 hover:bg-black/60 transition-all group"
+                                        className="ios26-card-interactive p-6 flex flex-col items-center justify-center group border-white/5"
                                     >
-                                        <span className="text-2xl mb-2 group-hover:scale-125 transition-transform">{tool.icon}</span>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-white transition-colors">{tool.label}</span>
+                                        <span className="text-3xl mb-4 group-hover:scale-125 transition-all duration-500">{tool.icon}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 group-hover:text-blue-500 transition-colors">{tool.label}</span>
                                     </button>
                                 ))}
                             </div>
                         </div>
 
-                        <div className="apple-card p-8">
-                            <div className="flex items-center justify-between mb-8">
-                                <div className="flex items-center gap-3">
+                        <div className="ios26-card p-12">
+                            <div className="flex items-center justify-between mb-10">
+                                <div className="flex items-center gap-4">
                                     <UserX className="text-red-500" size={24} />
-                                    <h3 className="text-xl font-bold tracking-tighter">Artist Health</h3>
+                                    <h3 className="text-2xl font-black tracking-tighter uppercase text-white">Metabolism</h3>
                                 </div>
                                 {topArtists.length > 0 && (
-                                    <button onClick={() => setTopArtists([])} className="text-[10px] font-black text-gray-500 uppercase tracking-widest hover:text-white">Reset Scan</button>
+                                    <button onClick={() => setTopArtists([])} className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] hover:text-white transition-colors">Reset Node Scan</button>
                                 )}
                             </div>
 
                             {topArtists.length === 0 ? (
-                                <button onClick={handleScanArtists} disabled={loading} className="w-full py-12 border-2 border-dashed border-white/5 rounded-[32px] hover:border-red-500/20 hover:bg-red-500/5 transition-all text-gray-500 flex flex-col items-center gap-4">
-                                    {loading ? <Loader2 className="animate-spin text-red-500" /> : <Sparkles className="text-red-500" />}
-                                    <span className="font-bold text-sm">Scan for artist over-saturation</span>
+                                <button onClick={handleScanArtists} disabled={loading} className="w-full py-16 border-2 border-dashed border-white/5 rounded-[48px] hover:border-red-500/20 hover:bg-red-500/[0.02] transition-all text-white/20 flex flex-col items-center gap-6">
+                                    {loading ? <Loader2 className="animate-spin text-red-500" size={32} /> : <Sparkles className="text-red-500" size={32} />}
+                                    <span className="font-black text-[10px] uppercase tracking-[0.4em]">Scan for artist over-saturation</span>
                                 </button>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                                     {topArtists.map((artist, i) => (
-                                        <div key={i} className="flex items-center justify-between p-4 bg-black/40 rounded-2xl border border-white/5">
-                                            <div className="flex items-center gap-3">
-                                                <span className="font-bold text-sm tracking-tight">{artist.name}</span>
-                                                <span className="text-[10px] font-black text-gray-500 uppercase">{artist.count} tracks</span>
+                                        <div key={i} className="flex items-center justify-between p-5 bg-white/[0.02] rounded-[24px] border border-white/5 hover:border-red-500/20 transition-all">
+                                            <div className="flex items-center gap-4">
+                                                <span className="font-black text-sm uppercase tracking-tighter text-white">{artist.name}</span>
+                                                <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">{artist.count} Units</span>
                                             </div>
                                             <button
                                                 onClick={() => handleRemoveArtist(artist.name)}
                                                 disabled={loading}
-                                                className="w-8 h-8 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all"
+                                                className="w-10 h-10 rounded-full ios26-liquid border border-red-500/20 text-red-500 flex items-center justify-center hover:scale-110 transition-all shadow-2xl"
                                             >
-                                                <Trash size={14} />
+                                                <Trash size={16} />
                                             </button>
                                         </div>
                                     ))}
@@ -644,73 +651,75 @@ const PlaylistManager = () => {
                 )}
 
                 {activeTab === 'split' && (
-                    <div className="apple-glass p-10 rounded-[40px] animate-apple-in">
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center text-green-500">
-                                <Scissors size={24} />
+                    <div className="ios26-card p-12 animate-ios26-in relative overflow-hidden border-white/10 bg-white/[0.02]">
+                        <div className="absolute inset-0 bg-green-500/[0.01] -z-10" />
+                        <div className="flex items-center gap-6 mb-12">
+                            <div className="w-16 h-16 ios26-liquid rounded-[28px] flex items-center justify-center text-green-500 border border-white/20 shadow-2xl">
+                                <Scissors size={32} strokeWidth={1.5} />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-bold tracking-tighter">Segment Playlist</h3>
-                                <p className="text-gray-500 font-medium">Divide one massive list into manageable mini-mixes.</p>
+                                <h3 className="text-4xl font-black tracking-tighter text-white uppercase leading-none">Stream Fission</h3>
+                                <p className="text-[10px] text-white/30 font-black uppercase tracking-[0.3em] mt-3">Divide a massive stream into optimized sub-channels.</p>
                             </div>
                         </div>
 
-                        <div className="mb-10 space-y-4">
-                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-4">Tracks per Mixed Segment</label>
+                        <div className="mb-12 space-y-6">
+                            <label className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] ml-4">Units per Segment</label>
                             <input
                                 type="number"
                                 value={splitSize}
                                 onChange={(e) => setSplitSize(parseInt(e.target.value))}
                                 min={5}
                                 max={500}
-                                className="w-full bg-black/40 border border-white/5 rounded-2xl p-6 text-2xl font-black text-center outline-none focus:border-green-500 transition-all"
+                                className="w-full bg-black/60 border border-white/10 rounded-[36px] p-8 text-6xl font-black text-center text-white outline-none focus:border-green-500 transition-all shadow-inner tracking-tighter"
                             />
-                            <p className="text-center text-xs text-gray-500 font-medium">
-                                We'll create approximately <span className="text-green-500 font-black">{Math.ceil(selectedPlaylist.tracks.total / (splitSize || 1))}</span> new playlists for you.
+                            <p className="text-center text-[10px] text-white/40 font-black uppercase tracking-[0.3em]">
+                                Protocol will generate <span className="text-green-500 font-black">{Math.ceil(selectedPlaylist.tracks.total / (splitSize || 1))}</span> redundant streams.
                             </p>
                         </div>
 
                         <button
                             onClick={handleSplitPlaylist}
                             disabled={loading || splitSize < 5}
-                            className="w-full py-4 bg-white text-black font-black uppercase tracking-widest rounded-2xl hover:bg-gray-200 transition-all active:scale-95 shadow-xl"
+                            className="w-full py-6 ios26-liquid text-white font-black uppercase tracking-[0.3em] rounded-[28px] hover:scale-[1.02] active:scale-95 transition-all shadow-2xl border border-green-500/20 text-[10px]"
                         >
-                            {loading ? 'Processing...' : 'Generate Segments'}
+                            {loading ? 'Fissioning Stream' : 'Apply Fission'}
                         </button>
                     </div>
                 )}
 
                 {activeTab === 'merge' && (
-                    <div className="apple-glass p-10 rounded-[40px] animate-apple-in">
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500">
-                                <Merge size={24} />
+                    <div className="ios26-card p-12 animate-ios26-in relative overflow-hidden border-white/10 bg-white/[0.02]">
+                        <div className="absolute inset-0 bg-indigo-500/[0.01] -z-10" />
+                        <div className="flex items-center gap-6 mb-12">
+                            <div className="w-16 h-16 ios26-liquid rounded-[28px] flex items-center justify-center text-indigo-500 border border-white/20 shadow-2xl">
+                                <Merge size={32} strokeWidth={1.5} />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-bold tracking-tighter">Merge and Unify</h3>
-                                <p className="text-gray-500 font-medium">Consolidate multiple themes into one master selection.</p>
+                                <h3 className="text-4xl font-black tracking-tighter text-white uppercase leading-none">Stream Fusion</h3>
+                                <p className="text-[10px] text-white/30 font-black uppercase tracking-[0.3em] mt-3">Consolidate multiple frequency streams into one master nexus.</p>
                             </div>
                         </div>
 
-                        <div className="max-h-80 overflow-y-auto custom-scrollbar mb-8 space-y-2 pr-2">
+                        <div className="max-h-96 overflow-y-auto custom-scrollbar mb-12 space-y-3 pr-4">
                             {playlists.filter(p => p.id !== selectedPlaylist.id).map(p => (
                                 <div
                                     key={p.id}
                                     onClick={() => toggleMergeSelection(p.id)}
-                                    className={`p-4 rounded-2xl flex items-center gap-4 cursor-pointer transition-all border ${selectedMergePlaylists.has(p.id)
+                                    className={`p-5 rounded-[24px] flex items-center gap-6 cursor-pointer transition-all border ${selectedMergePlaylists.has(p.id)
                                         ? 'bg-indigo-500/10 border-indigo-500/30'
-                                        : 'bg-black/20 border-white/5 hover:bg-black/40'
+                                        : 'bg-black/40 border-white/5 hover:border-white/10'
                                         }`}
                                 >
-                                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedMergePlaylists.has(p.id)
+                                    <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all shadow-2xl ${selectedMergePlaylists.has(p.id)
                                         ? 'bg-indigo-500 border-indigo-500'
                                         : 'border-white/10'
                                         }`}>
-                                        {selectedMergePlaylists.has(p.id) && <CheckCircle size={14} className="text-white" />}
+                                        {selectedMergePlaylists.has(p.id) && <CheckCircle size={18} className="text-white" />}
                                     </div>
                                     <div className="flex-1 truncate">
-                                        <div className="font-bold text-sm tracking-tight truncate">{p.name}</div>
-                                        <div className="text-[10px] text-gray-500 font-black uppercase">{p.tracks.total} tracks</div>
+                                        <div className="font-black text-sm uppercase tracking-tighter text-white truncate mb-1">{p.name}</div>
+                                        <div className="text-[9px] text-white/30 font-black uppercase tracking-widest">{p.tracks.total} Units</div>
                                     </div>
                                 </div>
                             ))}
@@ -719,9 +728,9 @@ const PlaylistManager = () => {
                         <button
                             onClick={handleMergePlaylists}
                             disabled={loading || selectedMergePlaylists.size === 0}
-                            className="w-full py-4 bg-white text-black font-black uppercase tracking-widest rounded-2xl hover:bg-gray-200 transition-all active:scale-95 shadow-xl"
+                            className="w-full py-6 ios26-liquid text-white font-black uppercase tracking-[0.3em] rounded-[28px] hover:scale-[1.02] active:scale-95 transition-all shadow-2xl border border-indigo-500/20 text-[10px]"
                         >
-                            {loading ? 'Merging...' : `Integrate ${selectedMergePlaylists.size} Sources`}
+                            {loading ? 'Fusing Channels' : `Initiate fusion of ${selectedMergePlaylists.size} sources`}
                         </button>
                     </div>
                 )}

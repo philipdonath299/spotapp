@@ -1,34 +1,42 @@
-import { redirectToAuthCodeFlow, REDIRECT_URI } from '../utils/spotify';
+import React from 'react';
+import { Music } from 'lucide-react';
+import { redirectToAuthCodeFlow } from '../utils/spotify';
 
 const Login = () => {
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-6 relative overflow-hidden">
-            {/* Background Glows */}
-            <div className="absolute top-1/4 -left-20 w-96 h-96 bg-blue-600/20 blur-[120px] rounded-full animate-pulse" />
-            <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-purple-600/20 blur-[120px] rounded-full animate-pulse" />
+        <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden">
+            {/* Background Atmosphere */}
+            <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-blue-500/10 blur-[150px] rounded-full -z-10 animate-ios26-float" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-500/10 blur-[150px] rounded-full -z-10 animate-ios26-float-slow" />
 
-            <div className="text-center max-w-xl relative z-10 animate-apple-in">
-                <div className="apple-glass p-12 md:p-20 rounded-[48px] border border-white/15 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.8)] backdrop-blur-2xl">
-                    <h1 className="text-6xl md:text-8xl font-black mb-8 tracking-tighter leading-none uppercase bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent">
-                        Statsify
+            <div className="text-center max-w-xl relative z-10 animate-ios26-in">
+                <div className="ios26-card p-16 md:p-24 border-white/10 shadow-[0_64px_128px_-32px_rgba(0,0,0,0.9)] bg-white/[0.03]">
+                    <div className="flex justify-center mb-16">
+                        <div className="w-24 h-24 ios26-liquid rounded-[36px] flex items-center justify-center border border-white/20 shadow-2xl">
+                            <Music size={48} className="text-white" />
+                        </div>
+                    </div>
+
+                    <h1 className="text-6xl md:text-7xl font-black tracking-tighter text-white mb-6 uppercase leading-none">
+                        SpotApp <br /><span className="text-blue-500">Pro</span>
                     </h1>
-                    <p className="text-gray-400 mb-14 text-xl font-bold tracking-tight leading-relaxed max-w-md mx-auto">
-                        Connect your digital footprint to architect the perfect audio ecosystem.
+
+                    <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.5em] mb-16 leading-relaxed">
+                        Secure Handshake Required <br />
+                        <span className="opacity-50">Vortex-7 Protocol Authorized</span>
                     </p>
+
                     <button
                         onClick={redirectToAuthCodeFlow}
-                        className="apple-button-primary w-full py-6 text-xl font-black uppercase tracking-[0.2em] shadow-[0_24px_48px_-12px_rgba(59,130,246,0.5)] active:scale-95 transition-all"
+                        className="ios26-liquid block w-full py-7 text-sm font-black uppercase tracking-[0.4em] text-white rounded-[28px] shadow-2xl border border-white/20 active:scale-95 transition-all hover:scale-[1.03]"
                     >
                         Initiate Link
                     </button>
                 </div>
 
-                {/* Hidden Debug Box - Preserving working state logic */}
-                <div className="hidden mt-12 p-6 apple-glass rounded-[24px] border border-white/10 opacity-50">
-                    <p className="text-[10px] text-gray-500 mb-2 uppercase tracking-[0.3em] font-black">Secure Tunnel</p>
-                    <code className="text-blue-400 text-xs block break-all font-mono font-bold tracking-tighter">
-                        {REDIRECT_URI}
-                    </code>
+                <div className="mt-16 flex flex-col items-center gap-4 opacity-30">
+                    <p className="text-[8px] font-black uppercase tracking-[0.6em] text-white">System v26.4.0 • Node: Terminal</p>
+                    <div className="w-12 h-[1px] bg-white/20" />
                 </div>
             </div>
         </div>

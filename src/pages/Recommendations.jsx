@@ -8,7 +8,7 @@ const Recommendations = () => {
     const navigate = useNavigate();
     const [recommendations, setRecommendations] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [statusMessage, setStatusMessage] = useState("Analyzing your playlist...");
+    const [statusMessage, setStatusMessage] = useState("Initializing Deep Scan...");
     const [playlistName, setPlaylistName] = useState("");
     const [isSaving, setIsSaving] = useState(false);
 
@@ -26,7 +26,7 @@ const Recommendations = () => {
         try {
             // 1. Get Playlist Details
             const playlistData = await spotifyFetch(`/playlists/${playlistId}`);
-            if (!playlistData || playlistData.error) throw new Error("Playlist fetch failed.");
+            if (!playlistData || playlistData.error) throw new Error("Link broken.");
 
             setPlaylistName(playlistData.name);
 
@@ -34,7 +34,7 @@ const Recommendations = () => {
             let allSourceTracks = [];
             let nextUrl = `/playlists/${playlistId}/tracks?limit=100`;
 
-            setStatusMessage("Analyzing entire playlist...");
+            setStatusMessage("Deconstructing Stream...");
             while (nextUrl) {
                 const trackData = await spotifyFetch(nextUrl.replace('https://api.spotify.com/v1', ''));
                 if (trackData && trackData.items) {
@@ -46,7 +46,7 @@ const Recommendations = () => {
             }
 
             if (allSourceTracks.length === 0) {
-                setStatusMessage("Playlist is empty.");
+                setStatusMessage("Null stream detected.");
                 setLoading(false);
                 return;
             }
@@ -56,7 +56,7 @@ const Recommendations = () => {
             const artistNames = [...new Set(allSourceTracks.flatMap(t => t.artists.map(a => a.name)))].slice(0, 5);
 
             // 3. Fetch Artist Details for Genres
-            setStatusMessage("Analyzing your taste...");
+            setStatusMessage("Mapping Acoustic Clusters...");
             const artistChunks = [];
             for (let i = 0; i < uniqueArtistsInPlaylist.slice(0, 50).length; i += 50) {
                 artistChunks.push(uniqueArtistsInPlaylist.slice(0, 50).slice(i, i + 50));
@@ -81,7 +81,7 @@ const Recommendations = () => {
                 .map(entry => entry[0]);
 
             // 4. Perform Search Discovery
-            setStatusMessage(`Digging for gems similar to ${playlistName}...`);
+            setStatusMessage(`Excavating Deep Signals...`);
             let searchTracks = [];
 
             // Add obscurity logic: if highly obscure, search specifically for "tag:new" or deeper genres
@@ -112,7 +112,7 @@ const Recommendations = () => {
             );
 
             // 5. Filter by Popularity & Saved Status
-            setStatusMessage(`Filtering by popularity (< ${maxPopularity})...`);
+            setStatusMessage(`Applying Spectral Filter (${maxPopularity}% Threshold)...`);
 
             // First filter by popularity locally (Spotify Search doesn't support range filtering well on basic plans)
             let filteredCandidates = uniqueCandidates.filter(t => t.popularity <= maxPopularity);
@@ -136,9 +136,9 @@ const Recommendations = () => {
             });
 
             if (discoveryTracks.length === 0) {
-                setStatusMessage("No tracks found matching this deep dive. Try lowering obscurity.");
+                setStatusMessage("No deep signals found. Adjust Crate Depth.");
             } else {
-                setStatusMessage(`Found ${discoveryTracks.length} deep cuts!`);
+                setStatusMessage(`${discoveryTracks.length} Deep Signals Optimized.`);
             }
 
             // Shuffle
@@ -147,7 +147,7 @@ const Recommendations = () => {
 
         } catch (error) {
             console.error("Discovery Error:", error);
-            setStatusMessage("Discovery failed. Please try again.");
+            setStatusMessage("Logic Failure.");
             setLoading(false);
         }
     };
@@ -160,8 +160,8 @@ const Recommendations = () => {
             if (!me || !me.id) throw new Error("Could not fetch user profile.");
 
             const newPlaylist = await spotifyFetch(`/users/${me.id}/playlists`, 'POST', {
-                name: `Discover: ${playlistName} (${obscurity > 50 ? 'Deep Cuts' : 'Mix'})`,
-                description: `Fresh mix generated from your ${playlistName} playlist with ${obscurity}% obscurity filter.`,
+                name: `DISCOVER: ${playlistName.toUpperCase()}`,
+                description: `Artificial Logic Render. Mode: Deep Discovery. Depth: ${obscurity}%`,
                 public: false
             });
 
@@ -173,10 +173,10 @@ const Recommendations = () => {
                 await spotifyFetch(`/playlists/${newPlaylist.id}/tracks`, 'POST', { uris: chunk });
             }
 
-            alert(`Successfully created "${newPlaylist.name}" in your library!`);
+            alert(`Committed to library: ${newPlaylist.name}`);
         } catch (error) {
             console.error("Save error:", error);
-            alert(`Error saving playlist: ${error.message}`);
+            alert(`Link failure.`);
         } finally {
             setIsSaving(false);
         }
@@ -184,136 +184,138 @@ const Recommendations = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 animate-apple-in">
-                <div className="w-20 h-20 bg-blue-500/10 rounded-[40px] flex items-center justify-center mb-10 border border-blue-500/20 shadow-2xl relative">
-                    <div className="absolute inset-0 rounded-[40px] border-2 border-blue-500 border-t-transparent animate-spin" />
-                    <RefreshCw className="text-blue-500 animate-pulse" size={32} strokeWidth={1.5} />
+            <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 animate-ios26-in relative overflow-hidden">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 blur-[120px] rounded-full -z-10" />
+                <div className="w-32 h-32 ios26-liquid rounded-[48px] flex items-center justify-center mb-12 border border-blue-500/20 shadow-2xl relative group">
+                    <RefreshCw className="text-blue-500 animate-spin" size={48} strokeWidth={1} />
                 </div>
-                <p className="text-2xl font-black text-white tracking-tighter uppercase mb-2 leading-none">{statusMessage}</p>
-                <p className="text-gray-500 font-bold text-sm tracking-widest uppercase opacity-80 italic">Simulating taste clusters...</p>
+                <h2 className="text-3xl font-black text-white tracking-tighter uppercase mb-2 animate-pulse">{statusMessage}</h2>
+                <p className="text-white/20 font-black text-[10px] tracking-[0.4em] uppercase">Simulating Taste Clusters</p>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-black text-white p-4 md:p-8 animate-fade-in">
-            <div className="max-w-7xl mx-auto">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-6">
-                    <button
-                        onClick={() => navigate('/playlists')}
-                        className="flex items-center text-blue-500 font-black text-xs bg-blue-500/10 px-6 py-2.5 rounded-full hover:bg-blue-500/20 transition-all uppercase tracking-widest"
-                    >
-                        <ArrowLeft className="mr-2" size={16} strokeWidth={3} /> Playlists
-                    </button>
+        <div className="py-20 animate-ios26-in max-w-7xl mx-auto px-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-500/5 blur-[120px] rounded-full -z-10 animate-ios26-float" />
 
+            <header className="mb-24">
+                <button
+                    onClick={() => navigate('/playlists')}
+                    className="mb-10 flex items-center text-blue-500 font-black text-[10px] uppercase tracking-[0.3em] hover:text-blue-400 transition-colors"
+                >
+                    <ArrowLeft size={16} className="mr-2" /> Archive
+                </button>
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
+                    <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Spectral Discovery Node</p>
+                        <h1 className="text-7xl md:text-8xl font-black tracking-tighter leading-none text-white">
+                            Deep Search
+                        </h1>
+                        <p className="mt-8 text-white/40 text-xl font-bold tracking-tight max-w-2xl px-1">
+                            Synthesizing new sonic terrains from <span className="text-blue-500 underline decoration-1 underline-offset-[12px]">{playlistName}</span>
+                        </p>
+                    </div>
                     {recommendations.length > 0 && (
                         <button
                             onClick={saveToPlaylist}
                             disabled={isSaving}
-                            className={`flex items-center gap-3 px-10 py-5 rounded-3xl font-black transition-all shadow-[0_24px_48px_-12px_rgba(59,130,246,0.3)] uppercase tracking-widest text-sm border-2 ${isSaving
-                                ? 'bg-white/5 text-gray-600 cursor-not-allowed border-white/5'
-                                : 'bg-white text-black hover:bg-gray-200 hover:scale-[1.02] active:scale-95 border-transparent'
-                                }`}
+                            className="ios26-liquid px-12 py-6 rounded-[24px] font-black text-[10px] text-white border border-white/20 shadow-2xl hover:scale-105 active:scale-95 transition-all uppercase tracking-[0.3em] flex items-center gap-4"
                         >
-                            {isSaving ? <Loader2 className="animate-spin" size={24} /> : <Plus size={24} strokeWidth={3} />}
-                            {isSaving ? 'Synching...' : 'Deploy to Library'}
+                            {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
+                            {isSaving ? 'Synching...' : 'Commit to Library'}
                         </button>
                     )}
                 </div>
+            </header>
 
-                <header className="mb-14">
-                    <h1 className="text-5xl md:text-8xl font-black mb-4 tracking-tighter leading-none uppercase">Deep Discovery</h1>
-                    <p className="text-gray-400 text-xl font-bold tracking-tight max-w-2xl px-1">
-                        Synthesizing new sonic terrains from <span className="text-blue-500 underline decoration-2 underline-offset-8">{playlistName}</span>
-                    </p>
-                </header>
-
-                {/* Obscurity Filter UI */}
-                <div className="apple-glass p-10 rounded-[48px] border border-white/15 mb-16 flex flex-col md:flex-row items-center justify-between gap-10 shadow-2xl">
-                    <div className="flex items-center gap-6">
-                        <div className="p-4 bg-purple-500/10 text-purple-500 rounded-[28px] border border-purple-500/20 shadow-2xl">
-                            <Sliders size={32} strokeWidth={1.5} />
-                        </div>
-                        <div>
-                            <h3 className="font-black text-2xl tracking-tighter uppercase leading-none mb-1">Crate Depth</h3>
-                            <p className="text-gray-500 text-sm font-bold tracking-tight uppercase tracking-widest opacity-80">Mainstream ⇄ Underground</p>
-                        </div>
+            {/* Obscurity Filter UI */}
+            <div className="ios26-card p-12 mb-20 flex flex-col md:flex-row items-center justify-between gap-12 bg-white/[0.02] border-white/5 shadow-2xl overflow-visible">
+                <div className="flex items-center gap-8">
+                    <div className="w-16 h-16 ios26-liquid rounded-[28px] flex items-center justify-center text-purple-500 border border-white/20 shadow-2xl">
+                        <Sliders size={32} strokeWidth={1} />
                     </div>
-
-                    <div className="flex-1 w-full max-w-md flex flex-col gap-4">
-                        <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={obscurity}
-                            onChange={(e) => setObscurity(Number(e.target.value))}
-                            className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-500 shadow-inner"
-                        />
-                        <div className="flex justify-between text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
-                            <span>Popular</span>
-                            <span className="text-blue-500 px-3 py-1 bg-blue-500/10 rounded-full border border-blue-500/20">{obscurity}% Obscuration</span>
-                            <span>Obscure</span>
-                        </div>
+                    <div>
+                        <h3 className="font-black text-3xl tracking-tighter uppercase text-white leading-none mb-2">Crate Depth</h3>
+                        <p className="text-white/20 text-[9px] font-black uppercase tracking-[0.3em]">Mainstream ⇄ Deep Undercurrents</p>
                     </div>
-
-                    <button
-                        onClick={fetchRecommendations}
-                        className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-[24px] font-black transition-all flex items-center gap-3 border border-white/10 uppercase tracking-widest text-xs"
-                    >
-                        <RefreshCw size={18} strokeWidth={2.5} /> Refresh Logic
-                    </button>
                 </div>
 
-                {recommendations.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-24 bg-neutral-900/30 rounded-3xl border border-neutral-800/50 backdrop-blur-sm">
-                        <p className="text-neutral-500 text-2xl mb-8 font-medium">No new songs found for this setting.</p>
-                        <button
-                            onClick={fetchRecommendations}
-                            className="px-10 py-4 bg-neutral-800 rounded-full hover:bg-neutral-700 font-bold transition-all border border-neutral-700"
-                        >
-                            Try Again
-                        </button>
+                <div className="flex-1 w-full max-w-lg flex flex-col gap-6">
+                    <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={obscurity}
+                        onChange={(e) => setObscurity(Number(e.target.value))}
+                        className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-blue-500"
+                    />
+                    <div className="flex justify-between items-center text-[9px] font-black text-white/20 uppercase tracking-[0.4em]">
+                        <span>Mainstream</span>
+                        <div className="ios26-glass px-5 py-2 rounded-full border border-white/10 text-blue-500 text-[10px] shadow-2xl">
+                            {obscurity}% Depth
+                        </div>
+                        <span>Underground</span>
                     </div>
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8 pb-32">
-                        {recommendations.map((track, index) => (
-                            <div
-                                key={track.id}
-                                className="apple-card-interactive p-5 group shadow-2xl animate-apple-in"
-                                style={{ animationDelay: `${index * 50}ms` }}
-                            >
-                                <div className="relative aspect-square w-full mb-6 rounded-[32px] overflow-hidden shadow-2xl border border-white/10">
-                                    <img
-                                        src={track.album.images[0]?.url}
-                                        alt={track.name}
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2000ms]"
-                                    />
-                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center p-4">
-                                        <button
-                                            onClick={() => window.open(track.uri, '_blank')}
-                                            className="bg-white text-black w-14 h-14 rounded-full hover:scale-110 transition-transform active:scale-90 shadow-2xl flex items-center justify-center"
-                                        >
-                                            <Play fill="black" size={24} className="ml-1" />
-                                        </button>
-                                    </div>
-                                    <div className="absolute top-4 right-4 apple-glass rounded-xl text-[10px] font-black px-3 py-1.5 border border-white/20 uppercase tracking-widest">
-                                        P: {track.popularity}
-                                    </div>
-                                </div>
+                </div>
 
-                                <div className="px-1 text-center">
-                                    <h3 className="font-black text-lg truncate mb-1 text-white tracking-tighter uppercase leading-[1.1]" title={track.name}>
-                                        {track.name}
-                                    </h3>
-                                    <p className="text-gray-500 text-[11px] truncate font-bold uppercase tracking-widest opacity-80 group-hover:text-blue-400 transition-colors">
-                                        {track.artists.map(a => a.name).join(', ')}
-                                    </p>
+                <button
+                    onClick={fetchRecommendations}
+                    className="ios26-glass px-8 py-5 rounded-[22px] text-white font-black text-[10px] uppercase tracking-[0.2em] hover:bg-white/10 transition-all border border-white/10 shadow-2xl flex items-center gap-3"
+                >
+                    <RefreshCw size={16} /> Refresh Logic
+                </button>
+            </div>
+
+            {recommendations.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-24 bg-neutral-900/30 rounded-3xl border border-neutral-800/50 backdrop-blur-sm">
+                    <p className="text-neutral-500 text-2xl mb-8 font-medium">No new songs found for this setting.</p>
+                    <button
+                        onClick={fetchRecommendations}
+                        className="px-10 py-4 bg-neutral-800 rounded-full hover:bg-neutral-700 font-bold transition-all border border-neutral-700"
+                    >
+                        Try Again
+                    </button>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 pb-32">
+                    {recommendations.map((track, index) => (
+                        <div
+                            key={track.id}
+                            className="ios26-card-interactive p-5 group"
+                            style={{ animationDelay: `${index * 50}ms` }}
+                        >
+                            <div className="relative aspect-square w-full mb-6 rounded-[28px] overflow-hidden shadow-2xl ring-1 ring-white/10">
+                                <img
+                                    src={track.album.images[0]?.url}
+                                    alt={track.name}
+                                    className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-[2000ms]"
+                                />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center p-4">
+                                    <button
+                                        onClick={() => window.open(track.uri, '_blank')}
+                                        className="ios26-liquid w-14 h-14 rounded-full hover:scale-110 transition-transform active:scale-90 shadow-2xl flex items-center justify-center border border-white/20"
+                                    >
+                                        <Play fill="white" size={20} className="ml-1 text-white" />
+                                    </button>
+                                </div>
+                                <div className="absolute top-4 right-4 ios26-glass rounded-xl text-[9px] font-black px-3 py-1.5 border border-white/10 uppercase tracking-widest shadow-2xl">
+                                    P: {track.popularity}
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                )}
-            </div>
+
+                            <div className="px-1 text-center">
+                                <h3 className="font-black text-lg truncate mb-1 text-white tracking-tighter uppercase leading-none group-hover:text-blue-500 transition-colors" title={track.name}>
+                                    {track.name}
+                                </h3>
+                                <p className="text-white/30 text-[9px] truncate font-black uppercase tracking-[0.2em] mt-3">
+                                    {track.artists.map(a => a.name).join(', ')}
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };

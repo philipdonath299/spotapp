@@ -17,28 +17,28 @@ const BottomNav = () => {
     ];
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 apple-tab-bar pb-6 md:pb-4 border-t border-white/10">
-            <div className="max-w-2xl mx-auto flex justify-around items-center pt-3 px-6">
+        <nav className="fixed bottom-8 left-0 right-0 z-50 flex justify-center px-4">
+            <div className="ios26-island rounded-[32px] px-8 py-3 flex items-center gap-6 shadow-2xl animate-ios26-in">
                 {navItems.map((item) => {
                     const active = isActive(item.path);
                     return (
                         <button
                             key={item.path}
                             onClick={() => navigate(item.path)}
-                            className={`flex flex-col items-center gap-1.5 transition-all duration-300 relative group ${active ? 'text-blue-500' : 'text-gray-500 hover:text-gray-300'}`}
+                            className={`flex flex-col items-center gap-1 transition-all duration-500 relative group ${active ? 'text-blue-500 scale-110' : 'text-white/40 hover:text-white/80'}`}
                         >
-                            <div className={`p-1 rounded-xl transition-all duration-300 ${active ? 'bg-blue-500/10' : 'group-hover:bg-white/5'}`}>
+                            <div className={`p-2 rounded-2xl transition-all duration-500 ${active ? 'bg-blue-500/20 shadow-[0_0_20px_rgba(10,132,255,0.3)]' : 'group-hover:bg-white/5'}`}>
                                 <item.icon
-                                    size={22}
-                                    strokeWidth={active ? 2.5 : 2}
-                                    className="transition-transform duration-300"
+                                    size={20}
+                                    strokeWidth={active ? 3 : 2}
+                                    className={`transition-transform duration-500 ${active ? 'rotate-[360deg]' : ''}`}
                                 />
                             </div>
-                            <span className={`text-[10px] font-bold tracking-tight transition-all duration-300 ${active ? 'opacity-100' : 'opacity-70'}`}>
+                            <span className={`text-[9px] font-black uppercase tracking-[0.1em] transition-all duration-500 ${active ? 'opacity-100' : 'opacity-0 scale-50'}`}>
                                 {item.label}
                             </span>
                             {active && (
-                                <div className="absolute -bottom-1 w-1 h-1 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,1)]" />
+                                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-blue-500 rounded-full blur-[2px] animate-pulse" />
                             )}
                         </button>
                     );

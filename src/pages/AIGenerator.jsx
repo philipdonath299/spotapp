@@ -15,7 +15,7 @@ const AIGenerator = () => {
 
     const runDiagnostics = async () => {
         setLoading(true);
-        setStatus('Running AI Diagnostics...');
+        setStatus('Executing AI Diagnostics...');
         try {
             const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
@@ -23,10 +23,9 @@ const AIGenerator = () => {
             if (data.models) {
                 const names = data.models.map(m => m.name.replace('models/', ''));
                 setAvailableAIModels(names);
-                console.log("Available Gemini Models:", names);
-                alert(`✅ Diagnostics Complete!\n\nYour key is active. Found ${names.length} models.\n\nWorking models for your key:\n${names.slice(0, 10).join('\n')}\n...`);
+                alert(`✅ SYSTEM DIAGNOSIS COMPLETE\n\nActive Nodes: ${names.length}\nPrimary Stream: Stable\nSecurity: Verified`);
             } else {
-                throw new Error(data.error?.message || "No models returned. Your API key might be invalid or restricted.");
+                throw new Error(data.error?.message || "Node handshake failed.");
             }
         } catch (err) {
             setError(`Diagnostic Failed: ${err.message}`);
@@ -45,7 +44,6 @@ const AIGenerator = () => {
         ];
 
         let lastError = null;
-
         for (const model of models) {
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/${model.version}/models/${model.id}:generateContent?key=${apiKey}`, {
@@ -61,18 +59,14 @@ const AIGenerator = () => {
                         }]
                     })
                 });
-
                 const data = await response.json();
                 if (data.error) throw new Error(data.error.message);
-                if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
-                    return data;
-                }
+                if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) return data;
             } catch (err) {
-                console.warn(`Model ${model.id} (${model.version}) failed:`, err.message);
                 lastError = err.message;
             }
         }
-        throw new Error(`AI Connection Failed. Last error: ${lastError}. Please ensure your API Key is valid for Gemini 1.5.`);
+        throw new Error(`AI Connection Failed. Entropy check required.`);
     };
 
     const generateAIPlaylist = async (e) => {
@@ -82,43 +76,29 @@ const AIGenerator = () => {
         setLoading(true);
         setError(null);
         setResults([]);
-        setStatus('AI is brainstorming songs (trying stable models)...');
+        setStatus('AI Neural Brainstorming...');
 
         try {
             const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-            if (!apiKey) {
-                throw new Error('Gemini API Key is missing. Please add VITE_GEMINI_API_KEY to your environment variables.');
-            }
+            if (!apiKey) throw new Error('API Key missing.');
 
             const data = await fetchAIResponse(apiKey, prompt);
             const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (!textResponse) throw new Error("AI did not return any content.");
-
-            // Extract JSON from potential markdown backticks
             const jsonMatch = textResponse.match(/\[.*\]/s);
-            if (!jsonMatch) throw new Error("Could not parse AI response.");
+            if (!jsonMatch) throw new Error("Could not decompile response.");
 
             const aiSongs = JSON.parse(jsonMatch[0]);
-
-            // 2. Search for each song on Spotify
             const spotifyResults = [];
 
             for (let i = 0; i < aiSongs.length; i++) {
                 const item = aiSongs[i];
-                setStatus(`Searching for songs (${i + 1}/${aiSongs.length})...`);
-
+                setStatus(`Signal Mapping: ${i + 1}/${aiSongs.length}`);
                 const searchQ = encodeURIComponent(`track:${item.track} artist:${item.artist}`);
                 const searchData = await spotifyFetch(`/search?q=${searchQ}&type=track&limit=1`);
-
-                if (searchData?.tracks?.items?.length > 0) {
-                    spotifyResults.push(searchData.tracks.items[0]);
-                }
+                if (searchData?.tracks?.items?.length > 0) spotifyResults.push(searchData.tracks.items[0]);
             }
 
-            if (spotifyResults.length === 0) {
-                throw new Error("No matching songs found on Spotify.");
-            }
-
+            if (spotifyResults.length === 0) throw new Error("No signal found on Spotify.");
             setResults(spotifyResults);
             setStatus('');
         } catch (err) {
@@ -131,124 +111,123 @@ const AIGenerator = () => {
 
     const saveAsPlaylist = async () => {
         setLoading(true);
-        setStatus('Creating your playlist...');
+        setStatus('Mapping to Core Spotify...');
         try {
             const me = await spotifyFetch('/me');
             const playlist = await spotifyFetch(`/users/${me.id}/playlists`, 'POST', {
-                name: `Magic: ${prompt.slice(0, 20)}...`,
-                description: `AI generated playlist for prompt: ${prompt}`,
+                name: `MAGIC PRO: ${prompt.slice(0, 15)}...`,
+                description: `iOS 26 Logic Render: ${prompt}`,
                 public: false
             });
-
             const trackUris = results.map(t => t.uri);
-            await spotifyFetch(`/playlists/${playlist.id}/tracks`, 'POST', {
-                uris: trackUris
-            });
-
-            alert('Playlist created successfully!');
+            await spotifyFetch(`/playlists/${playlist.id}/tracks`, 'POST', { uris: trackUris });
             navigate('/dashboard');
         } catch (err) {
-            setError('Failed to save playlist.');
+            setError('Handshake failed during save.');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-black text-white p-4 md:p-8 animate-fade-in">
-            <button
-                onClick={() => navigate('/dashboard')}
-                className="hidden md:flex items-center text-gray-400 hover:text-white mb-8 transition-colors"
-            >
-                <ArrowLeft className="mr-2" size={20} /> Back to Dashboard
-            </button>
+        <div className="py-20 animate-ios26-in max-w-6xl mx-auto px-6 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full -z-10 animate-ios26-float" />
 
-            <div className="max-w-3xl mx-auto text-center mb-16 px-4">
-                <div className="inline-block p-5 bg-blue-500/10 rounded-[32px] mb-8 border border-blue-500/20 shadow-2xl">
-                    <Wand2 className="text-blue-500" size={48} strokeWidth={1.5} />
+            <header className="mb-24">
+                <button onClick={() => navigate('/dashboard')} className="mb-10 flex items-center text-blue-500 font-black text-[10px] uppercase tracking-[0.3em] hover:text-blue-400 transition-colors">
+                    <ArrowLeft size={16} className="mr-2" /> Index
+                </button>
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
+                    <div className="max-w-2xl">
+                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Linguistic Logic Engine</p>
+                        <h1 className="text-7xl md:text-8xl font-black tracking-tighter leading-none text-white mb-8">
+                            Magic Pro
+                        </h1>
+                    </div>
                 </div>
-                <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter leading-none uppercase">Magic Pro</h1>
-                <p className="text-gray-400 text-xl font-bold tracking-tight">Describe the mood, activity, or vibe, and let AI build your perfect soundtrack.</p>
-            </div>
+            </header>
 
-            <div className="max-w-2xl mx-auto apple-glass p-8 rounded-[40px] border border-white/15 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] mb-12 px-8">
-                <form onSubmit={generateAIPlaylist}>
-                    <textarea
-                        value={prompt}
-                        onChange={(e) => setPrompt(e.target.value)}
-                        placeholder="e.g. 90s underground hip-hop for a rainy night in Tokyo..."
-                        className="w-full bg-black/40 border border-white/10 rounded-3xl p-6 text-white text-lg font-medium placeholder:text-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all resize-none h-40 mb-8 shadow-inner"
-                    />
-                    <button
-                        type="submit"
-                        disabled={loading || !prompt}
-                        className="w-full py-5 bg-blue-600 text-white font-black rounded-3xl hover:bg-blue-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 shadow-[0_20px_40px_-10px_rgba(37,99,235,0.4)] uppercase tracking-widest text-sm"
-                    >
-                        {loading ? <Loader2 className="animate-spin" size={24} /> : <Wand2 size={24} />}
-                        {loading ? 'Working Magic...' : 'Generate Playlist'}
-                    </button>
-                </form>
-            </div>
-
-            {status && <p className="text-center text-green-500 animate-pulse mb-8">{status}</p>}
-            {error && (
-                <div className="max-w-xl mx-auto mb-8 text-center">
-                    <p className="text-red-500 mb-4 p-4 bg-red-500/10 rounded-lg">{error}</p>
-                    <button
-                        onClick={runDiagnostics}
-                        className="text-xs text-neutral-500 hover:text-white underline transition-colors"
-                    >
-                        Run Connection Diagnostics
-                    </button>
-                    {availableAIModels.length > 0 && (
-                        <div className="mt-4 p-4 bg-neutral-900 rounded-lg border border-neutral-800 text-left">
-                            <p className="text-[10px] text-neutral-600 uppercase mb-2">Available Models for your Key:</p>
-                            <div className="flex flex-wrap gap-2">
-                                {availableAIModels.map(m => (
-                                    <span key={m} className="text-[10px] bg-black px-2 py-1 rounded text-green-400 font-mono">{m}</span>
-                                ))}
+            <div className="max-w-4xl mx-auto space-y-16">
+                <div className="ios26-card p-12 relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-blue-500/[0.02] -z-10" />
+                    <form onSubmit={generateAIPlaylist} className="space-y-10">
+                        <div className="relative">
+                            <textarea
+                                value={prompt}
+                                onChange={(e) => setPrompt(e.target.value)}
+                                placeholder="e.g. 90s underground hip-hop for a rainy night in Tokyo..."
+                                className="w-full bg-black/40 border border-white/10 rounded-[32px] p-8 text-white text-xl font-black placeholder:text-white/10 focus:border-blue-500 focus:ring-0 outline-none transition-all resize-none h-48 shadow-inner uppercase tracking-widest leading-relaxed"
+                            />
+                            <div className="absolute top-8 right-8 text-white/5 pointer-events-none">
+                                <Plus size={40} />
                             </div>
                         </div>
-                    )}
-                </div>
-            )}
 
-            {results.length > 0 && (
-                <div className="max-w-4xl mx-auto space-y-8 animate-apple-in px-4">
-                    <div className="flex flex-col md:flex-row justify-between items-center bg-white/5 p-8 rounded-[36px] border border-white/10 shadow-2xl gap-6">
-                        <div>
-                            <h2 className="text-3xl font-black tracking-tighter uppercase leading-none">Suggested Tracks</h2>
-                            <p className="text-gray-500 text-sm font-bold uppercase tracking-widest mt-2">{results.length} songs brainstorming</p>
-                        </div>
                         <button
-                            onClick={saveAsPlaylist}
-                            disabled={loading}
-                            className="flex items-center gap-3 bg-white text-black px-8 py-4 rounded-2xl font-black hover:bg-gray-200 transition-all shadow-xl uppercase tracking-widest text-xs"
+                            type="submit"
+                            disabled={loading || !prompt}
+                            className="w-full py-6 ios26-liquid text-white font-black rounded-[28px] hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-4 shadow-2xl border border-white/20 uppercase tracking-[0.3em] text-[10px]"
                         >
-                            <Plus size={20} strokeWidth={3} /> Save as Playlist
+                            {loading ? <Loader2 className="animate-spin" size={20} /> : <Wand2 size={20} />}
+                            {loading ? 'Processing Logic' : 'Initiate Render'}
+                        </button>
+                    </form>
+                </div>
+
+                {status && (
+                    <div className="text-center">
+                        <p className="text-[9px] text-blue-500 font-black animate-pulse tracking-[0.4em] uppercase">{status}</p>
+                    </div>
+                )}
+
+                {error && (
+                    <div className="max-w-xl mx-auto text-center ios26-glass p-8 rounded-[32px] border border-red-500/20">
+                        <p className="text-red-500 font-black uppercase tracking-[0.2em] text-[10px] mb-4">{error}</p>
+                        <button onClick={runDiagnostics} className="text-[8px] text-white/20 hover:text-white uppercase font-black tracking-widest underline transition-colors">
+                            Bypass Security / Diagnostics
                         </button>
                     </div>
+                )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20">
-                        {results.map((track, index) => (
-                            <div key={track.id} className="flex items-center gap-5 apple-card-interactive p-4 group">
-                                <span className="w-8 text-center text-gray-500 font-black text-sm">{index + 1}</span>
-                                {track.album.images[0] ? (
-                                    <img src={track.album.images[0].url} className="w-16 h-16 rounded-2xl shadow-2xl border border-white/10 group-hover:scale-110 transition-transform duration-700" alt="" />
-                                ) : (
-                                    <div className="w-16 h-16 bg-white/5 flex items-center justify-center rounded-2xl border border-white/10">
-                                        <Music size={24} className="text-gray-600" />
-                                    </div>
-                                )}
-                                <div className="flex-1 truncate">
-                                    <div className="font-black truncate text-lg tracking-tighter uppercase group-hover:text-blue-400 transition-colors leading-none mb-1">{track.name}</div>
-                                    <div className="text-xs text-gray-500 font-bold truncate tracking-tight uppercase opacity-80">{track.artists.map(a => a.name).join(', ')}</div>
-                                </div>
+                {results.length > 0 && (
+                    <div className="space-y-12 animate-ios26-in pb-32">
+                        <div className="flex flex-col md:flex-row justify-between items-center gap-8 border-b border-white/5 pb-12">
+                            <div>
+                                <h2 className="text-4xl font-black tracking-tighter uppercase text-white leading-none">Suggested Signal</h2>
+                                <p className="text-[10px] text-white/30 font-black uppercase tracking-widest mt-2">{results.length} Neural Matches Detected</p>
                             </div>
-                        ))}
+                            <button
+                                onClick={saveAsPlaylist}
+                                disabled={loading}
+                                className="flex items-center gap-4 ios26-liquid text-white px-10 py-5 rounded-[22px] font-black hover:scale-105 transition-all shadow-2xl uppercase tracking-[0.2em] text-[10px] border border-white/10"
+                            >
+                                <Plus size={18} strokeWidth={3} /> Save Archive
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {results.map((track, index) => (
+                                <div key={track.id} className="ios26-card-interactive p-5 flex items-center gap-6 group">
+                                    <span className="w-8 text-center text-white/20 font-black text-[10px]">{String(index + 1).padStart(2, '0')}</span>
+                                    <div className="w-16 h-16 rounded-[24px] overflow-hidden shadow-2xl ring-1 ring-white/10 group-hover:scale-110 transition-all duration-700">
+                                        {track.album.images[0] ? (
+                                            <img src={track.album.images[0].url} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700" alt="" />
+                                        ) : (
+                                            <div className="w-full h-full bg-white/5 flex items-center justify-center">
+                                                <Music size={24} className="text-white/20" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="font-black truncate text-sm tracking-tighter uppercase text-white group-hover:text-blue-500 transition-colors mb-1">{track.name}</div>
+                                        <div className="text-[9px] text-white/30 font-black truncate tracking-widest uppercase opacity-80">{track.artists.map(a => a.name).join(', ')}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 };

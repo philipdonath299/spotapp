@@ -18,21 +18,19 @@ const Automation = () => {
 
     const handleCheckRadar = async () => {
         setRadarLoading(true);
-        setRadarStatus('Fetching followed artists...');
+        setRadarStatus('Locating Followed Nodes...');
         setReleases([]);
 
         try {
-            // 1. Get Followed Artists (limit 50 for speed, users might have more but let's start small)
             const artistsData = await spotifyFetch('/me/following?type=artist&limit=50');
             const artists = artistsData.artists.items;
 
-            setRadarStatus(`Checking releases from ${artists.length} artists...`);
+            setRadarStatus(`Scanning ${artists.length} Frequency Streams...`);
 
             const newReleases = [];
             const twoWeeksAgo = new Date();
             twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 
-            // 2. Parallel fetch latest albums for each artist
             const promises = artists.map(async (artist) => {
                 try {
                     const albumsData = await spotifyFetch(`/artists/${artist.id}/albums?include_groups=album,single&limit=5`);
@@ -42,30 +40,24 @@ const Automation = () => {
                             if (releaseDate >= twoWeeksAgo) {
                                 newReleases.push({
                                     ...album,
-                                    artistMsg: `New from ${artist.name}`
+                                    artistMsg: `New Signal from ${artist.name}`
                                 });
                             }
                         });
                     }
-                } catch (e) {
-                    // Ignore individual failures
-                }
+                } catch (e) { }
             });
 
             await Promise.all(promises);
-
-            // Sort by date new to old
             newReleases.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
-
-            // Deduplicate by ID
             const uniqueReleases = Array.from(new Map(newReleases.map(item => [item.id, item])).values());
 
             setReleases(uniqueReleases);
-            setRadarStatus(uniqueReleases.length > 0 ? `Found ${uniqueReleases.length} new releases!` : 'No recent releases found.');
+            setRadarStatus(uniqueReleases.length > 0 ? `Detected ${uniqueReleases.length} New Signals` : 'No Recent Spectral Changes');
 
         } catch (err) {
             console.error(err);
-            setRadarStatus('Failed to check releases.');
+            setRadarStatus('SYSTEM SCAN FAILED');
         } finally {
             setRadarLoading(false);
         }
@@ -74,16 +66,15 @@ const Automation = () => {
     const addToLibrary = async (id) => {
         try {
             await spotifyFetch('/me/albums', 'PUT', { ids: [id] });
-            alert('Added to library!');
+            alert('Committed to Library.');
         } catch (e) {
-            alert('Failed to save.');
+            alert('Commit failed.');
         }
     };
 
     const handleHealthCheck = async () => {
         setHealthLoading(true);
         try {
-            // Fetch simplified stats
             const [profile, playlists, tracks] = await Promise.all([
                 spotifyFetch('/me'),
                 spotifyFetch('/me/playlists?limit=50'),
@@ -94,7 +85,7 @@ const Automation = () => {
                 followers: profile.followers?.total || 0,
                 playlists: playlists?.total || 0,
                 likedTracks: tracks?.total || 0,
-                explicitContent: profile.explicit_content?.filter_enabled ? 'Filtered' : 'Allowed',
+                explicitContent: profile.explicit_content?.filter_enabled ? 'Filtered' : 'Open',
                 product: profile.product || 'Standard'
             });
 
@@ -106,85 +97,84 @@ const Automation = () => {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white p-4 md:p-8 animate-fade-in">
-            <header className="mb-14 px-4">
-                <button
-                    onClick={() => navigate('/dashboard')}
-                    className="mb-8 flex items-center text-blue-500 font-bold text-sm bg-blue-500/10 px-5 py-2 rounded-full hover:bg-blue-500/20 transition-all w-fit uppercase tracking-widest"
-                >
-                    <ArrowLeft size={16} className="mr-2" /> Dashboard
+        <div className="py-20 animate-ios26-in max-w-6xl mx-auto px-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full -z-10 animate-ios26-float" />
+
+            <header className="mb-24">
+                <button onClick={() => navigate('/dashboard')} className="mb-10 flex items-center text-blue-500 font-black text-[10px] uppercase tracking-[0.3em] hover:text-blue-400 transition-colors">
+                    <ArrowLeft size={16} className="mr-2" /> Index
                 </button>
-                <div className="flex items-center gap-6">
-                    <div className="p-5 bg-blue-500/10 rounded-[32px] border border-blue-500/20 shadow-2xl">
-                        <Activity className="text-blue-500" size={48} strokeWidth={1.5} />
-                    </div>
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
                     <div>
-                        <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-none uppercase">Hub Pro</h1>
-                        <p className="text-gray-400 text-xl font-bold mt-2 tracking-tight">Manual triggers for high-precision library management.</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Automated Pulse Hub</p>
+                        <h1 className="text-7xl md:text-8xl font-black tracking-tighter leading-none text-white">
+                            Hub Pro
+                        </h1>
                     </div>
                 </div>
             </header>
 
-            <div className="flex gap-8 border-b border-white/10 mb-14 px-4">
-                <button onClick={() => setActiveTab('radar')} className={`pb-5 px-1 font-black transition-all uppercase tracking-widest text-xs relative ${activeTab === 'radar' ? 'text-blue-500' : 'text-gray-500 hover:text-gray-300'}`}>
-                    Release Radar
-                    {activeTab === 'radar' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.8)]" />}
+            <div className="ios26-tabs p-1.5 flex gap-2 mb-20 max-w-md mx-auto md:mx-0">
+                <button
+                    onClick={() => setActiveTab('radar')}
+                    className={`flex-1 py-4 rounded-[18px] text-[10px] font-black transition-all uppercase tracking-[0.2em] ${activeTab === 'radar' ? 'bg-white text-black shadow-2xl scale-105' : 'text-white/30 hover:text-white'}`}
+                >
+                    Spectral Radar
                 </button>
-                <button onClick={() => setActiveTab('health')} className={`pb-5 px-1 font-black transition-all uppercase tracking-widest text-xs relative ${activeTab === 'health' ? 'text-blue-500' : 'text-gray-500 hover:text-gray-300'}`}>
-                    Health Report
-                    {activeTab === 'health' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.8)]" />}
+                <button
+                    onClick={() => setActiveTab('health')}
+                    className={`flex-1 py-4 rounded-[18px] text-[10px] font-black transition-all uppercase tracking-[0.2em] ${activeTab === 'health' ? 'bg-white text-black shadow-2xl scale-105' : 'text-white/30 hover:text-white'}`}
+                >
+                    Biome Health
                 </button>
             </div>
 
             {activeTab === 'radar' && (
-                <div className="animate-apple-in px-4">
-                    <div className="apple-glass p-12 rounded-[48px] border border-white/15 mb-14 flex flex-col items-center text-center shadow-2xl">
-                        <div className="w-20 h-20 bg-blue-500/10 rounded-[32px] flex items-center justify-center mb-10 border border-blue-500/20 shadow-2xl">
-                            <Radio size={40} className="text-blue-500" strokeWidth={1.5} />
+                <div className="animate-ios26-in">
+                    <div className="ios26-card p-16 text-center flex flex-col items-center relative overflow-hidden group mb-16">
+                        <div className="absolute inset-0 bg-blue-500/[0.02] -z-10 group-hover:scale-110 transition-transform duration-1000" />
+                        <div className="w-24 h-24 ios26-liquid rounded-[36px] flex items-center justify-center mb-10 border border-white/20 shadow-2xl">
+                            <Radio size={44} className="text-blue-500" strokeWidth={1} />
                         </div>
-                        <h2 className="text-4xl font-black mb-4 tracking-tighter uppercase">Radar System</h2>
-                        <p className="text-gray-400 mb-10 max-w-md font-bold text-lg tracking-tight">
-                            Scan your followed artists for deep cuts and hidden releases from the last 14 days.
-                        </p>
+                        <h2 className="text-5xl font-black mb-4 tracking-tighter uppercase text-white">Spectral Sweep</h2>
+                        <p className="text-[10px] text-white/30 mb-12 max-w-sm font-black uppercase tracking-[0.3em] leading-relaxed">Scan followed frequency streams for new acoustic signatures from the last 14 days.</p>
                         <button
                             onClick={handleCheckRadar}
                             disabled={radarLoading}
-                            className="bg-blue-600 hover:bg-blue-500 text-white px-12 py-5 rounded-3xl font-black transition-all flex items-center gap-4 shadow-[0_20px_40px_-10px_rgba(37,99,235,0.4)] uppercase tracking-widest text-sm"
+                            className="ios26-liquid px-16 py-6 font-black uppercase tracking-[0.3em] text-[10px] text-white border border-white/20 shadow-2xl hover:scale-105 active:scale-95 transition-all"
                         >
-                            {radarLoading ? <Loader2 className="animate-spin" size={24} /> : <PlayCircle size={24} />}
-                            {radarLoading ? 'Scanning Frequencies...' : 'Run Scan'}
+                            {radarLoading ? <Loader2 className="animate-spin" size={20} /> : 'Initiate Scan'}
                         </button>
-                        {radarStatus && <p className="mt-8 text-sm font-black text-blue-400 uppercase tracking-widest animate-pulse">{radarStatus}</p>}
+                        {radarStatus && <p className="mt-8 text-[9px] font-black text-blue-500 uppercase tracking-[0.4em] animate-pulse">{radarStatus}</p>}
                     </div>
 
                     {releases.length > 0 && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-32">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-32">
                             {releases.map(album => (
-                                <div key={album.id} className="apple-card-interactive p-5 group shadow-2xl">
-                                    <div className="relative mb-6 rounded-[32px] overflow-hidden shadow-2xl border border-white/10">
-                                        <img src={album.images[0]?.url} className="w-full aspect-square object-cover group-hover:scale-110 transition-transform duration-[2000ms]" alt="" />
-                                        <div className="absolute top-4 right-4 apple-glass text-white text-[10px] font-black px-3 py-1.5 rounded-xl border border-white/20 uppercase tracking-widest">
+                                <div key={album.id} className="ios26-card-interactive p-5 group">
+                                    <div className="relative mb-6 rounded-[28px] overflow-hidden shadow-2xl ring-1 ring-white/10">
+                                        <img src={album.images[0]?.url} className="w-full aspect-square object-cover grayscale-[0.2] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-[2000ms]" alt="" />
+                                        <div className="absolute top-4 right-4 ios26-glass text-white text-[9px] font-black px-4 py-2 rounded-xl border border-white/20 uppercase tracking-[0.2em] shadow-2xl">
                                             {album.album_type}
                                         </div>
                                     </div>
-                                    <div className="px-1">
-                                        <h3 className="font-black text-xl truncate mb-1 tracking-tighter uppercase leading-[1.1] group-hover:text-blue-400 transition-colors">{album.name}</h3>
-                                        <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-6 opacity-80">{album.artistMsg}</p>
-                                        <div className="flex gap-3">
+                                    <div className="px-2">
+                                        <h3 className="font-black text-lg truncate mb-1 tracking-tighter uppercase text-white group-hover:text-blue-500 transition-colors leading-none">{album.name}</h3>
+                                        <p className="text-[9px] text-white/30 font-black uppercase tracking-widest mt-2">{album.artistMsg}</p>
+                                        <div className="flex gap-3 mt-8">
                                             <a
                                                 href={album.external_urls.spotify}
                                                 target="_blank"
                                                 rel="noreferrer"
-                                                className="flex-1 bg-white text-black text-center py-3.5 rounded-2xl font-black hover:bg-gray-200 transition-all uppercase tracking-widest text-[10px]"
+                                                className="flex-1 ios26-glass text-white text-center py-4 rounded-[18px] font-black border border-white/10 hover:bg-white/10 transition-all uppercase tracking-[0.2em] text-[9px]"
                                             >
-                                                Listen
+                                                Stream
                                             </a>
                                             <button
                                                 onClick={() => addToLibrary(album.id)}
-                                                className="p-3.5 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all text-white shadow-xl"
-                                                title="Save to Library"
+                                                className="w-12 h-12 ios26-liquid flex items-center justify-center border border-white/20 rounded-full hover:scale-110 transition-all text-white shadow-2xl"
                                             >
-                                                <PlusCircle size={22} />
+                                                <PlusCircle size={18} />
                                             </button>
                                         </div>
                                     </div>
@@ -196,38 +186,37 @@ const Automation = () => {
             )}
 
             {activeTab === 'health' && (
-                <div className="animate-apple-in px-4">
-                    <div className="apple-glass p-12 rounded-[48px] border border-white/15 mb-14 flex flex-col items-center text-center shadow-2xl">
-                        <div className="w-20 h-20 bg-pink-500/10 rounded-[32px] flex items-center justify-center mb-10 border border-pink-500/20 shadow-2xl">
-                            <Heart size={40} className="text-pink-500" strokeWidth={1.5} />
+                <div className="animate-ios26-in">
+                    <div className="ios26-card p-16 text-center flex flex-col items-center relative overflow-hidden group mb-16">
+                        <div className="absolute inset-0 bg-pink-500/[0.02] -z-10 group-hover:scale-110 transition-transform duration-1000" />
+                        <div className="w-24 h-24 ios26-liquid rounded-[36px] flex items-center justify-center mb-10 border border-pink-500/20 shadow-2xl">
+                            <Activity size={44} className="text-pink-500" strokeWidth={1} />
                         </div>
-                        <h2 className="text-4xl font-black mb-4 tracking-tighter uppercase">Health Diagnostics</h2>
-                        <p className="text-gray-400 mb-10 max-w-md font-bold text-lg tracking-tight">
-                            Generate a comprehensive profile of your digital listening environment.
-                        </p>
+                        <h2 className="text-5xl font-black mb-4 tracking-tighter uppercase text-white">Biome Analytics</h2>
+                        <p className="text-[10px] text-white/30 mb-12 max-w-sm font-black uppercase tracking-[0.3em] leading-relaxed">Execute a comprehensive diagnostic of your digital acoustic environment.</p>
                         {!healthStats && (
                             <button
                                 onClick={handleHealthCheck}
                                 disabled={healthLoading}
-                                className="bg-pink-600 hover:bg-pink-500 text-white px-12 py-5 rounded-3xl font-black transition-all flex items-center gap-4 shadow-[0_20px_40px_-10px_rgba(236,72,153,0.4)] uppercase tracking-widest text-sm"
+                                className="ios26-liquid px-16 py-6 font-black uppercase tracking-[0.3em] text-[10px] text-white border border-pink-500/20 shadow-2xl hover:scale-105 active:scale-95 transition-all"
                             >
-                                {healthLoading ? <Loader2 className="animate-spin" size={24} /> : <Activity size={24} />}
-                                {healthLoading ? 'Analyzing Body...' : 'Generate Report'}
+                                {healthLoading ? <Loader2 className="animate-spin" size={20} /> : 'Scan Biome'}
                             </button>
                         )}
                     </div>
 
                     {healthStats && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pb-32">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-32">
                             {[
                                 { label: 'Playlists', value: healthStats.playlists, color: 'text-white' },
-                                { label: 'Liked Tracks', value: `${healthStats.likedTracks}+`, color: 'text-blue-500' },
-                                { label: 'Followers', value: healthStats.followers, color: 'text-pink-500' },
-                                { label: 'Status', value: healthStats.product, color: 'text-purple-400' }
+                                { label: 'Liked Tracks', value: `${healthStats.likedTracks}`, color: 'text-blue-500' },
+                                { label: 'Network', value: healthStats.followers, color: 'text-pink-500' },
+                                { label: 'Protocol', value: healthStats.product, color: 'text-purple-400' }
                             ].map((stat, i) => (
-                                <div key={i} className="apple-card-interactive p-8 text-center border-white/10">
-                                    <h3 className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4">{stat.label}</h3>
-                                    <p className={`text-5xl font-black tracking-tighter uppercase ${stat.color}`}>{stat.value}</p>
+                                <div key={i} className="ios26-card p-10 text-center border-white/5 relative overflow-hidden group">
+                                    <div className="absolute inset-0 bg-white/[0.01] -z-10" />
+                                    <h3 className="text-white/20 text-[9px] font-black uppercase tracking-[0.4em] mb-6">{stat.label}</h3>
+                                    <p className={`text-6xl font-black tracking-tighter uppercase ${stat.color} group-hover:scale-110 transition-transform duration-700`}>{stat.value}</p>
                                 </div>
                             ))}
                         </div>
