@@ -17,12 +17,12 @@ const DiscoveryDeck = () => {
 
     // Hardcoded Category Playlists (These are stable Spotify Owned playlists)
     const PRESETS = [
-        { name: "Top 50 Global", id: "37i9dQZEVXbMDoHDwVN2tF", color: "blue" },
-        { name: "Viral 50", id: "37i9dQZEVXbLiRSafCXV9a", color: "purple" },
-        { name: "RapCaviar", id: "37i9dQZF1DX0XUsuxWHRQd", color: "red" },
-        { name: "Viva Latino", id: "37i9dQZF1DX10zKzsJ2jva", color: "orange" },
-        { name: "Mega Hit Mix", id: "37i9dQZF1DXbYM3nMM0oPk", color: "pink" },
-        { name: "All Out 2010s", id: "37i9dQZF1DX5Ejj0EkURtP", color: "teal" }
+        { name: "Top 50 Global", query: "Top 50 Global", color: "blue" },
+        { name: "Viral 50", query: "Viral 50 Global", color: "purple" },
+        { name: "RapCaviar", query: "RapCaviar", color: "red" },
+        { name: "Viva Latino", query: "Viva Latino", color: "orange" },
+        { name: "Mega Hit Mix", query: "Mega Hit Mix", color: "pink" },
+        { name: "All Out 2010s", query: "All Out 2010s", color: "teal" }
     ];
 
     useEffect(() => {
@@ -63,13 +63,21 @@ const DiscoveryDeck = () => {
         }
     };
 
-    const loadCategory = async (presetId) => {
+    const loadCategory = async (query) => {
         setLoading(true);
         setErrorMsg('');
         setInitDone(true);
         try {
-            // Fetch tracks from the selected playlist
-            const res = await spotifyFetch(`/playlists/${presetId}/tracks?limit=50`);
+            // 1. Search for a playlist matching the query (robust against regional IDs)
+            const searchRes = await spotifyFetch(`/search?q=${encodeURIComponent(query)}&type=playlist&limit=1`);
+            const playlist = searchRes?.playlists?.items[0];
+
+            if (!playlist) {
+                throw new Error(`Playlist for "${query}" not found.`);
+            }
+
+            // 2. Fetch tracks from the found playlist
+            const res = await spotifyFetch(`/playlists/${playlist.id}/tracks?limit=50`);
 
             if (res?.items) {
                 const tracks = res.items
@@ -160,8 +168,8 @@ const DiscoveryDeck = () => {
                 <div className="grid grid-cols-2 gap-4 w-full max-w-md">
                     {PRESETS.map(p => (
                         <button
-                            key={p.id}
-                            onClick={() => loadCategory(p.id)}
+                            key={p.name}
+                            onClick={() => loadCategory(p.query)}
                             className={`p-6 rounded-2xl bg-gradient-to-br from-neutral-800 to-neutral-900 border border-neutral-700 hover:to-${p.color}-900/50 hover:border-${p.color}-500 transition-all text-left group`}
                         >
                             <span className={`text-${p.color}-400 font-bold text-lg block mb-1 group-hover:text-white`}>{p.name}</span>
