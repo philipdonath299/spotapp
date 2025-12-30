@@ -70,22 +70,22 @@ const Dashboard = () => {
             {/* iOS 26 Header */}
             <header className="flex justify-between items-center mb-16 relative">
                 <div className="relative z-10">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-3 ml-1">Your Stats</p>
-                    <h1 className="text-7xl md:text-8xl font-black tracking-tighter leading-[0.85] text-white">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-2 ml-1 hidden md:block">Your Stats</p>
+                    <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.85] text-white">
                         {profile?.display_name?.split(' ')[0]}
                     </h1>
                 </div>
 
-                <div className="flex items-center gap-6 relative z-10">
+                <div className="flex items-center gap-4 md:gap-6 relative z-10">
                     <button
                         onClick={() => loadData(true)}
-                        className={`w-14 h-14 rounded-full ios26-glass flex items-center justify-center hover:bg-white/10 transition-all active:scale-90 border border-white/10 group ${refreshing ? 'animate-spin' : ''}`}
+                        className={`w-12 h-12 md:w-14 md:h-14 rounded-full ios26-glass flex items-center justify-center hover:bg-white/10 transition-all active:scale-90 border border-white/10 group ${refreshing ? 'animate-spin' : ''}`}
                     >
-                        <RefreshCw size={22} className="text-white/60 group-hover:text-white transition-colors" />
+                        <RefreshCw size={20} className="text-white/60 group-hover:text-white transition-colors" />
                     </button>
                     {profile?.images?.[0]?.url && (
-                        <div className="w-20 h-20 rounded-[32px] p-1 bg-gradient-to-tr from-white/20 to-transparent rotate-3 hover:rotate-0 transition-all duration-700 shadow-2xl overflow-hidden">
-                            <img src={profile.images[0].url} className="w-full h-full rounded-[28px] object-cover" alt="Profile" />
+                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-[28px] md:rounded-[32px] p-0.5 md:p-1 bg-gradient-to-tr from-white/20 to-transparent rotate-3 hover:rotate-0 transition-all duration-700 shadow-2xl overflow-hidden">
+                            <img src={profile.images[0].url} className="w-full h-full rounded-[24px] md:rounded-[28px] object-cover" alt="Profile" />
                         </div>
                     )}
                 </div>
@@ -102,14 +102,14 @@ const Dashboard = () => {
                         className="ios26-card-interactive p-12 flex flex-col md:flex-row items-center justify-between gap-12 group"
                     >
                         <div className="z-10 flex-1 text-center md:text-left">
-                            <div className="flex items-center justify-center md:justify-start gap-3 mb-8">
-                                <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_20px_rgba(10,132,255,0.8)]" />
+                            <div className="flex items-center justify-center md:justify-start gap-3 mb-4 md:mb-8">
+                                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_20px_rgba(10,132,255,0.8)]" />
                                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Power Rotation</p>
                             </div>
-                            <h2 className="text-5xl md:text-8xl lg:text-9xl font-black tracking-tighter mb-6 leading-none group-hover:scale-[1.02] transition-transform duration-700">
+                            <h2 className="text-4xl md:text-8xl lg:text-9xl font-black tracking-tighter mb-4 md:mb-6 leading-none group-hover:scale-[1.02] transition-transform duration-700">
                                 {topArtist.name}
                             </h2>
-                            <p className="text-white/40 font-black uppercase tracking-widest text-[10px] md:text-xs">Primary influence this cycle</p>
+                            <p className="text-white/40 font-black uppercase tracking-widest text-[9px] md:text-xs hidden md:block">Primary influence this cycle</p>
                         </div>
 
                         {topArtist.images?.[0] && (
@@ -132,13 +132,13 @@ const Dashboard = () => {
                     <div className="h-px flex-1 bg-white/5" />
                 </div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                     <Widget title="Magic" desc="AI Assistant" icon={Wand2} colorClass="blue" onClick={() => navigate('/ai-generator')} />
                     <Widget title="Explore" desc="New Music" icon={Layers} colorClass="purple" onClick={() => navigate('/discovery')} />
                     <Widget title="Mood" desc="Smart Filters" icon={Sliders} colorClass="pink" onClick={() => navigate('/mood-mix')} />
                     <Widget title="Vault" desc="Manage" icon={Edit3} colorClass="orange" onClick={() => navigate('/playlists')} />
                     <Widget title="Stats" desc="Analytics" icon={BarChart3} colorClass="green" span onClick={() => navigate('/stats')} />
-                    <Widget title="Cleanup" desc="Library Health" icon={Trash2} colorClass="red" onClick={() => navigate('/cleanup')} />
+                    <Widget title="Cleanup" desc="Health" icon={Trash2} colorClass="red" onClick={() => navigate('/cleanup')} />
                     <Widget title="Receipt" desc="Snapshot" icon={Receipt} colorClass="gray" onClick={() => navigate('/receipt')} />
                 </div>
             </div>

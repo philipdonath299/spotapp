@@ -588,15 +588,15 @@ const Stats = () => {
                             { id: 'artists', label: 'ARTISTS', icon: User },
                             { id: 'tracks', label: 'SONGS', icon: Music },
                             { id: 'albums', label: 'ALBUMS', icon: Disc },
-                            { id: 'insights', label: 'PROFILE', icon: Activity },
-                            { id: 'recent', label: 'HISTORY', icon: Clock }
+                            { id: 'insights', label: 'SELF', icon: Activity },
+                            { id: 'recent', label: 'PAST', icon: Clock }
                         ].map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-2 px-6 py-2.5 rounded-[18px] text-[10px] font-black transition-all duration-500 tracking-widest whitespace-nowrap ${activeTab === tab.id
+                                className={`flex items-center gap-1.5 px-4 md:px-6 py-2 rounded-[16px] md:rounded-[18px] text-[9px] md:text-[10px] font-black transition-all duration-500 tracking-widest whitespace-nowrap ios26-haptic-light ${activeTab === tab.id
                                     ? 'bg-white text-black scale-105 shadow-xl'
-                                    : 'text-white/40 hover:text-white/80'
+                                    : 'text-white/30 hover:text-white/80'
                                     }`}
                             >
                                 <tab.icon size={14} className={activeTab === tab.id ? 'text-black' : 'text-white/40'} />

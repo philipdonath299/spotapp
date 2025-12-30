@@ -90,7 +90,7 @@
 }
 
 .ios26-card {
-  @apply rounded-[32px] border border-white/5 transition-all duration-700 relative overflow-hidden;
+  @apply rounded-[24px] md:rounded-[32px] border border-white/5 transition-all duration-700 relative overflow-hidden;
   background: rgba(20, 20, 22, 0.3);
   backdrop-filter: blur(20px);
 }
@@ -177,25 +177,25 @@
 
 /* Typography */
 h1 {
-  /* Fluid typography: 3.5rem (56px) to 6rem (96px) */
-  font-size: clamp(3rem, 10vw, 6rem);
+  /* Ultra-Compact Fluid: 2.5rem (40px) to 5.5rem (88px) */
+  font-size: clamp(2.5rem, 8vw, 5.5rem);
   @apply font-black tracking-tighter leading-none;
 }
 
 h2 {
-  /* Fluid typography: 2rem (32px) to 4rem (64px) */
-  font-size: clamp(2rem, 6vw, 4rem);
+  /* Ultra-Compact Fluid: 1.75rem (28px) to 3.5rem (56px) */
+  font-size: clamp(1.75rem, 5vw, 3.5rem);
   @apply font-extrabold tracking-tight;
 }
 
 h3 {
-  /* Fluid typography: 1.25rem (20px) to 2rem (32px) */
-  font-size: clamp(1.25rem, 4vw, 2rem);
+  /* Ultra-Compact Fluid: 1.1rem (17px) to 1.75rem (28px) */
+  font-size: clamp(1.1rem, 3.5vw, 1.75rem);
   @apply font-bold tracking-tight;
 }
 
 p {
-  @apply leading-relaxed text-white/60 font-medium text-sm md:text-base;
+  @apply leading-relaxed text-white/50 font-medium text-[13px] md:text-base;
 }
 
 /* Dynamic Island Style Navigation */
@@ -218,4 +218,13 @@ p {
 .blur-mega {
   backdrop-filter: blur(100px) saturate(200%);
   -webkit-backdrop-filter: blur(100px) saturate(200%);
+}
+
+/* Haptic Interaction Utilities */
+.ios26-haptic {
+  @apply active:scale-90 transition-transform duration-300;
+}
+
+.ios26-haptic-light {
+  @apply active:scale-[0.97] transition-transform duration-300;
 }
