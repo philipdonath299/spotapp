@@ -230,7 +230,7 @@ const Recommendations = () => {
             </header>
 
             {/* Obscurity Filter UI */}
-            <div className="ios26-card p-12 mb-20 flex flex-col md:flex-row items-center justify-between gap-12 bg-white/[0.02] border-white/5 shadow-2xl overflow-visible">
+            <div className="ios26-card p-6 md:p-12 mb-20 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12 bg-white/[0.02] border-white/5 shadow-2xl overflow-visible">
                 <div className="flex items-center gap-8">
                     <div className="w-16 h-16 ios26-liquid rounded-[28px] flex items-center justify-center text-purple-500 border border-white/20 shadow-2xl">
                         <Sliders size={32} strokeWidth={1} />

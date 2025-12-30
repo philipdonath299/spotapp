@@ -223,12 +223,12 @@ const DiscoveryDeck = () => {
                         <button
                             key={v.id}
                             onClick={() => loadVibe(v.id)}
-                            className="ios26-card-interactive p-12 flex flex-col items-center text-center gap-10 group relative overflow-hidden"
+                            className="ios26-card-interactive p-8 md:p-12 flex flex-col items-center text-center gap-6 md:gap-10 group relative overflow-hidden"
                         >
                             <div className={`absolute top-0 right-0 w-32 h-32 bg-${v.color}-500/5 blur-[80px] rounded-full translate-x-1/2 -translate-y-1/2 group-hover:scale-150 transition-transform duration-1000`} />
 
-                            <div className={`w-24 h-24 rounded-[36px] ios26-liquid flex items-center justify-center text-white/80 group-hover:scale-110 transition-all duration-700 shadow-2xl border border-white/20`}>
-                                {React.cloneElement(v.icon, { size: 44, strokeWidth: 1 })}
+                            <div className={`w-20 h-20 md:w-24 md:h-24 rounded-[32px] md:rounded-[36px] ios26-liquid flex items-center justify-center text-white/80 group-hover:scale-110 transition-all duration-700 shadow-2xl border border-white/20`}>
+                                {React.cloneElement(v.icon, { size: 36, strokeWidth: 1 })}
                             </div>
 
                             <div>
@@ -316,8 +316,8 @@ const DiscoveryDeck = () => {
                         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]/30 pointer-events-none" />
 
                         {/* Content Overlay */}
-                        <div className="absolute inset-0 flex flex-col justify-end p-12">
-                            <div className="mb-8 p-1.5 ios26-glass w-fit rounded-full px-4 border border-white/10 backdrop-blur-3xl">
+                        <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12">
+                            <div className="mb-6 md:mb-8 p-1.5 ios26-glass w-fit rounded-full px-4 border border-white/10 backdrop-blur-3xl">
                                 <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.3em]">NEW TRACK DETECTED</span>
                             </div>
 
@@ -348,23 +348,23 @@ const DiscoveryDeck = () => {
                     </div>
 
                     {/* Spatial Controls */}
-                    <div className="absolute -bottom-20 left-0 right-0 flex items-center justify-center gap-10 translate-y-4">
+                    <div className="absolute -bottom-16 md:-bottom-20 left-0 right-0 flex items-center justify-center gap-6 md:gap-10 translate-y-4">
                         <button
                             onClick={() => handleSwipe('left')}
-                            className="w-24 h-24 rounded-full ios26-glass text-red-500 border border-white/10 flex items-center justify-center shadow-2xl active:scale-90 hover:bg-red-500/10 transition-all group overflow-hidden"
+                            className="w-20 h-20 md:w-24 md:h-24 rounded-full ios26-glass text-red-500 border border-white/10 flex items-center justify-center shadow-2xl active:scale-90 hover:bg-red-500/10 transition-all group overflow-hidden"
                             title="Discard Signal"
                         >
                             <div className="absolute inset-0 bg-red-500/0 group-hover:bg-red-500/5 transition-colors" />
-                            <X size={40} strokeWidth={1} className="relative z-10 group-hover:rotate-90 transition-transform duration-700" />
+                            <X size={32} strokeWidth={1} className="relative z-10 group-hover:rotate-90 transition-transform duration-700 md:size-[40px]" />
                         </button>
 
                         <button
                             onClick={() => handleSwipe('right')}
-                            className="w-24 h-24 rounded-full ios26-liquid text-green-400 border border-white/20 flex items-center justify-center shadow-2xl active:scale-90 hover:scale-110 transition-all group overflow-hidden"
+                            className="w-20 h-20 md:w-24 md:h-24 rounded-full ios26-liquid text-green-400 border border-white/20 flex items-center justify-center shadow-2xl active:scale-90 hover:scale-110 transition-all group overflow-hidden"
                             title="Acknowledge Frequency"
                         >
                             <div className="absolute inset-0 bg-green-500/0 group-hover:bg-green-500/10 transition-colors" />
-                            <Heart size={40} strokeWidth={1} fill="none" className="relative z-10 group-hover:scale-125 transition-transform duration-700" />
+                            <Heart size={32} strokeWidth={1} fill="none" className="relative z-10 group-hover:scale-125 transition-transform duration-700 md:size-[40px]" />
                         </button>
                     </div>
                 </div>

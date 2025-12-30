@@ -453,7 +453,7 @@ const PlaylistManager = () => {
                     </div>
                 </header>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-8">
                     {playlists.map(p => (
                         <div key={p.id} onClick={() => handleSelect(p)} className="ios26-card-interactive p-4 group">
                             <div className="relative aspect-square mb-6 rounded-[28px] overflow-hidden shadow-2xl ring-1 ring-white/10">

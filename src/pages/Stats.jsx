@@ -539,8 +539,8 @@ const Stats = () => {
 
                 {/* iOS 26 Stats Grid */}
                 {listeningStats && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-20">
-                        <div className="ios26-card p-8 group relative overflow-hidden">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-20">
+                        <div className="ios26-card p-5 md:p-8 group relative overflow-hidden">
                             <div className="absolute -top-10 -right-10 w-24 h-24 bg-blue-500/10 blur-[50px] rounded-full group-hover:scale-150 transition-transform duration-1000" />
                             <div className="flex items-center gap-3 mb-6">
                                 <Clock size={18} className="text-blue-500" />
@@ -550,7 +550,7 @@ const Stats = () => {
                             <div className="text-[9px] text-white/10 font-black tracking-widest mt-2 uppercase">Daily Listening</div>
                         </div>
 
-                        <div className="ios26-card p-8 group relative overflow-hidden">
+                        <div className="ios26-card p-5 md:p-8 group relative overflow-hidden">
                             <div className="absolute -top-10 -right-10 w-24 h-24 bg-green-500/10 blur-[50px] rounded-full group-hover:scale-150 transition-transform duration-1000" />
                             <div className="flex items-center gap-3 mb-6">
                                 <Activity size={18} className="text-green-500" />
@@ -560,7 +560,7 @@ const Stats = () => {
                             <div className="text-[9px] text-white/10 font-black tracking-widest mt-2 uppercase">Songs per Day</div>
                         </div>
 
-                        <div className="ios26-card p-8 group relative overflow-hidden">
+                        <div className="ios26-card p-5 md:p-8 group relative overflow-hidden">
                             <div className="absolute -top-10 -right-10 w-24 h-24 bg-purple-500/10 blur-[50px] rounded-full group-hover:scale-150 transition-transform duration-1000" />
                             <div className="flex items-center gap-3 mb-6">
                                 <Music size={18} className="text-purple-500" />
@@ -570,7 +570,7 @@ const Stats = () => {
                             <div className="text-[9px] text-white/10 font-black tracking-widest mt-2 uppercase">Total Songs</div>
                         </div>
 
-                        <div className="ios26-card p-8 group relative overflow-hidden">
+                        <div className="ios26-card p-5 md:p-8 group relative overflow-hidden">
                             <div className="absolute -top-10 -right-10 w-24 h-24 bg-orange-500/10 blur-[50px] rounded-full group-hover:scale-150 transition-transform duration-1000" />
                             <div className="flex items-center gap-3 mb-6">
                                 <Volume2 size={18} className="text-orange-500" />

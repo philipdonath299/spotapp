@@ -148,7 +148,7 @@ const AIGenerator = () => {
             </header>
 
             <div className="max-w-4xl mx-auto space-y-16">
-                <div className="ios26-card p-12 relative overflow-hidden group">
+                <div className="ios26-card p-6 md:p-12 relative overflow-hidden group">
                     <div className="absolute inset-0 bg-blue-500/[0.02] -z-10" />
                     <form onSubmit={generateAIPlaylist} className="space-y-10">
                         <div className="relative">
@@ -156,7 +156,7 @@ const AIGenerator = () => {
                                 value={prompt}
                                 onChange={(e) => setPrompt(e.target.value)}
                                 placeholder="e.g. 90s underground hip-hop for a rainy night in Tokyo..."
-                                className="w-full bg-black/40 border border-white/10 rounded-[32px] p-8 text-white text-xl font-black placeholder:text-white/10 focus:border-blue-500 focus:ring-0 outline-none transition-all resize-none h-48 shadow-inner uppercase tracking-widest leading-relaxed"
+                                className="w-full bg-black/40 border border-white/10 rounded-[32px] p-6 md:p-8 text-lg md:text-xl font-black placeholder:text-white/10 focus:border-blue-500 focus:ring-0 outline-none transition-all resize-none h-48 shadow-inner uppercase tracking-widest leading-relaxed"
                             />
                             <div className="absolute top-8 right-8 text-white/5 pointer-events-none">
                                 <Plus size={40} />

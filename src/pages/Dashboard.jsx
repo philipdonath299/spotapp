@@ -106,10 +106,10 @@ const Dashboard = () => {
                                 <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_20px_rgba(10,132,255,0.8)]" />
                                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Power Rotation</p>
                             </div>
-                            <h2 className="text-7xl md:text-9xl font-black tracking-tighter mb-6 leading-none group-hover:scale-[1.02] transition-transform duration-700">
+                            <h2 className="text-5xl md:text-8xl lg:text-9xl font-black tracking-tighter mb-6 leading-none group-hover:scale-[1.02] transition-transform duration-700">
                                 {topArtist.name}
                             </h2>
-                            <p className="text-white/40 font-black uppercase tracking-widest text-xs">Primary influence this cycle</p>
+                            <p className="text-white/40 font-black uppercase tracking-widest text-[10px] md:text-xs">Primary influence this cycle</p>
                         </div>
 
                         {topArtist.images?.[0] && (

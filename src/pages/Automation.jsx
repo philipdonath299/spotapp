@@ -131,7 +131,7 @@ const Automation = () => {
 
             {activeTab === 'radar' && (
                 <div className="animate-ios26-in">
-                    <div className="ios26-card p-16 text-center flex flex-col items-center relative overflow-hidden group mb-16">
+                    <div className="ios26-card p-8 md:p-16 text-center flex flex-col items-center relative overflow-hidden group mb-16">
                         <div className="absolute inset-0 bg-blue-500/[0.02] -z-10 group-hover:scale-110 transition-transform duration-1000" />
                         <div className="w-24 h-24 ios26-liquid rounded-[36px] flex items-center justify-center mb-10 border border-white/20 shadow-2xl">
                             <Radio size={44} className="text-blue-500" strokeWidth={1} />

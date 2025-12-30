@@ -91,9 +91,9 @@ const ReceiptGenerator = () => {
                         <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em]">Generating your receipt...</p>
                     </div>
                 ) : (
-                    <div className="ios26-card p-1 relative group overflow-visible">
+                    <div className="ios26-card p-0.5 md:p-1 relative group overflow-visible">
                         <div className="absolute -inset-10 bg-white/[0.03] blur-[100px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-                        <div className="bg-white text-black p-10 font-mono text-sm shadow-2xl relative receipt-paper max-w-[380px] transform-gpu transition-all duration-700 hover:rotate-1 hover:scale-[1.03]">
+                        <div className="bg-white text-black p-6 md:p-10 font-mono text-sm shadow-2xl relative receipt-paper max-w-[340px] md:max-w-[380px] transform-gpu transition-all duration-700 hover:rotate-1 hover:scale-[1.03]">
                             <div className="text-center mb-10">
                                 <h2 className="text-4xl font-black tracking-widest mb-2">STATSIFY</h2>
                                 <p className="text-[10px] font-black tracking-widest uppercase mb-1">User: {profile?.id || 'ANONYMOUS'}</p>

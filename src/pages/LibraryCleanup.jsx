@@ -190,7 +190,7 @@ const LibraryCleanup = () => {
                             <div
                                 key={playlist.id}
                                 onClick={() => analyzePlaylist(playlist)}
-                                className="ios26-card-interactive p-6 group"
+                                className="ios26-card-interactive p-5 md:p-6 group"
                             >
                                 <div className="flex items-center gap-6">
                                     <div className="w-16 h-16 rounded-[24px] overflow-hidden shadow-2xl ring-1 ring-white/10 group-hover:scale-110 transition-all duration-700">
