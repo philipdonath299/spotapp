@@ -62,6 +62,7 @@ const MoodMix = () => {
             for (let i = 0; i < artistIds.length; i += 50) {
                 try {
                     const chunk = artistIds.slice(i, i + 50);
+                    setStatus(`Analyzing artists: ${Math.round((i / artistIds.length) * 100)}%`);
                     const res = await spotifyFetch(`/artists?ids=${chunk.join(',')}`);
                     if (res?.artists) {
                         res.artists.forEach(a => {
@@ -88,14 +89,19 @@ const MoodMix = () => {
             const genreCounts = {};
             enrichedTracks.forEach(t => {
                 t.genre.forEach(g => {
-                    // Simplify genres (e.g., "dance pop" -> "pop")
+                    // Simplify/Group common genres
                     let key = g;
-                    if (g.includes('pop')) key = 'Pop';
-                    else if (g.includes('rap') || g.includes('hip hop')) key = 'Hip Hop';
-                    else if (g.includes('rock') || g.includes('metal')) key = 'Rock';
-                    else if (g.includes('house') || g.includes('edm') || g.includes('dance')) key = 'Electronic';
-                    else if (g.includes('indie')) key = 'Indie';
-                    else if (g.includes('r&b') || g.includes('soul')) key = 'R&B';
+                    const l = g.toLowerCase();
+                    if (l.includes('pop')) key = 'Pop';
+                    else if (l.includes('rap') || l.includes('hip hop') || l.includes('trap')) key = 'Hip Hop';
+                    else if (l.includes('rock') || l.includes('metal') || l.includes('punk')) key = 'Rock';
+                    else if (l.includes('house') || l.includes('edm') || l.includes('techno') || l.includes('dance')) key = 'Electronic';
+                    else if (l.includes('indie') || l.includes('alternative')) key = 'Indie/Alt';
+                    else if (l.includes('r&b') || l.includes('soul') || l.includes('funk')) key = 'R&B/Soul';
+                    else if (l.includes('jazz')) key = 'Jazz';
+                    else if (l.includes('country')) key = 'Country';
+                    else if (l.includes('folk')) key = 'Folk';
+                    else if (l.includes('latino') || l.includes('reggaeton')) key = 'Latino';
 
                     genreCounts[key] = (genreCounts[key] || 0) + 1;
                 });
@@ -103,7 +109,7 @@ const MoodMix = () => {
 
             const topGenres = Object.entries(genreCounts)
                 .sort((a, b) => b[1] - a[1])
-                .slice(0, 8) // Top 8 genres
+                .slice(0, 10) // Top 10 genres
                 .map(([g]) => g);
 
             setAvailableGenres(['All', ...topGenres]);
@@ -129,11 +135,12 @@ const MoodMix = () => {
                 const g = t.genre.join(' ').toLowerCase();
                 const target = selectedGenre.toLowerCase();
                 if (target === 'pop') return g.includes('pop');
-                if (target === 'hip hop') return g.includes('rap') || g.includes('hip hop');
-                if (target === 'rock') return g.includes('rock') || g.includes('metal');
-                if (target === 'electronic') return g.includes('house') || g.includes('edm') || g.includes('dance') || g.includes('electronic');
-                if (target === 'indie') return g.includes('indie');
-                if (target === 'r&b') return g.includes('r&b') || g.includes('soul');
+                if (target.includes('hip hop')) return g.includes('rap') || g.includes('hip hop') || g.includes('trap');
+                if (target === 'rock') return g.includes('rock') || g.includes('metal') || g.includes('punk');
+                if (target === 'electronic') return g.includes('house') || g.includes('edm') || g.includes('dance') || g.includes('electronic') || g.includes('techno');
+                if (target.includes('indie')) return g.includes('indie') || g.includes('alternative');
+                if (target.includes('r&b')) return g.includes('r&b') || g.includes('soul') || g.includes('funk');
+                if (target === 'latino') return g.includes('latino') || g.includes('reggaeton');
                 return g.includes(target);
             });
         }
