@@ -10,6 +10,7 @@ const ReceiptGenerator = () => {
     const [profile, setProfile] = useState(null);
     const [totalDuration, setTotalDuration] = useState('00:00');
     const [date, setDate] = useState('');
+    const [range, setRange] = useState('short_term'); // short_term, medium_term, long_term
 
     useEffect(() => {
         const now = new Date();
@@ -19,14 +20,15 @@ const ReceiptGenerator = () => {
             month: 'long',
             day: 'numeric'
         }).toUpperCase());
-        fetchData();
-    }, []);
+        fetchData(range);
+    }, [range]);
 
-    const fetchData = async () => {
+    const fetchData = async (currentRange) => {
+        setLoading(true);
         try {
             const [profileData, tracksData] = await Promise.all([
                 spotifyFetch('/me'),
-                spotifyFetch('/me/top/tracks?limit=15&time_range=short_term') // Last 4 weeks
+                spotifyFetch(`/me/top/tracks?limit=15&time_range=${currentRange}`)
             ]);
 
             setProfile(profileData);
@@ -67,6 +69,22 @@ const ReceiptGenerator = () => {
                     </h1>
                     <p className="text-gray-500 text-sm">Your top tracks this month, served fresh.</p>
                 </header>
+
+                <div className="flex gap-2 mb-8 bg-neutral-900 p-1 rounded-xl">
+                    {[
+                        { id: 'short_term', label: 'Last Month' },
+                        { id: 'medium_term', label: '6 Months' },
+                        { id: 'long_term', label: 'All Time' }
+                    ].map(r => (
+                        <button
+                            key={r.id}
+                            onClick={() => setRange(r.id)}
+                            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${range === r.id ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-white'}`}
+                        >
+                            {r.label}
+                        </button>
+                    ))}
+                </div>
 
                 {loading ? (
                     <div className="flex justify-center py-20">

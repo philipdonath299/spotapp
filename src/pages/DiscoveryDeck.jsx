@@ -122,12 +122,21 @@ const DiscoveryDeck = () => {
                 throw new Error(`We couldn't find any music for "${query}" right now. Try a different vibe!`);
             }
 
-            // 2. Fetch tracks
-            const trackRes = await spotifyFetch(`/playlists/${playlist.id}/tracks?limit=50`);
+            // 3. Fetch tracks
+            const trackRes = await spotifyFetch(`/playlists/${playlist.id}/tracks?limit=100`);
+
+            // 4. Get current tracks in "My Discovery Deck" to prevent duplicates
+            let existingUris = new Set();
+            if (playlistId) {
+                const currentRes = await spotifyFetch(`/playlists/${playlistId}/tracks?limit=100`);
+                if (currentRes?.items) {
+                    currentRes.items.forEach(i => { if (i.track) existingUris.add(i.track.uri); });
+                }
+            }
 
             const tracks = (trackRes?.items || [])
                 .map(i => i.track)
-                .filter(t => t && t.id && !t.is_local && t.preview_url);
+                .filter(t => t && t.id && !t.is_local && t.preview_url && !existingUris.has(t.uri));
 
             if (tracks.length === 0) {
                 throw new Error("No playable tracks found in this vibe. Try a different one!");

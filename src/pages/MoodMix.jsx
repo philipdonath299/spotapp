@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { spotifyFetch } from '../utils/spotify';
-import { ArrowLeft, Save, Loader2, Music2, Filter, Tag, Calendar, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Music2, Filter, Tag, Calendar, TrendingUp, RefreshCw } from 'lucide-react';
 
 const MoodMix = () => {
     const navigate = useNavigate();
@@ -215,6 +215,13 @@ const MoodMix = () => {
                     <Filter className="text-purple-500" /> Vibe Filter
                 </h1>
                 <p className="text-gray-400">Filter your liked songs by Genre, Year, and Popularity.</p>
+                <button
+                    onClick={fetchLikedSongs}
+                    disabled={loading}
+                    className="mt-4 flex items-center gap-2 text-xs text-purple-400 hover:text-purple-300 transition-colors"
+                >
+                    <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Rescan Liked Songs
+                </button>
             </header>
 
             {loading && !tracks.length ? (
@@ -278,6 +285,7 @@ const MoodMix = () => {
                                             key={p}
                                             onClick={() => setPopularity(p)}
                                             className={`flex-1 py-2 rounded-md text-sm font-bold transition-all ${popularity === p ? 'bg-green-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                                            title={p === 'Top Hits' ? 'Popularity > 70' : p === 'Deep Cuts' ? 'Popularity < 50' : 'All songs'}
                                         >
                                             {p}
                                         </button>
