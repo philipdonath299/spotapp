@@ -14,16 +14,7 @@ const DiscoveryDeck = () => {
     const [audio, setAudio] = useState(null);
     const [errorMsg, setErrorMsg] = useState('');
     const [initDone, setInitDone] = useState(false);
-
-    // Hardcoded Category Playlists (These are stable Spotify Owned playlists)
-    const PRESETS = [
-        { name: "Global Top 50", query: "Top 50 Global", color: "blue" },
-        { name: "Viral 50", query: "Viral 50 Global", color: "purple" },
-        { name: "Today's Top Hits", query: "Today's Top Hits", color: "green" },
-        { name: "RapCaviar", query: "RapCaviar", color: "red" },
-        { name: "Rock Classics", query: "Rock Classics", color: "orange" },
-        { name: "New Music Friday", query: "New Music Friday", color: "pink" }
-    ];
+    const [categories, setCategories] = useState([]);
 
     useEffect(() => {
         initDiscovery();
@@ -36,7 +27,42 @@ const DiscoveryDeck = () => {
         };
     }, []);
 
-    // Start preview helper (to be called from interaction handlers)
+    const initDiscovery = async () => {
+        try {
+            // 1. Fetch User Profile
+            const me = await spotifyFetch('/me');
+            if (!me || !me.id) {
+                setErrorMsg("Could not fetch user profile. Try re-logging in.");
+                return;
+            }
+
+            // 2. Find or Create "My Discovery Deck" playlist
+            const playlists = await spotifyFetch('/me/playlists?limit=50');
+            const found = playlists.items.find(p => p.name === "My Discovery Deck");
+
+            if (found) {
+                setPlaylistId(found.id);
+            } else {
+                const newPlaylist = await spotifyFetch(`/users/${me.id}/playlists`, 'POST', {
+                    name: "My Discovery Deck",
+                    description: "Songs I swiped right on using Discovery Deck.",
+                    public: false
+                });
+                setPlaylistId(newPlaylist.id);
+            }
+
+            // 3. Fetch Regional Categories for the user
+            const catRes = await spotifyFetch('/browse/categories?limit=8');
+            if (catRes?.categories?.items) {
+                setCategories(catRes.categories.items);
+            }
+
+        } catch (err) {
+            console.error("Discovery init failed:", err);
+            setErrorMsg(`Error: ${err.message}`);
+        }
+    };
+
     const playPreview = (track, existingAudio) => {
         if (!track?.preview_url) {
             setIsPlaying(false);
@@ -66,61 +92,29 @@ const DiscoveryDeck = () => {
         return newAudio;
     };
 
-    const initDiscovery = async () => {
-        try {
-            const me = await spotifyFetch('/me');
-            if (!me || !me.id) {
-                setErrorMsg("Could not fetch user profile. Try re-logging in.");
-                return;
-            }
-
-            const playlists = await spotifyFetch('/me/playlists?limit=50');
-            const found = playlists.items.find(p => p.name === "My Discovery Deck");
-
-            if (found) {
-                setPlaylistId(found.id);
-            } else {
-                const newPlaylist = await spotifyFetch(`/users/${me.id}/playlists`, 'POST', {
-                    name: "My Discovery Deck",
-                    description: "Songs I swiped right on using Discovery Deck.",
-                    public: false
-                });
-                setPlaylistId(newPlaylist.id);
-            }
-        } catch (err) {
-            console.error("Playlist init failed:", err);
-            setErrorMsg("Could not access your playlists.");
-        }
-    };
-
-    const loadCategory = async (query) => {
+    const loadCategoryPlaylists = async (categoryId) => {
         setLoading(true);
         setErrorMsg('');
         setInitDone(true);
         try {
-            // 1. Search for a playlist matching the query
-            let searchRes = await spotifyFetch(`/search?q=${encodeURIComponent(query)}&type=playlist&limit=5`);
+            // 1. Get playlists for this category
+            const res = await spotifyFetch(`/browse/categories/${categoryId}/playlists?limit=5`);
+            const playlists = res?.playlists?.items?.filter(Boolean) || [];
 
-            // Try to find a Spotify-owned one first in the results (with safety checks)
-            let playlist = searchRes?.playlists?.items?.find(p => p && p.owner && p.owner.display_name === 'Spotify') || searchRes?.playlists?.items?.[0];
-
-            if (!playlist) {
-                // Try a broader search if the specific one fails
-                searchRes = await spotifyFetch(`/search?q=${encodeURIComponent(query.replace('Global', '').trim())}&type=playlist&limit=5`);
-                playlist = searchRes?.playlists?.items?.find(p => p && p.owner && p.owner.display_name === 'Spotify') || searchRes?.playlists?.items?.[0];
+            if (playlists.length === 0) {
+                throw new Error("No playlists found for this category in your region.");
             }
 
-            if (!playlist) {
-                throw new Error(`Could not find a playlist for "${query}".`);
-            }
+            // 2. Pick a random playlist from the results for variety
+            const targetPlaylist = playlists[Math.floor(Math.random() * playlists.length)];
 
-            // 2. Fetch tracks from the found playlist
-            const res = await spotifyFetch(`/playlists/${playlist.id}/tracks?limit=50`);
+            // 3. Fetch tracks from that playlist
+            const trackRes = await spotifyFetch(`/playlists/${targetPlaylist.id}/tracks?limit=50`);
 
-            if (res?.items) {
-                const tracks = res.items
+            if (trackRes?.items) {
+                const tracks = trackRes.items
                     .map(i => i.track)
-                    .filter(t => t && t.id && !t.is_local && t.preview_url); // ONLY tracks with previews
+                    .filter(t => t && t.id && !t.is_local && t.preview_url);
 
                 if (tracks.length === 0) {
                     throw new Error("No tracks with previews found in this vibe. Try another!");
@@ -134,7 +128,6 @@ const DiscoveryDeck = () => {
 
                 setQueue(tracks);
                 setCurrentTrack(tracks[0]);
-                // Start first track immediately (this is inside a click handler's call stack)
                 playPreview(tracks[0], audio);
             } else {
                 setErrorMsg("Failed to load tracks from this category.");
@@ -168,7 +161,6 @@ const DiscoveryDeck = () => {
             setCurrentTrack(nextTrack);
             setSwipeDirection(null);
 
-            // Play next track (still part of the click interaction chain via setTimeout)
             if (nextTrack) {
                 playPreview(nextTrack, audio);
             }
@@ -200,7 +192,7 @@ const DiscoveryDeck = () => {
 
     if (!initDone) {
         return (
-            <div className="min-h-screen bg-black text-white p-6 flex flex-col items-center justify-center animate-fade-in">
+            <div className="min-h-screen bg-black text-white p-6 flex flex-col items-center justify-center animate-fade-in relative">
                 <button
                     onClick={() => navigate('/dashboard')}
                     className="absolute top-6 left-6 flex items-center text-gray-400 hover:text-white transition-colors"
@@ -208,20 +200,41 @@ const DiscoveryDeck = () => {
                     <ArrowLeft className="mr-2" size={20} /> Exit
                 </button>
 
-                <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">
-                    <Layers className="text-blue-500" /> Choose a Vibe
-                </h1>
-                <div className="grid grid-cols-2 gap-4 w-full max-w-md">
-                    {PRESETS.map(p => (
+                <header className="text-center mb-10">
+                    <h1 className="text-4xl font-bold mb-3 flex items-center justify-center gap-3">
+                        <Layers className="text-blue-500" /> Discovery Deck
+                    </h1>
+                    <p className="text-gray-400">Choose a vibey category to start swiping.</p>
+                </header>
+
+                {errorMsg && (
+                    <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl text-red-500 text-sm mb-6 max-w-md w-full">
+                        {errorMsg}
+                    </div>
+                )}
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-4xl">
+                    {categories.map(cat => (
                         <button
-                            key={p.name}
-                            onClick={() => loadCategory(p.query)}
-                            className={`p-6 rounded-2xl bg-gradient-to-br from-neutral-800 to-neutral-900 border border-neutral-700 hover:to-${p.color}-900/50 hover:border-${p.color}-500 transition-all text-left group`}
+                            key={cat.id}
+                            onClick={() => loadCategoryPlaylists(cat.id)}
+                            className="relative group aspect-square rounded-2xl overflow-hidden border border-white/5 hover:border-blue-500 transition-all"
                         >
-                            <span className={`text-${p.color}-400 font-bold text-lg block mb-1 group-hover:text-white`}>{p.name}</span>
-                            <span className="text-xs text-gray-500">Explore</span>
+                            {cat.icons[0] && (
+                                <img src={cat.icons[0].url} className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" alt="" />
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                            <div className="absolute inset-0 flex items-center justify-center p-4">
+                                <span className="text-xl font-bold text-center drop-shadow-lg">{cat.name}</span>
+                            </div>
                         </button>
                     ))}
+                    {!categories.length && !errorMsg && (
+                        <div className="col-span-full flex flex-col items-center py-12">
+                            <Loader2 className="animate-spin text-blue-500 mb-4" />
+                            <p className="text-gray-400">Fetching categories...</p>
+                        </div>
+                    )}
                 </div>
             </div>
         );
@@ -231,7 +244,7 @@ const DiscoveryDeck = () => {
         return (
             <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white">
                 <Loader2 className="animate-spin text-blue-500 mb-4" size={48} />
-                <p>Dealing the cards...</p>
+                <p className="text-xl font-bold">Dealing your discovery deck...</p>
             </div>
         );
     }
@@ -241,7 +254,7 @@ const DiscoveryDeck = () => {
             <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-6 text-center">
                 <Music2 size={64} className="text-neutral-700 mb-6" />
                 <h2 className="text-2xl font-bold mb-2">Out of cards!</h2>
-                <p className="text-gray-400 mb-6">{errorMsg || "You've swiped through this deck."}</p>
+                <p className="text-gray-400 mb-6">{errorMsg || "You've swiped through this vibe."}</p>
                 <button
                     onClick={() => setInitDone(false)}
                     className="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors"
@@ -258,7 +271,7 @@ const DiscoveryDeck = () => {
                 onClick={() => setInitDone(false)}
                 className="absolute top-6 left-6 z-20 flex items-center text-gray-400 hover:text-white transition-colors"
             >
-                <ArrowLeft className="mr-2" size={20} /> Back
+                <ArrowLeft className="mr-2" size={20} /> Change Vibe
             </button>
 
             <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full relative">
@@ -269,11 +282,6 @@ const DiscoveryDeck = () => {
                         <img src={currentTrack.album.images[0].url} className="absolute inset-0 w-full h-full object-cover" alt="" />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-
-                    {/* Preload Next */}
-                    {queue[1]?.album?.images[0] && (
-                        <link rel="preload" as="image" href={queue[1].album.images[0].url} />
-                    )}
 
                     <div className="absolute bottom-0 left-0 right-0 p-8">
                         <h2 className="text-3xl font-bold mb-2 leading-tight shadow-black drop-shadow-lg">{currentTrack.name}</h2>
@@ -286,7 +294,7 @@ const DiscoveryDeck = () => {
                                     className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/50 text-white font-bold py-3 px-6 rounded-full flex items-center justify-center gap-2 transition-all"
                                 >
                                     {isPlaying ? <Pause fill="white" size={20} /> : <Play fill="white" size={20} />}
-                                    {isPlaying ? 'Pause' : 'Preview'}
+                                    {isPlaying ? 'Pause' : 'Previewing'}
                                 </button>
                             ) : (
                                 <div className="flex-1 bg-black/40 backdrop-blur-md text-gray-400 py-3 px-6 rounded-full text-center text-sm font-bold border border-white/10">No Preview</div>
