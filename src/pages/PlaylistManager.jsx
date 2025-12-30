@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { spotifyFetch } from '../utils/spotify';
-import { ArrowLeft, Edit3, Wand2, Loader2, Save, X, CheckCircle, Sparkles, Music, BarChart3, Scissors, Merge } from 'lucide-react';
+import { ArrowLeft, Edit3, Wand2, Loader2, Save, X, CheckCircle, Sparkles, Music, BarChart3, Scissors, Merge, Copy, ArrowUpDown, UserX, Trash } from 'lucide-react';
 
 const PlaylistManager = () => {
     const navigate = useNavigate();
@@ -22,6 +22,9 @@ const PlaylistManager = () => {
 
     // Merge State
     const [selectedMergePlaylists, setSelectedMergePlaylists] = useState(new Set());
+
+    // Artist Cleanup State
+    const [topArtists, setTopArtists] = useState([]);
 
     useEffect(() => {
         fetchPlaylists();
@@ -44,6 +47,7 @@ const PlaylistManager = () => {
         setActiveTab('details');
         setStatus('');
         setSelectedMergePlaylists(new Set()); // Reset merge selection
+        setTopArtists([]); // Reset artist scan
     };
 
     const handleUpdateDetails = async (e) => {
@@ -330,6 +334,106 @@ const PlaylistManager = () => {
         }
     };
 
+    const handleClonePlaylist = async () => {
+        setLoading(true);
+        setStatus('Creating copy...');
+        try {
+            const me = await spotifyFetch('/me');
+            const tracks = await fetchTracksForPlaylist(selectedPlaylist.id);
+            const uris = tracks.map(t => t.track.uri);
+
+            const newPlaylist = await spotifyFetch(`/users/${me.id}/playlists`, 'POST', {
+                name: `Copy of ${selectedPlaylist.name}`,
+                description: selectedPlaylist.description || '',
+                public: false
+            });
+
+            // Add tracks in chunks
+            for (let i = 0; i < uris.length; i += 100) {
+                await spotifyFetch(`/playlists/${newPlaylist.id}/tracks`, 'POST', {
+                    uris: uris.slice(i, i + 100)
+                });
+            }
+            setStatus('Playlist cloned successfully!');
+            fetchPlaylists(); // Update sidebar list
+        } catch (err) {
+            setStatus('Clone failed.');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleReverseOrder = async () => {
+        setLoading(true);
+        setStatus('Reversing...');
+        try {
+            const tracks = await fetchTracksForPlaylist(selectedPlaylist.id);
+            const reversedUris = tracks.map(t => t.track.uri).reverse();
+            await replaceTracks(reversedUris);
+            setStatus('Order reversed!');
+        } catch (err) {
+            setStatus('Reverse failed.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleScanArtists = async () => {
+        setLoading(true);
+        setStatus('Analyzing artists...');
+        try {
+            const tracks = await fetchTracksForPlaylist(selectedPlaylist.id);
+            const artistCounts = {};
+            tracks.forEach(t => {
+                const artist = t.track.artists[0]?.name;
+                if (artist) {
+                    artistCounts[artist] = (artistCounts[artist] || 0) + 1;
+                }
+            });
+            const sorted = Object.entries(artistCounts)
+                .sort(([, a], [, b]) => b - a)
+                .slice(0, 50) // Top 50 artists
+                .map(([name, count]) => ({ name, count }));
+            setTopArtists(sorted);
+            setStatus(`Found ${sorted.length} top artists.`);
+        } catch (err) {
+            setStatus('Scan failed.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRemoveArtist = async (artistName) => {
+        if (!confirm(`Remove all songs by ${artistName}?`)) return;
+        setLoading(true);
+        setStatus(`Removing ${artistName}...`);
+        try {
+            const tracks = await fetchTracksForPlaylist(selectedPlaylist.id);
+            // Invert logic: Keep tracks that are NOT by this artist
+            const keepUris = tracks
+                .filter(t => t.track.artists[0]?.name !== artistName)
+                .map(t => t.track.uri);
+
+            // Safety check: if we somehow removed everything, warn or handle
+            if (keepUris.length === 0 && tracks.length > 0) {
+                // Deleting everything - simple way
+                await spotifyFetch(`/playlists/${selectedPlaylist.id}/tracks`, 'PUT', { uris: [] });
+            } else {
+                await replaceTracks(keepUris);
+            }
+
+            // Update local list UI
+            setTopArtists(prev => prev.filter(p => p.name !== artistName));
+            setStatus(`Removed tracks by ${artistName}!`);
+        } catch (err) {
+            setStatus('Removal failed.');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (view === 'list') {
         return (
             <div className="min-h-screen bg-black text-white p-4 md:p-8 animate-fade-in">
@@ -447,6 +551,73 @@ const PlaylistManager = () => {
                                 <button onClick={() => handleSmartSort('valence')} disabled={loading} className="p-3 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-sm font-bold border border-neutral-700 transition-all">😊 Happy to Sad</button>
                             </div>
                         </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-[#181818] p-6 rounded-2xl border border-neutral-800">
+                                <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+                                    <span className="p-2 bg-yellow-500/10 text-yellow-500 rounded-lg"><Copy size={20} /></span>
+                                    Clone
+                                </h3>
+                                <button onClick={handleClonePlaylist} disabled={loading} className="w-full py-3 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-white font-bold rounded-xl transition-all">
+                                    {loading ? 'Cloning...' : 'Make Copy'}
+                                </button>
+                            </div>
+
+                            <div className="bg-[#181818] p-6 rounded-2xl border border-neutral-800">
+                                <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+                                    <span className="p-2 bg-orange-500/10 text-orange-500 rounded-lg"><ArrowUpDown size={20} /></span>
+                                    Reverse
+                                </h3>
+                                <button onClick={handleReverseOrder} disabled={loading} className="w-full py-3 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-white font-bold rounded-xl transition-all">
+                                    {loading ? 'Working...' : 'Reverse Order'}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="bg-[#181818] p-6 rounded-2xl border border-neutral-800">
+                            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                                <span className="p-2 bg-red-500/10 text-red-500 rounded-lg"><UserX size={20} /></span>
+                                Artist Cleanup
+                            </h3>
+
+                            {topArtists.length === 0 ? (
+                                <button onClick={handleScanArtists} disabled={loading} className="w-full py-4 bg-red-900/40 hover:bg-red-900/60 border border-red-500/30 text-red-200 font-bold rounded-xl transition-all flex items-center justify-center gap-2">
+                                    {loading ? <Loader2 className="animate-spin" /> : <Sparkles />}
+                                    Scan Playlist for Artists
+                                </button>
+                            ) : (
+                                <div className="space-y-3">
+                                    <h4 className="text-sm font-bold text-gray-400 mb-2">Most Frequent Artists</h4>
+                                    <div className="max-h-[300px] overflow-y-auto custom-scrollbar space-y-2 pr-2">
+                                        {topArtists.map((artist, i) => (
+                                            <div key={i} className="flex items-center justify-between p-3 bg-black/40 rounded-lg hover:bg-black/60 transition-colors">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center text-xs font-bold text-gray-400">
+                                                        {i + 1}
+                                                    </div>
+                                                    <span className="font-bold">{artist.name}</span>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-xs text-gray-500">{artist.count} tracks</span>
+                                                    <button
+                                                        onClick={() => handleRemoveArtist(artist.name)}
+                                                        disabled={loading}
+                                                        className="p-2 bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all"
+                                                        title="Remove all songs by this artist"
+                                                    >
+                                                        <Trash size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <button onClick={() => setTopArtists([])} className="text-xs text-gray-500 hover:text-white mt-2 w-full text-center">
+                                        Clear Scan Results
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
                         {status && <p className="text-center text-green-500 font-bold">{status}</p>}
                     </div>
                 )}
