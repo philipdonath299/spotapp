@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { spotifyFetch } from '../utils/spotify';
-import { ArrowLeft, X, Heart, Play, Pause, Loader2, Music2, Layers, Sparkles, TrendingUp, Music } from 'lucide-react';
+import { ArrowLeft, X, Heart, Play, Pause, Loader2, Music2, Layers, Search, Mic2, Disc } from 'lucide-react';
 
 const DiscoveryDeck = () => {
     const navigate = useNavigate();
@@ -14,6 +14,16 @@ const DiscoveryDeck = () => {
     const [audio, setAudio] = useState(null);
     const [errorMsg, setErrorMsg] = useState('');
     const [initDone, setInitDone] = useState(false);
+
+    // Reliable Search-based vibes
+    const VIBES = [
+        { name: "Pop Hits", query: "Today's Top Hits", color: "blue", icon: <Layers /> },
+        { name: "Hip Hop", query: "RapCaviar", color: "red", icon: <Mic2 /> },
+        { name: "Indie/Alt", query: "Indie Pop", color: "orange", icon: <Disc /> },
+        { name: "Electronic", query: "Mint", color: "purple", icon: <Music2 /> },
+        { name: "Classic Rock", query: "Rock Classics", color: "green", icon: <Layers /> },
+        { name: "Fresh Finds", query: "Fresh Finds", color: "pink", icon: <Search /> }
+    ];
 
     useEffect(() => {
         initDiscovery();
@@ -74,56 +84,41 @@ const DiscoveryDeck = () => {
         return newAudio;
     };
 
-    const loadDiscoverySource = async (type) => {
+    const loadDiscoverySource = async (query) => {
         setLoading(true);
         setErrorMsg('');
         setInitDone(true);
         try {
-            let tracks = [];
+            // 1. Search for a playlist matching the vibe
+            const searchRes = await spotifyFetch(`/search?q=${encodeURIComponent(query)}&type=playlist&limit=5`);
 
-            if (type === 'featured') {
-                const res = await spotifyFetch('/browse/featured-playlists?limit=5');
-                const playlists = res?.playlists?.items?.filter(Boolean) || [];
-                if (playlists.length === 0) throw new Error("No featured playlists available.");
+            // Prioritize Spotify-owned playlists
+            const playlist = searchRes?.playlists?.items?.find(p => p && p.owner && (p.owner.display_name === 'Spotify' || p.owner.id === 'spotify')) || searchRes?.playlists?.items?.[0];
 
-                const randomPlaylist = playlists[Math.floor(Math.random() * playlists.length)];
-                const trackRes = await spotifyFetch(`/playlists/${randomPlaylist.id}/tracks?limit=50`);
-                tracks = trackRes?.items?.map(i => i.track) || [];
-            }
-            else if (type === 'new-releases') {
-                const res = await spotifyFetch('/browse/new-releases?limit=20');
-                const albums = res?.albums?.items?.filter(Boolean) || [];
-                if (albums.length === 0) throw new Error("No new releases available.");
-
-                // Fetch tracks for a random new album
-                const randomAlbum = albums[Math.floor(Math.random() * albums.length)];
-                const albumRes = await spotifyFetch(`/albums/${randomAlbum.id}/tracks?limit=20`);
-                tracks = albumRes?.items || [];
-            }
-            else {
-                // Global Hits Search Fallback
-                const res = await spotifyFetch('/search?q=Global+Hits&type=playlist&limit=1');
-                const playlist = res?.playlists?.items[0];
-                if (!playlist) throw new Error("No global hits found.");
-                const trackRes = await spotifyFetch(`/playlists/${playlist.id}/tracks?limit=50`);
-                tracks = trackRes?.items?.map(i => i.track) || [];
+            if (!playlist) {
+                throw new Error(`Could not find a vibe playlist for "${query}". Try another vibe!`);
             }
 
-            const cleanTracks = tracks.filter(t => t && t.id && !t.is_local && t.preview_url);
+            // 2. Fetch tracks
+            const trackRes = await spotifyFetch(`/playlists/${playlist.id}/tracks?limit=50`);
 
-            if (cleanTracks.length === 0) {
-                throw new Error("No playable previews found in this source. Try another!");
+            const tracks = (trackRes?.items || [])
+                .map(i => i.track)
+                .filter(t => t && t.id && !t.is_local && t.preview_url);
+
+            if (tracks.length === 0) {
+                throw new Error("No playable tracks found in this vibe. Try a different one!");
             }
 
             // Shuffle
-            for (let i = cleanTracks.length - 1; i > 0; i--) {
+            for (let i = tracks.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [cleanTracks[i], cleanTracks[j]] = [cleanTracks[j], cleanTracks[i]];
+                [tracks[i], tracks[j]] = [tracks[j], tracks[i]];
             }
 
-            setQueue(cleanTracks);
-            setCurrentTrack(cleanTracks[0]);
-            playPreview(cleanTracks[0], audio);
+            setQueue(tracks);
+            setCurrentTrack(tracks[0]);
+            playPreview(tracks[0], audio);
 
         } catch (err) {
             console.error(err);
@@ -172,29 +167,28 @@ const DiscoveryDeck = () => {
                     <h1 className="text-4xl font-bold mb-3 flex items-center justify-center gap-3">
                         <Layers className="text-blue-500" /> Discovery Deck
                     </h1>
-                    <p className="text-gray-400">Where do we start searching for new music?</p>
+                    <p className="text-gray-400">Pick a vibe to start your session.</p>
                 </header>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
-                    <button onClick={() => loadDiscoverySource('featured')} className="p-8 rounded-2xl bg-gradient-to-br from-blue-900/20 to-blue-900/40 border border-blue-500/20 hover:border-blue-500 transition-all text-center group">
-                        <Sparkles className="mx-auto mb-4 text-blue-400 group-hover:scale-110 transition-transform" size={40} />
-                        <h2 className="text-2xl font-bold mb-2">Editor's Picks</h2>
-                        <p className="text-sm text-gray-400 text-balance">Official featured playlists for your region.</p>
-                    </button>
-
-                    <button onClick={() => loadDiscoverySource('new-releases')} className="p-8 rounded-2xl bg-gradient-to-br from-purple-900/20 to-purple-900/40 border border-purple-500/20 hover:border-purple-500 transition-all text-center group">
-                        <Music className="mx-auto mb-4 text-purple-400 group-hover:scale-110 transition-transform" size={40} />
-                        <h2 className="text-2xl font-bold mb-2">New Drops</h2>
-                        <p className="text-sm text-gray-400 text-balance">The freshest singles and albums released today.</p>
-                    </button>
-
-                    <button onClick={() => loadDiscoverySource('hits')} className="p-8 rounded-2xl bg-gradient-to-br from-green-900/20 to-green-900/40 border border-green-500/20 hover:border-green-500 transition-all text-center group">
-                        <TrendingUp className="mx-auto mb-4 text-green-400 group-hover:scale-110 transition-transform" size={40} />
-                        <h2 className="text-2xl font-bold mb-2">Global Hits</h2>
-                        <p className="text-sm text-gray-400 text-balance">The most popular tracks around the world.</p>
-                    </button>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-4xl">
+                    {VIBES.map(v => (
+                        <button
+                            key={v.name}
+                            onClick={() => loadDiscoverySource(v.query)}
+                            className={`p-6 rounded-2xl bg-gradient-to-br from-${v.color}-900/10 to-${v.color}-900/30 border border-${v.color}-500/20 hover:border-${v.color}-500 transition-all text-left flex flex-col justify-between aspect-square group overflow-hidden relative`}
+                        >
+                            <div className={`p-4 rounded-full bg-${v.color}-500/10 text-${v.color}-400 w-fit group-hover:scale-110 transition-transform`}>
+                                {v.icon}
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-bold">{v.name}</h2>
+                                <p className="text-xs text-gray-500 mt-1">Explore Mix</p>
+                            </div>
+                            <div className={`absolute -right-4 -bottom-4 w-24 h-24 bg-${v.color}-500/10 blur-3xl rounded-full`} />
+                        </button>
+                    ))}
                 </div>
-                {errorMsg && <p className="text-red-500 mt-8 font-medium">{errorMsg}</p>}
+                {errorMsg && <p className="text-red-500 mt-8 font-medium bg-red-500/10 px-4 py-2 rounded-lg border border-red-500/20">{errorMsg}</p>}
             </div>
         );
     }
@@ -203,7 +197,7 @@ const DiscoveryDeck = () => {
         return (
             <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white">
                 <Loader2 className="animate-spin text-blue-500 mb-4" size={48} />
-                <p className="text-xl font-bold">Digging for gold...</p>
+                <p className="text-xl font-bold">Mixing your deck...</p>
             </div>
         );
     }
@@ -215,7 +209,7 @@ const DiscoveryDeck = () => {
                 <h2 className="text-2xl font-bold mb-2">Deck Empty</h2>
                 <p className="text-gray-400 mb-6">{errorMsg || "We've reached the bottom of this pile."}</p>
                 <button onClick={() => setInitDone(false)} className="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors">
-                    Try Another Source
+                    Pick Another Vibe
                 </button>
             </div>
         );
@@ -232,12 +226,12 @@ const DiscoveryDeck = () => {
                     {currentTrack.album.images[0] && <img src={currentTrack.album.images[0].url} className="absolute inset-0 w-full h-full object-cover" alt="" />}
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-8">
-                        <h2 className="text-3xl font-bold mb-2 drop-shadow-lg">{currentTrack.name}</h2>
-                        <p className="text-xl text-gray-300 mb-6 drop-shadow-md">{currentTrack.artists[0].name}</p>
+                        <h2 className="text-2xl font-bold mb-2 drop-shadow-lg leading-tight">{currentTrack.name}</h2>
+                        <p className="text-lg text-gray-300 mb-6 drop-shadow-md">{currentTrack.artists[0].name}</p>
                         <div className="flex items-center gap-4">
                             <button onClick={togglePreview} className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/50 text-white font-bold py-3 px-6 rounded-full flex items-center justify-center gap-2 transition-all">
                                 {isPlaying ? <Pause fill="white" size={20} /> : <Play fill="white" size={20} />}
-                                {isPlaying ? 'Pause' : 'Listening'}
+                                {isPlaying ? 'Pause' : 'Playing Preview'}
                             </button>
                         </div>
                     </div>
