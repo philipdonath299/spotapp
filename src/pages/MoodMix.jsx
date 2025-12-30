@@ -59,18 +59,22 @@ const MoodMix = () => {
             setStatus(`Analyzing vibes of ${trackIds.length} songs...`);
             setAnalyzing(true);
 
-            // 3. Fetch Audio Features in chunks of 100
-            for (let i = 0; i < trackIds.length; i += 100) {
+            // 3. Fetch Audio Features in chunks of 50 (Low batch size to avoid errors)
+            for (let i = 0; i < trackIds.length; i += 50) {
                 try {
-                    const chunk = trackIds.slice(i, i + 100);
+                    const chunk = trackIds.slice(i, i + 50);
                     const featureRes = await spotifyFetch(`/audio-features?ids=${chunk.join(',')}`);
                     if (featureRes?.audio_features) {
                         featureRes.audio_features.forEach(f => {
                             if (f) featuresMap[f.id] = f;
                         });
+                    } else {
+                        console.warn("Chunk returned strings/nulls:", featureRes);
                     }
                 } catch (e) {
-                    console.warn("Failed to fetch features chunk:", e);
+                    console.error("Failed to fetch features chunk:", e);
+                    setStatus(`Analysis Error: ${e.message}`);
+                    // Don't break, try next chunk
                 }
             }
 
