@@ -17,12 +17,12 @@ const DiscoveryDeck = () => {
 
     // Hardcoded Category Playlists (These are stable Spotify Owned playlists)
     const PRESETS = [
-        { name: "Global Top 50", query: "Top 50 Global owner:spotify", color: "blue" },
-        { name: "Global Viral 50", query: "Viral 50 Global owner:spotify", color: "purple" },
-        { name: "Today's Top Hits", query: "Today's Top Hits owner:spotify", color: "green" },
-        { name: "RapCaviar", query: "RapCaviar owner:spotify", color: "red" },
-        { name: "Rock Classics", query: "Rock Classics owner:spotify", color: "orange" },
-        { name: "New Music Friday", query: "New Music Friday owner:spotify", color: "pink" }
+        { name: "Global Top 50", query: "Top 50 Global", color: "blue" },
+        { name: "Viral 50", query: "Viral 50 Global", color: "purple" },
+        { name: "Today's Top Hits", query: "Today's Top Hits", color: "green" },
+        { name: "RapCaviar", query: "RapCaviar", color: "red" },
+        { name: "Rock Classics", query: "Rock Classics", color: "orange" },
+        { name: "New Music Friday", query: "New Music Friday", color: "pink" }
     ];
 
     useEffect(() => {
@@ -98,12 +98,20 @@ const DiscoveryDeck = () => {
         setErrorMsg('');
         setInitDone(true);
         try {
-            // 1. Search for a playlist matching the query (robust against regional IDs)
-            const searchRes = await spotifyFetch(`/search?q=${encodeURIComponent(query)}&type=playlist&limit=1`);
-            const playlist = searchRes?.playlists?.items[0];
+            // 1. Search for a playlist matching the query
+            let searchRes = await spotifyFetch(`/search?q=${encodeURIComponent(query)}&type=playlist&limit=5`);
+
+            // Try to find a Spotify-owned one first in the results
+            let playlist = searchRes?.playlists?.items?.find(p => p.owner.display_name === 'Spotify') || searchRes?.playlists?.items[0];
 
             if (!playlist) {
-                throw new Error(`Playlist for "${query}" not found.`);
+                // Try a broader search if the specific one fails
+                searchRes = await spotifyFetch(`/search?q=${encodeURIComponent(query.replace('Global', '').trim())}&type=playlist&limit=1`);
+                playlist = searchRes?.playlists?.items[0];
+            }
+
+            if (!playlist) {
+                throw new Error(`Could not find a playlist for "${query}".`);
             }
 
             // 2. Fetch tracks from the found playlist
