@@ -101,22 +101,39 @@ const DiscoveryDeck = () => {
         setInitDone(true);
         try {
             let tracks = [];
-
-            // Step 1: Search for tracks directly (Type=Track is most reliable global API)
             let query = vibeId;
             if (vibeId === 'for-you') {
                 if (topArtists.length > 0) {
                     const randomArtist = topArtists[Math.floor(Math.random() * topArtists.length)];
                     query = `artist:"${randomArtist}"`;
                 } else {
-                    query = "genre:pop"; // Fallback
+                    query = "genre:pop";
                 }
             }
 
-            const searchRes = await spotifyFetch(`/search?q=${encodeURIComponent(query)}&type=track&limit=50&market=${userMarket}`);
+            // Strategy 1: Search with market
+            let searchRes = await spotifyFetch(`/search?q=${encodeURIComponent(query)}&type=track&limit=50&market=${userMarket}`);
             tracks = searchRes?.tracks?.items || [];
 
-            // Step 2: Filter for playables & duplicates
+            // Strategy 2: If no tracks, search WITHOUT market (sometimes market parameter bugs out)
+            if (tracks.length === 0) {
+                console.log(`No results for "${query}" with market ${userMarket}, retrying global...`);
+                searchRes = await spotifyFetch(`/search?q=${encodeURIComponent(query)}&type=track&limit=50`);
+                tracks = searchRes?.tracks?.items || [];
+            }
+
+            // Strategy 3: Hard fallback to general pop if still nothing
+            if (tracks.length === 0) {
+                console.log(`Still no results, hard fallback to pop...`);
+                searchRes = await spotifyFetch(`/search?q=genre:pop&type=track&limit=50`);
+                tracks = searchRes?.tracks?.items || [];
+            }
+
+            if (tracks.length === 0) {
+                throw new Error("Spotify search returned zero results for your region.");
+            }
+
+            // Get existing uris to avoid duplicates
             let existingUris = new Set();
             if (playlistId) {
                 try {
@@ -125,10 +142,18 @@ const DiscoveryDeck = () => {
                 } catch (e) { console.warn("Duplicate check failed", e); }
             }
 
-            const cleanTracks = tracks.filter(t => t && t.id && !t.is_local && t.preview_url && !existingUris.has(t.uri));
+            // Strategy 4: Filter for playable (preview_url exists)
+            let cleanTracks = tracks.filter(t => t && t.id && !t.is_local && t.preview_url && !existingUris.has(t.uri));
+
+            // Strategy 5: If ALL tracks are filtered out because they lack previews, 
+            // relax the constraint so the user at least sees SOMETHING.
+            if (cleanTracks.length === 0) {
+                console.warn("No tracks with previews found. Relaxing preview constraint.");
+                cleanTracks = tracks.filter(t => t && t.id && !t.is_local && !existingUris.has(t.uri));
+            }
 
             if (cleanTracks.length === 0) {
-                throw new Error(`No new tracks found for this vibe in your region (${userMarket}).`);
+                throw new Error(`All discovered tracks are already in your Deck! Try a different vibe.`);
             }
 
             // Shuffle
@@ -251,9 +276,22 @@ const DiscoveryDeck = () => {
                         <h2 className="text-4xl font-black mb-3 tracking-tighter drop-shadow-2xl leading-[0.9]">{currentTrack.name}</h2>
                         <p className="text-xl text-gray-300 mb-8 font-medium italic opacity-80">{currentTrack.artists[0].name}</p>
 
-                        <button onClick={togglePreview} className="w-full bg-white text-black font-black py-5 rounded-3xl flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-95 transition-all shadow-2xl">
-                            {isPlaying ? <Pause fill="black" size={24} /> : <Play fill="black" size={24} />}
-                            {isPlaying ? 'PAUSE PREVIEW' : 'PLAY PREVIEW'}
+                        <button
+                            onClick={togglePreview}
+                            disabled={!currentTrack.preview_url}
+                            className={`w-full font-black py-5 rounded-3xl flex items-center justify-center gap-4 transition-all shadow-2xl ${currentTrack.preview_url ? 'bg-white text-black hover:scale-[1.02] active:scale-95' : 'bg-white/10 text-gray-500 cursor-not-allowed border border-white/5'}`}
+                        >
+                            {currentTrack.preview_url ? (
+                                <>
+                                    {isPlaying ? <Pause fill="black" size={24} /> : <Play fill="black" size={24} />}
+                                    {isPlaying ? 'PAUSE PREVIEW' : 'PLAY PREVIEW'}
+                                </>
+                            ) : (
+                                <>
+                                    <Music size={24} className="opacity-50" />
+                                    PREVIEW UNAVAILABLE
+                                </>
+                            )}
                         </button>
                     </div>
                 </div>
