@@ -17,12 +17,12 @@ const DiscoveryDeck = () => {
 
     // Hardcoded Category Playlists (These are stable Spotify Owned playlists)
     const PRESETS = [
-        { name: "Top 50 Global", query: "Top 50 Global", color: "blue" },
-        { name: "Viral 50", query: "Viral 50 Global", color: "purple" },
-        { name: "RapCaviar", query: "RapCaviar", color: "red" },
-        { name: "Viva Latino", query: "Viva Latino", color: "orange" },
-        { name: "Mega Hit Mix", query: "Mega Hit Mix", color: "pink" },
-        { name: "All Out 2010s", query: "All Out 2010s", color: "teal" }
+        { name: "Global Top 50", query: "Top 50 Global owner:spotify", color: "blue" },
+        { name: "Global Viral 50", query: "Viral 50 Global owner:spotify", color: "purple" },
+        { name: "Today's Top Hits", query: "Today's Top Hits owner:spotify", color: "green" },
+        { name: "RapCaviar", query: "RapCaviar owner:spotify", color: "red" },
+        { name: "Rock Classics", query: "Rock Classics owner:spotify", color: "orange" },
+        { name: "New Music Friday", query: "New Music Friday owner:spotify", color: "pink" }
     ];
 
     useEffect(() => {
@@ -47,10 +47,20 @@ const DiscoveryDeck = () => {
 
             const newAudio = new Audio(currentTrack.preview_url);
             newAudio.volume = 0.5;
-            newAudio.play().catch(e => console.warn("Auto-play blocked by browser:", e));
+
+            // Interaction-based play
+            const playPromise = newAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    setIsPlaying(true);
+                }).catch(e => {
+                    console.warn("Auto-play blocked:", e);
+                    setIsPlaying(false);
+                });
+            }
+
             newAudio.onended = () => setIsPlaying(false);
             setAudio(newAudio);
-            setIsPlaying(true);
         } else {
             // If no preview, stop current audio
             if (audio) {
@@ -108,6 +118,10 @@ const DiscoveryDeck = () => {
                 const tracks = res.items
                     .map(i => i.track)
                     .filter(t => t && t.id && !t.is_local);
+
+                if (tracks.length === 0) {
+                    throw new Error("This vibe has no songs available right now.");
+                }
 
                 // Shuffle for variety
                 for (let i = tracks.length - 1; i > 0; i--) {
