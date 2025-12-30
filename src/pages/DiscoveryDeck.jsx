@@ -14,6 +14,7 @@ const DiscoveryDeck = () => {
     const [audio, setAudio] = useState(null);
     const [errorMsg, setErrorMsg] = useState('');
     const [initDone, setInitDone] = useState(false);
+    const [userMarket, setUserMarket] = useState('US'); // Default fallback
 
     // Reliable Search-based vibes
     const VIBES = [
@@ -43,6 +44,7 @@ const DiscoveryDeck = () => {
                 setErrorMsg("Could not fetch user profile.");
                 return;
             }
+            setUserMarket(me.country || 'US');
 
             const playlists = await spotifyFetch('/me/playlists?limit=50');
             const found = playlists.items.find(p => p.name === "My Discovery Deck");
@@ -89,8 +91,9 @@ const DiscoveryDeck = () => {
         setErrorMsg('');
         setInitDone(true);
         try {
-            // 1. Search for a playlist matching the vibe
-            let searchRes = await spotifyFetch(`/search?q=${encodeURIComponent(query)}&type=playlist&limit=10`);
+            // 1. Search for a playlist matching the vibe (Market-aware)
+            let searchUrl = `/search?q=${encodeURIComponent(query)}&type=playlist&limit=10&market=${userMarket}`;
+            let searchRes = await spotifyFetch(searchUrl);
 
             // Prioritize Spotify-owned playlists (more robust check)
             let playlist = searchRes?.playlists?.items?.find(p =>
@@ -102,13 +105,15 @@ const DiscoveryDeck = () => {
 
             // 2. Fallback search if specific vibe fails
             if (!playlist) {
-                console.log(`Vibe "${query}" failed, trying broad fallback...`);
-                searchRes = await spotifyFetch(`/search?q=${encodeURIComponent("Top Hits")}&type=playlist&limit=1`);
+                console.log(`Vibe "${query}" failed in market ${userMarket}, trying broad fallback...`);
+                searchUrl = `/search?q=${encodeURIComponent("Top 50")}&type=playlist&limit=5&market=${userMarket}`;
+                searchRes = await spotifyFetch(searchUrl);
                 playlist = searchRes?.playlists?.items?.[0];
             }
 
             if (!playlist) {
-                throw new Error(`Could not find any music for "${query}". Please check your internet or try again later.`);
+                const diag = searchRes?.playlists ? `Matches: ${searchRes.playlists.total}` : "No playlists object";
+                throw new Error(`No music found for "${query}" in market ${userMarket}. (${diag})`);
             }
 
             // 2. Fetch tracks
