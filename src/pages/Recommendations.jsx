@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { spotifyFetch } from '../utils/spotify';
-import { ArrowLeft, Play, Plus, Sliders, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Play, Plus, Sliders, RefreshCw, Loader2 } from 'lucide-react';
 
 const Recommendations = () => {
     const { playlistId } = useParams();

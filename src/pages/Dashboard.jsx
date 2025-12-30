@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { spotifyFetch } from '../utils/spotify';
-import { Music, Play, Wand2, BarChart3, Edit3, Trash2, Activity, RefreshCw, Sliders, Layers, Receipt } from 'lucide-react';
+import { Music, Play, Wand2, BarChart3, Edit3, Trash2, Activity, RefreshCw, Sliders, Layers, Receipt, Loader2 } from 'lucide-react';
 
 const Dashboard = () => {
     const [playlists, setPlaylists] = useState([]);
