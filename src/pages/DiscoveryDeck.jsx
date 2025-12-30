@@ -207,12 +207,12 @@ const DiscoveryDeck = () => {
                     </button>
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
                         <div className="max-w-2xl">
-                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Sonic Archetypes</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Daily Mixes</p>
                             <h1 className="text-7xl md:text-8xl font-black tracking-tighter leading-none text-white mb-8">
                                 Discovery
                             </h1>
                             <p className="text-white/40 text-lg font-black tracking-widest uppercase max-w-lg leading-relaxed">
-                                Swipe to find your new favorite frequency in the digital ocean.
+                                Swipe to find your new favorite songs in the music ocean.
                             </p>
                         </div>
                     </div>
@@ -290,7 +290,7 @@ const DiscoveryDeck = () => {
 
             <header className="mb-16 max-w-md mx-auto w-full px-6">
                 <button onClick={() => setInitDone(false)} className="flex items-center text-white/40 font-black text-[9px] uppercase tracking-[0.4em] hover:text-white transition-colors group">
-                    <ArrowLeft size={14} className="mr-2 group-hover:-translate-x-1 transition-transform" /> Retuned Signal
+                    <ArrowLeft size={14} className="mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Mixes
                 </button>
             </header>
 
@@ -318,7 +318,7 @@ const DiscoveryDeck = () => {
                         {/* Content Overlay */}
                         <div className="absolute inset-0 flex flex-col justify-end p-12">
                             <div className="mb-8 p-1.5 ios26-glass w-fit rounded-full px-4 border border-white/10 backdrop-blur-3xl">
-                                <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.3em]">Frequency Detected</span>
+                                <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.3em]">NEW TRACK DETECTED</span>
                             </div>
 
                             <h2 className="text-5xl md:text-6xl font-black mb-4 tracking-tighter leading-[0.85] text-white uppercase drop-shadow-2xl">
@@ -340,7 +340,7 @@ const DiscoveryDeck = () => {
                                 {currentTrack.preview_url ? (
                                     <>
                                         {isPlaying ? <Pause size={20} fill="white" /> : <Play size={20} fill="white" />}
-                                        <span className="relative z-10 text-[10px]">{isPlaying ? 'Interrupt' : 'Resonate'}</span>
+                                        <span className="relative z-10 text-[10px]">{isPlaying ? 'Stop' : 'Play'}</span>
                                     </>
                                 ) : <span className="text-[10px]">No Signal</span>}
                             </button>

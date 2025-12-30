@@ -106,9 +106,9 @@ const Automation = () => {
                 </button>
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
                     <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Automated Pulse Hub</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Smart Automation</p>
                         <h1 className="text-7xl md:text-8xl font-black tracking-tighter leading-none text-white">
-                            Hub Pro
+                            Stats Hub
                         </h1>
                     </div>
                 </div>
@@ -119,13 +119,13 @@ const Automation = () => {
                     onClick={() => setActiveTab('radar')}
                     className={`flex-1 py-4 rounded-[18px] text-[10px] font-black transition-all uppercase tracking-[0.2em] ${activeTab === 'radar' ? 'bg-white text-black shadow-2xl scale-105' : 'text-white/30 hover:text-white'}`}
                 >
-                    Spectral Radar
+                    New Releases
                 </button>
                 <button
                     onClick={() => setActiveTab('health')}
                     className={`flex-1 py-4 rounded-[18px] text-[10px] font-black transition-all uppercase tracking-[0.2em] ${activeTab === 'health' ? 'bg-white text-black shadow-2xl scale-105' : 'text-white/30 hover:text-white'}`}
                 >
-                    Biome Health
+                    Library Health
                 </button>
             </div>
 
@@ -136,14 +136,14 @@ const Automation = () => {
                         <div className="w-24 h-24 ios26-liquid rounded-[36px] flex items-center justify-center mb-10 border border-white/20 shadow-2xl">
                             <Radio size={44} className="text-blue-500" strokeWidth={1} />
                         </div>
-                        <h2 className="text-5xl font-black mb-4 tracking-tighter uppercase text-white">Spectral Sweep</h2>
-                        <p className="text-[10px] text-white/30 mb-12 max-w-sm font-black uppercase tracking-[0.3em] leading-relaxed">Scan followed frequency streams for new acoustic signatures from the last 14 days.</p>
+                        <h2 className="text-5xl font-black mb-4 tracking-tighter uppercase text-white">Release Scan</h2>
+                        <p className="text-[10px] text-white/30 mb-12 max-w-sm font-black uppercase tracking-[0.3em] leading-relaxed">Scan followed artists for new releases from the last 14 days.</p>
                         <button
                             onClick={handleCheckRadar}
                             disabled={radarLoading}
                             className="ios26-liquid px-16 py-6 font-black uppercase tracking-[0.3em] text-[10px] text-white border border-white/20 shadow-2xl hover:scale-105 active:scale-95 transition-all"
                         >
-                            {radarLoading ? <Loader2 className="animate-spin" size={20} /> : 'Initiate Scan'}
+                            {radarLoading ? <Loader2 className="animate-spin" size={20} /> : 'Start Scan'}
                         </button>
                         {radarStatus && <p className="mt-8 text-[9px] font-black text-blue-500 uppercase tracking-[0.4em] animate-pulse">{radarStatus}</p>}
                     </div>
@@ -192,15 +192,15 @@ const Automation = () => {
                         <div className="w-24 h-24 ios26-liquid rounded-[36px] flex items-center justify-center mb-10 border border-pink-500/20 shadow-2xl">
                             <Activity size={44} className="text-pink-500" strokeWidth={1} />
                         </div>
-                        <h2 className="text-5xl font-black mb-4 tracking-tighter uppercase text-white">Biome Analytics</h2>
-                        <p className="text-[10px] text-white/30 mb-12 max-w-sm font-black uppercase tracking-[0.3em] leading-relaxed">Execute a comprehensive diagnostic of your digital acoustic environment.</p>
+                        <h2 className="text-5xl font-black mb-4 tracking-tighter uppercase text-white">Library Insights</h2>
+                        <p className="text-[10px] text-white/30 mb-12 max-w-sm font-black uppercase tracking-[0.3em] leading-relaxed">Run a diagnostic of your music library and listening habits.</p>
                         {!healthStats && (
                             <button
                                 onClick={handleHealthCheck}
                                 disabled={healthLoading}
                                 className="ios26-liquid px-16 py-6 font-black uppercase tracking-[0.3em] text-[10px] text-white border border-pink-500/20 shadow-2xl hover:scale-105 active:scale-95 transition-all"
                             >
-                                {healthLoading ? <Loader2 className="animate-spin" size={20} /> : 'Scan Biome'}
+                                {healthLoading ? <Loader2 className="animate-spin" size={20} /> : 'Analyze Library'}
                             </button>
                         )}
                     </div>

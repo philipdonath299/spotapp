@@ -111,12 +111,12 @@ const AIGenerator = () => {
 
     const saveAsPlaylist = async () => {
         setLoading(true);
-        setStatus('Mapping to Core Spotify...');
+        setStatus('Creating Playlist...');
         try {
             const me = await spotifyFetch('/me');
             const playlist = await spotifyFetch(`/users/${me.id}/playlists`, 'POST', {
-                name: `MAGIC PRO: ${prompt.slice(0, 15)}...`,
-                description: `iOS 26 Logic Render: ${prompt}`,
+                name: `MAGIC: ${prompt.slice(0, 15)}...`,
+                description: `AI Generated Playlist: ${prompt}`,
                 public: false
             });
             const trackUris = results.map(t => t.uri);
@@ -139,9 +139,9 @@ const AIGenerator = () => {
                 </button>
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
                     <div className="max-w-2xl">
-                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Linguistic Logic Engine</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">AI Assistant</p>
                         <h1 className="text-7xl md:text-8xl font-black tracking-tighter leading-none text-white mb-8">
-                            Magic Pro
+                            Magic
                         </h1>
                     </div>
                 </div>

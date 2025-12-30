@@ -506,13 +506,13 @@ const Stats = () => {
             <div className="py-12 animate-ios26-in max-w-6xl mx-auto px-4">
                 <header className="mb-20">
                     <button onClick={() => navigate('/dashboard')} className="mb-10 flex items-center text-blue-500 font-black text-[10px] uppercase tracking-widest hover:text-blue-400 transition-colors">
-                        <ArrowLeft size={16} className="mr-2" /> Index
+                        <ArrowLeft size={16} className="mr-2" /> Vault
                     </button>
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Statistical Analysis</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Music Insights</p>
                             <h1 className="text-7xl md:text-8xl font-black tracking-tighter leading-none text-white">
-                                Frequency
+                                Stats
                             </h1>
                         </div>
 
@@ -547,17 +547,17 @@ const Stats = () => {
                                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 group-hover:text-blue-500 transition-colors">Activity</span>
                             </div>
                             <div className="text-4xl md:text-5xl font-black tracking-tighter text-white">{listeningStats.avgMinutesPerDay}m</div>
-                            <div className="text-[9px] text-white/10 font-black tracking-widest mt-2 uppercase">Mean Daily Rotation</div>
+                            <div className="text-[9px] text-white/10 font-black tracking-widest mt-2 uppercase">Daily Listening</div>
                         </div>
 
                         <div className="ios26-card p-8 group relative overflow-hidden">
                             <div className="absolute -top-10 -right-10 w-24 h-24 bg-green-500/10 blur-[50px] rounded-full group-hover:scale-150 transition-transform duration-1000" />
                             <div className="flex items-center gap-3 mb-6">
                                 <Activity size={18} className="text-green-500" />
-                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 group-hover:text-green-500 transition-colors">Neural</span>
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 group-hover:text-green-500 transition-colors">Daily</span>
                             </div>
                             <div className="text-4xl md:text-5xl font-black tracking-tighter text-white">{listeningStats.avgStreamsPerDay}</div>
-                            <div className="text-[9px] text-white/10 font-black tracking-widest mt-2 uppercase">Streams per Cycle</div>
+                            <div className="text-[9px] text-white/10 font-black tracking-widest mt-2 uppercase">Songs per Day</div>
                         </div>
 
                         <div className="ios26-card p-8 group relative overflow-hidden">
@@ -567,7 +567,7 @@ const Stats = () => {
                                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 group-hover:text-purple-500 transition-colors">Volume</span>
                             </div>
                             <div className="text-4xl md:text-5xl font-black tracking-tighter text-white">{listeningStats.totalStreams}</div>
-                            <div className="text-[9px] text-white/10 font-black tracking-widest mt-2 uppercase">Total Units</div>
+                            <div className="text-[9px] text-white/10 font-black tracking-widest mt-2 uppercase">Total Songs</div>
                         </div>
 
                         <div className="ios26-card p-8 group relative overflow-hidden">
@@ -577,7 +577,7 @@ const Stats = () => {
                                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 group-hover:text-orange-500 transition-colors">Index</span>
                             </div>
                             <div className="text-4xl md:text-5xl font-black tracking-tighter text-white">{listeningStats.totalHours}h</div>
-                            <div className="text-[9px] text-white/10 font-black tracking-widest mt-2 uppercase">Cumulative Pulse</div>
+                            <div className="text-[9px] text-white/10 font-black tracking-widest mt-2 uppercase">Total Listening</div>
                         </div>
                     </div>
                 )}

@@ -61,17 +61,17 @@ const ReceiptGenerator = () => {
                     <ArrowLeft size={16} className="mr-2" /> Index
                 </button>
                 <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Spectral Transaction Log</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Your Receipt</p>
                     <h1 className="text-7xl md:text-8xl font-black tracking-tighter leading-none text-white">
-                        Receiptify
+                        Snapshot
                     </h1>
                 </div>
             </header>
 
             <div className="ios26-tabs p-1.5 flex gap-2 mb-20 max-w-lg mx-auto md:mx-0">
                 {[
-                    { id: 'short_term', label: 'Last Cycle' },
-                    { id: 'medium_term', label: 'Half Cycle' },
+                    { id: 'short_term', label: 'Last Month' },
+                    { id: 'medium_term', label: 'Last 6 Months' },
                     { id: 'long_term', label: 'All History' }
                 ].map(r => (
                     <button
@@ -88,15 +88,15 @@ const ReceiptGenerator = () => {
                 {loading ? (
                     <div className="py-20 flex flex-col items-center gap-6">
                         <Loader2 className="animate-spin text-white" size={44} />
-                        <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em]">Rendering spectral log...</p>
+                        <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em]">Generating your receipt...</p>
                     </div>
                 ) : (
                     <div className="ios26-card p-1 relative group overflow-visible">
                         <div className="absolute -inset-10 bg-white/[0.03] blur-[100px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
                         <div className="bg-white text-black p-10 font-mono text-sm shadow-2xl relative receipt-paper max-w-[380px] transform-gpu transition-all duration-700 hover:rotate-1 hover:scale-[1.03]">
                             <div className="text-center mb-10">
-                                <h2 className="text-4xl font-black tracking-widest mb-2">SPOTIFY</h2>
-                                <p className="text-[10px] font-black tracking-widest uppercase mb-1">Node: {profile?.id || 'ANONYMOUS'}</p>
+                                <h2 className="text-4xl font-black tracking-widest mb-2">STATSIFY</h2>
+                                <p className="text-[10px] font-black tracking-widest uppercase mb-1">User: {profile?.id || 'ANONYMOUS'}</p>
                                 <p className="text-[10px] font-black tracking-widest uppercase opacity-60">{date}</p>
                             </div>
 
@@ -140,7 +140,7 @@ const ReceiptGenerator = () => {
                             </div>
 
                             <div className="text-center">
-                                <p className="mb-6 font-black text-[10px] tracking-widest uppercase">Protocol Verified.</p>
+                                <p className="mb-6 font-black text-[10px] tracking-widest uppercase">Thank you for listening.</p>
                                 <div className="h-20 bg-black w-full" style={{
                                     maskImage: 'repeating-linear-gradient(90deg, black, black 3px, transparent 3px, transparent 6px)',
                                     WebkitMaskImage: 'repeating-linear-gradient(90deg, black, black 3px, transparent 3px, transparent 6px)'

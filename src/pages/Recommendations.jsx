@@ -190,7 +190,7 @@ const Recommendations = () => {
                     <RefreshCw className="text-blue-500 animate-spin" size={48} strokeWidth={1} />
                 </div>
                 <h2 className="text-3xl font-black text-white tracking-tighter uppercase mb-2 animate-pulse">{statusMessage}</h2>
-                <p className="text-white/20 font-black text-[10px] tracking-[0.4em] uppercase">Simulating Taste Clusters</p>
+                <p className="text-white/20 font-black text-[10px] tracking-[0.4em] uppercase">Finding New Favorites</p>
             </div>
         );
     }
@@ -208,12 +208,12 @@ const Recommendations = () => {
                 </button>
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
                     <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Spectral Discovery Node</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Music Discovery</p>
                         <h1 className="text-7xl md:text-8xl font-black tracking-tighter leading-none text-white">
-                            Deep Search
+                            Discovery
                         </h1>
                         <p className="mt-8 text-white/40 text-xl font-bold tracking-tight max-w-2xl px-1">
-                            Synthesizing new sonic terrains from <span className="text-blue-500 underline decoration-1 underline-offset-[12px]">{playlistName}</span>
+                            Finding new music based on <span className="text-blue-500 underline decoration-1 underline-offset-[12px]">{playlistName}</span>
                         </p>
                     </div>
                     {recommendations.length > 0 && (
@@ -236,8 +236,8 @@ const Recommendations = () => {
                         <Sliders size={32} strokeWidth={1} />
                     </div>
                     <div>
-                        <h3 className="font-black text-3xl tracking-tighter uppercase text-white leading-none mb-2">Crate Depth</h3>
-                        <p className="text-white/20 text-[9px] font-black uppercase tracking-[0.3em]">Mainstream ⇄ Deep Undercurrents</p>
+                        <h3 className="font-black text-3xl tracking-tighter uppercase text-white leading-none mb-2">Discovery Range</h3>
+                        <p className="text-white/20 text-[9px] font-black uppercase tracking-[0.3em]">Popular Hits ⇄ Hidden Gems</p>
                     </div>
                 </div>
 
@@ -255,7 +255,7 @@ const Recommendations = () => {
                         <div className="ios26-glass px-5 py-2 rounded-full border border-white/10 text-blue-500 text-[10px] shadow-2xl">
                             {obscurity}% Depth
                         </div>
-                        <span>Underground</span>
+                        <span>Hidden Gems</span>
                     </div>
                 </div>
 

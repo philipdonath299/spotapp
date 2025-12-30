@@ -18,24 +18,24 @@ const Login = () => {
                     </div>
 
                     <h1 className="text-6xl md:text-7xl font-black tracking-tighter text-white mb-6 uppercase leading-none">
-                        SpotApp <br /><span className="text-blue-500">Pro</span>
+                        Statsify <br /><span className="text-blue-500">Pro</span>
                     </h1>
 
                     <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.5em] mb-16 leading-relaxed">
-                        Secure Handshake Required <br />
-                        <span className="opacity-50">Vortex-7 Protocol Authorized</span>
+                        Authentication Required <br />
+                        <span className="opacity-50">Secure Spotify Connection</span>
                     </p>
 
                     <button
                         onClick={redirectToAuthCodeFlow}
                         className="ios26-liquid block w-full py-7 text-sm font-black uppercase tracking-[0.4em] text-white rounded-[28px] shadow-2xl border border-white/20 active:scale-95 transition-all hover:scale-[1.03]"
                     >
-                        Initiate Link
+                        Login with Spotify
                     </button>
                 </div>
 
                 <div className="mt-16 flex flex-col items-center gap-4 opacity-30">
-                    <p className="text-[8px] font-black uppercase tracking-[0.6em] text-white">System v26.4.0 • Node: Terminal</p>
+                    <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white">Handcrafted for Music Lovers</p>
                     <div className="w-12 h-[1px] bg-white/20" />
                 </div>
             </div>

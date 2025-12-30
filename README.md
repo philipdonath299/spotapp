@@ -1,7 +1,6 @@
-```
-# SpotApp: Spotify Music Discovery Engine 🎵
+# Statsify: Spotify Music Discovery Engine 🎵
 
-SpotApp is a specialized music discovery engine that finds genuinely new music based on your existing playlists. It uses a custom genre-and-artist discovery algorithm to bypass the deprecated Spotify Recommendations API.
+Statsify is a specialized music discovery engine that finds genuinely new music based on your existing playlists. It uses a custom genre-and-artist discovery algorithm to bypass the deprecated Spotify Recommendations API.
 
 ## Features
 - **AI Magic**: Brainstorms song lists based on text prompts using Gemini 2.x/2.5.

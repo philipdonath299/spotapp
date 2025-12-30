@@ -159,7 +159,7 @@ const LibraryCleanup = () => {
                 </button>
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
                     <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Library Pure Logic</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Library Management</p>
                         <h1 className="text-7xl md:text-8xl font-black tracking-tighter leading-none text-white">
                             Cleanup
                         </h1>
@@ -172,19 +172,19 @@ const LibraryCleanup = () => {
                     onClick={() => { setCleanupMode('duplicates'); setSelectedPlaylist(null); }}
                     className={`flex-1 py-4 rounded-[18px] text-[10px] font-black transition-all uppercase tracking-[0.2em] ${cleanupMode === 'duplicates' ? 'bg-white text-black shadow-2xl scale-105' : 'text-white/30 hover:text-white'}`}
                 >
-                    Entropy Detect
+                    Duplicates
                 </button>
                 <button
                     onClick={() => { setCleanupMode('unavailable'); setSelectedPlaylist(null); }}
                     className={`flex-1 py-4 rounded-[18px] text-[10px] font-black transition-all uppercase tracking-[0.2em] ${cleanupMode === 'unavailable' ? 'bg-white text-black shadow-2xl scale-105' : 'text-white/30 hover:text-white'}`}
                 >
-                    Node Integrity
+                    Clean
                 </button>
             </div>
 
             {!selectedPlaylist ? (
                 <div className="space-y-12 animate-ios26-in">
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-3 ml-1">Select Stream to Purge</h2>
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-3 ml-1">Select Playlist to Scan</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {playlists.map(playlist => (
                             <div

@@ -70,7 +70,7 @@ const Dashboard = () => {
             {/* iOS 26 Header */}
             <header className="flex justify-between items-center mb-16 relative">
                 <div className="relative z-10">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-3 ml-1">Frequency Index</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-3 ml-1">Your Stats</p>
                     <h1 className="text-7xl md:text-8xl font-black tracking-tighter leading-[0.85] text-white">
                         {profile?.display_name?.split(' ')[0]}
                     </h1>
@@ -133,21 +133,21 @@ const Dashboard = () => {
                 </div>
 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                    <Widget title="Magic" desc="AI Synth" icon={Wand2} colorClass="blue" onClick={() => navigate('/ai-generator')} />
-                    <Widget title="Explore" desc="Discovery" icon={Layers} colorClass="purple" onClick={() => navigate('/discovery')} />
-                    <Widget title="Mood" desc="Filters" icon={Sliders} colorClass="pink" onClick={() => navigate('/mood-mix')} />
-                    <Widget title="Vault" desc="Sync" icon={Edit3} colorClass="orange" onClick={() => navigate('/playlists')} />
-                    <Widget title="Analytics" desc="Neural Stats" icon={BarChart3} colorClass="green" span onClick={() => navigate('/stats')} />
-                    <Widget title="Cleanup" desc="Refactor" icon={Trash2} colorClass="red" onClick={() => navigate('/cleanup')} />
-                    <Widget title="Receipt" desc="Ledger" icon={Receipt} colorClass="gray" onClick={() => navigate('/receipt')} />
+                    <Widget title="Magic" desc="AI Assistant" icon={Wand2} colorClass="blue" onClick={() => navigate('/ai-generator')} />
+                    <Widget title="Explore" desc="New Music" icon={Layers} colorClass="purple" onClick={() => navigate('/discovery')} />
+                    <Widget title="Mood" desc="Smart Filters" icon={Sliders} colorClass="pink" onClick={() => navigate('/mood-mix')} />
+                    <Widget title="Vault" desc="Manage" icon={Edit3} colorClass="orange" onClick={() => navigate('/playlists')} />
+                    <Widget title="Stats" desc="Analytics" icon={BarChart3} colorClass="green" span onClick={() => navigate('/stats')} />
+                    <Widget title="Cleanup" desc="Library Health" icon={Trash2} colorClass="red" onClick={() => navigate('/cleanup')} />
+                    <Widget title="Receipt" desc="Snapshot" icon={Receipt} colorClass="gray" onClick={() => navigate('/receipt')} />
                 </div>
             </div>
 
             {/* Fluid Playlist Section */}
             <section className="pb-32">
                 <div className="flex items-baseline gap-4 mb-10 px-2">
-                    <h2 className="text-4xl font-black tracking-tighter uppercase">Archive</h2>
-                    <button className="text-[10px] font-black uppercase tracking-widest text-blue-500 hover:text-blue-400 transition-colors">Expand</button>
+                    <h2 className="text-4xl font-black tracking-tighter uppercase">Library</h2>
+                    <button className="text-[10px] font-black uppercase tracking-widest text-blue-500 hover:text-blue-400 transition-colors">View All</button>
                     <div className="h-px flex-1 bg-white/5" />
                 </div>
 

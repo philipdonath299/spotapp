@@ -445,9 +445,9 @@ const PlaylistManager = () => {
                     </button>
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Stream Curation Protocol</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Manage Your Library</p>
                             <h1 className="text-7xl md:text-8xl font-black tracking-tighter leading-none text-white">
-                                Playlists
+                                Vault
                             </h1>
                         </div>
                     </div>
@@ -466,7 +466,7 @@ const PlaylistManager = () => {
                                 )}
                             </div>
                             <h3 className="font-black text-sm truncate mb-1 tracking-tighter uppercase text-white group-hover:text-blue-500 transition-colors leading-none">{p.name}</h3>
-                            <p className="text-[9px] text-white/30 font-black uppercase tracking-widest mt-2">{p.tracks.total} Units</p>
+                            <p className="text-[9px] text-white/30 font-black uppercase tracking-widest mt-2">{p.tracks.total} Tracks</p>
                         </div>
                     ))}
                 </div>
@@ -478,7 +478,7 @@ const PlaylistManager = () => {
         <div className="py-20 animate-ios26-in max-w-5xl mx-auto px-6 relative overflow-hidden">
             <header className="mb-16">
                 <button onClick={() => setView('list')} className="mb-10 flex items-center text-blue-500 font-black text-[10px] uppercase tracking-[0.3em] hover:text-blue-400 transition-colors">
-                    <ArrowLeft size={16} className="mr-2" /> Archive
+                    <ArrowLeft size={16} className="mr-2" /> Vault
                 </button>
                 <div className="flex items-center gap-10">
                     <div className="w-48 h-48 shadow-2xl rounded-[48px] overflow-hidden shrink-0 ring-1 ring-white/20">

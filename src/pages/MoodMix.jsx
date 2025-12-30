@@ -140,20 +140,20 @@ const MoodMix = () => {
     const handleCreatePlaylist = async () => {
         if (filteredTracks.length === 0) return;
         setLoading(true);
-        setStatus('Encoding Playlist...');
+        setStatus('Creating Playlist...');
         try {
             const me = await spotifyFetch('/me');
             const name = `MIX: ${selectedGenre !== 'All' ? selectedGenre : 'NEURAL'} ${yearRange !== 'All' ? yearRange : ''}`;
             const playlist = await spotifyFetch(`/users/${me.id}/playlists`, 'POST', {
                 name: name,
-                description: `iOS 26 Logic Render. G:${selectedGenre} Y:${yearRange} P:${popularity}.`,
+                description: `Created with Statsify. G:${selectedGenre} Y:${yearRange} P:${popularity}.`,
                 public: false
             });
             const uris = filteredTracks.map(t => t.track.uri);
             for (let i = 0; i < uris.length; i += 100) {
                 await spotifyFetch(`/playlists/${playlist.id}/tracks`, 'POST', { uris: uris.slice(i, i + 100) });
             }
-            setStatus('RENDER COMPLETE');
+            setStatus('SAVED TO LIBRARY');
             setTimeout(() => setStatus(''), 3000);
         } catch (err) {
             console.error(err);

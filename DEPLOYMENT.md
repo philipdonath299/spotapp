@@ -11,9 +11,9 @@ Before hosting, you should store your code on GitHub. This keeps it safe and mak
     ```bash
     git init
     git add .
-    git commit -m "Initial commit - SpotApp"
+    git commit -m "Initial commit - Statsify"
     git branch -M main
-    git remote add origin https://github.com/YOUR_USERNAME/spotapp.git
+    git remote add origin https://github.com/YOUR_USERNAME/statsify.git
     git push -u origin main
     ```
     *(Replace YOUR_USERNAME with your actual GitHub username)*
@@ -31,7 +31,7 @@ Vercel is the easiest way to host a React app. It's free and takes 2 minutes.
     vercel
     ```
 3.  Follow the prompts (Log in if needed).
-4.  Once finished, Vercel will give you a **Production URL** (e.g., `https://spotapp-yourname.vercel.app`).
+4.  Once finished, Vercel will give you a **Production URL** (e.g., `https://statsify-yourname.vercel.app`).
 5.  **Important**: In the Vercel Dashboard for your project, go to **Settings > Environment Variables** and add:
     *   `VITE_SPOTIFY_CLIENT_ID` = `[Your Client ID]`
     *   `VITE_REDIRECT_URI` = `https://your-app-url.vercel.app/callback`
