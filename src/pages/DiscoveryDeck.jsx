@@ -95,7 +95,14 @@ const DiscoveryDeck = () => {
             let searchUrl = `/search?q=${encodeURIComponent(query)}&type=playlist&limit=10&market=${userMarket}`;
             let searchRes = await spotifyFetch(searchUrl);
 
-            // Prioritize Spotify-owned playlists (more robust check)
+            // If No localized results found, try global search
+            if (!searchRes?.playlists?.items?.length) {
+                console.log(`Vibe "${query}" not found in market ${userMarket}, trying global...`);
+                searchUrl = `/search?q=${encodeURIComponent(query)}&type=playlist&limit=10`;
+                searchRes = await spotifyFetch(searchUrl);
+            }
+
+            // Prioritize Spotify-owned playlists
             let playlist = searchRes?.playlists?.items?.find(p =>
                 p && p.owner && (
                     p.owner.display_name?.toLowerCase().includes('spotify') ||
@@ -103,17 +110,16 @@ const DiscoveryDeck = () => {
                 )
             ) || searchRes?.playlists?.items?.[0];
 
-            // 2. Fallback search if specific vibe fails
+            // 2. Broad Fallback if still nothing
             if (!playlist) {
-                console.log(`Vibe "${query}" failed in market ${userMarket}, trying broad fallback...`);
-                searchUrl = `/search?q=${encodeURIComponent("Top 50")}&type=playlist&limit=5&market=${userMarket}`;
+                console.log(`Still nothing for "${query}", trying broad "Top 50"...`);
+                searchUrl = `/search?q=${encodeURIComponent("Top 50 - Global")}&type=playlist&limit=1`;
                 searchRes = await spotifyFetch(searchUrl);
                 playlist = searchRes?.playlists?.items?.[0];
             }
 
             if (!playlist) {
-                const diag = searchRes?.playlists ? `Matches: ${searchRes.playlists.total}` : "No playlists object";
-                throw new Error(`No music found for "${query}" in market ${userMarket}. (${diag})`);
+                throw new Error(`We couldn't find any music for "${query}" right now. Try a different vibe!`);
             }
 
             // 2. Fetch tracks
