@@ -40,14 +40,20 @@ const DiscoveryDeck = () => {
         try {
             // Seed with top artists
             const topArtists = await spotifyFetch('/me/top/artists?limit=5&time_range=short_term');
-            if (!topArtists?.items?.length) return;
 
-            const seeds = topArtists.items.map(a => a.id).join(',');
-            const res = await spotifyFetch(`/recommendations?seed_artists=${seeds}&limit=50`);
+            let url = '/recommendations?limit=50';
+
+            if (topArtists?.items?.length > 0) {
+                const seeds = topArtists.items.map(a => a.id).join(',');
+                url += `&seed_artists=${seeds}`;
+            } else {
+                // Fallback to Pop if no top artists found (new account)
+                url += `&seed_genres=pop`;
+            }
+
+            const res = await spotifyFetch(url);
 
             if (res?.tracks) {
-                // Filter out songs without audio previews if you want strict preview availability
-                // For now, we'll keep them all but disable preview button if missing
                 setQueue(res.tracks);
                 setCurrentTrack(res.tracks[0]);
             }
@@ -233,7 +239,8 @@ const DiscoveryDeck = () => {
 
                     <button
                         onClick={() => handleSwipe('right')}
-                        className="w-16 h-16 rounded-full bg-[#181818] text-green-500 border border-neutral-800 hover:bg-green-500 hover:text-white hover:scale-110 hover:border-green-500 transition-all flex items-center justify-center shadow-lg"
+                        disabled={!playlistId}
+                        className={`w-16 h-16 rounded-full bg-[#181818] border border-neutral-800 flex items-center justify-center shadow-lg transition-all ${!playlistId ? 'opacity-50 cursor-not-allowed text-gray-500' : 'text-green-500 hover:bg-green-500 hover:text-white hover:scale-110 hover:border-green-500'}`}
                     >
                         <Heart size={32} fill="currentColor" />
                     </button>

@@ -66,7 +66,11 @@ const MoodMix = () => {
             })).filter(t => t.features); // Only keep tracks with features
 
             setTracks(enrichedTracks);
-            setStatus('');
+            if (enrichedTracks.length === 0) {
+                setStatus('No liked songs found (or analysis failed). Try liking more songs!');
+            } else {
+                setStatus('');
+            }
         } catch (err) {
             console.error(err);
             setStatus('Failed to load songs.');
