@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { spotifyFetch } from '../utils/spotify';
-import { Music, Play, Wand2, BarChart3, Edit3, Trash2, Activity, RefreshCw } from 'lucide-react';
+import { Music, Play, Wand2, BarChart3, Edit3, Trash2, Activity, RefreshCw, Sliders, Layers, Receipt } from 'lucide-react';
 
 const Dashboard = () => {
     const [playlists, setPlaylists] = useState([]);
@@ -137,6 +137,27 @@ const Dashboard = () => {
                         icon={Trash2}
                         color="red"
                         onClick={() => navigate('/cleanup')}
+                    />
+                    <QuickActionCard
+                        title="Mood Mix"
+                        desc="Filter by Vibe/Energy"
+                        icon={Sliders}
+                        color="yellow"
+                        onClick={() => navigate('/mood-mix')}
+                    />
+                    <QuickActionCard
+                        title="Discovery"
+                        desc="Swipe to find new gems"
+                        icon={Layers}
+                        color="blue"
+                        onClick={() => navigate('/discovery')}
+                    />
+                    <QuickActionCard
+                        title="Receiptify"
+                        desc="Your top tracks receipt"
+                        icon={Receipt}
+                        color="gray"
+                        onClick={() => navigate('/receipt')}
                     />
                     <QuickActionCard
                         title="Full Stats"

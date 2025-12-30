@@ -9,6 +9,9 @@ import PlaylistManager from './pages/PlaylistManager';
 import Stats from './pages/Stats';
 import LibraryCleanup from './pages/LibraryCleanup';
 import Automation from './pages/Automation';
+import MoodMix from './pages/MoodMix';
+import DiscoveryDeck from './pages/DiscoveryDeck';
+import ReceiptGenerator from './pages/ReceiptGenerator';
 import Layout from './components/Layout';
 
 function App() {
@@ -26,6 +29,9 @@ function App() {
                 <Route path="/playlists" element={<Layout><PlaylistManager /></Layout>} />
                 <Route path="/cleanup" element={<Layout><LibraryCleanup /></Layout>} />
                 <Route path="/automation" element={<Layout><Automation /></Layout>} />
+                <Route path="/mood-mix" element={<Layout><MoodMix /></Layout>} />
+                <Route path="/discovery" element={<Layout><DiscoveryDeck /></Layout>} />
+                <Route path="/receipt" element={<Layout><ReceiptGenerator /></Layout>} />
                 <Route path="/stats" element={<Layout><Stats /></Layout>} />
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>
