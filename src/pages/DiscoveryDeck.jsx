@@ -90,13 +90,25 @@ const DiscoveryDeck = () => {
         setInitDone(true);
         try {
             // 1. Search for a playlist matching the vibe
-            const searchRes = await spotifyFetch(`/search?q=${encodeURIComponent(query)}&type=playlist&limit=5`);
+            let searchRes = await spotifyFetch(`/search?q=${encodeURIComponent(query)}&type=playlist&limit=10`);
 
-            // Prioritize Spotify-owned playlists
-            const playlist = searchRes?.playlists?.items?.find(p => p && p.owner && (p.owner.display_name === 'Spotify' || p.owner.id === 'spotify')) || searchRes?.playlists?.items?.[0];
+            // Prioritize Spotify-owned playlists (more robust check)
+            let playlist = searchRes?.playlists?.items?.find(p =>
+                p && p.owner && (
+                    p.owner.display_name?.toLowerCase().includes('spotify') ||
+                    p.owner.id === 'spotify'
+                )
+            ) || searchRes?.playlists?.items?.[0];
+
+            // 2. Fallback search if specific vibe fails
+            if (!playlist) {
+                console.log(`Vibe "${query}" failed, trying broad fallback...`);
+                searchRes = await spotifyFetch(`/search?q=${encodeURIComponent("Top Hits")}&type=playlist&limit=1`);
+                playlist = searchRes?.playlists?.items?.[0];
+            }
 
             if (!playlist) {
-                throw new Error(`Could not find a vibe playlist for "${query}". Try another vibe!`);
+                throw new Error(`Could not find any music for "${query}". Please check your internet or try again later.`);
             }
 
             // 2. Fetch tracks
