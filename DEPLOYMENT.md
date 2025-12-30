@@ -6,7 +6,7 @@
 
 Before hosting, you should store your code on GitHub. This keeps it safe and makes updates easy.
 
-1.  Go to [GitHub.com](https://github.com) and create a new repository called `spotapp`.
+1.  Go to [GitHub.com](https://github.com) and create a new repository called `statsify`.
 2.  In your terminal, run these commands:
     ```bash
     git init
@@ -24,7 +24,7 @@ Before hosting, you should store your code on GitHub. This keeps it safe and mak
 
 Vercel is the easiest way to host a React app. It's free and takes 2 minutes.
 
-1.  Open your terminal in the `spotapp` folder.
+1.  Open your terminal in the project folder.
 2.  Run:
     ```bash
     npm install -g vercel

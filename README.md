@@ -14,7 +14,7 @@ Statsify is a specialized music discovery engine that finds genuinely new music 
 1. **Clone the repository**:
    ```bash
    git clone [your-repo-url]
-   cd spotapp
+   cd statsify
    ```
 
 2. **Install dependencies**:

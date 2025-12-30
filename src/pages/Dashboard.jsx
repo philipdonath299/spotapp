@@ -162,7 +162,10 @@ const Dashboard = () => {
                                 {playlist.images?.[0]?.url ? (
                                     <img src={playlist.images[0].url} className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000" alt="" />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center font-black text-white/20 text-3xl">ARC</div>
+                                    <div className="w-full h-full flex flex-col items-center justify-center bg-white/5 group-hover:bg-white/10 transition-colors">
+                                        <Music size={40} className="text-white/20 mb-2" />
+                                        <span className="text-[8px] font-black text-white/20 tracking-[0.3em]">EMPTY ARCHIVE</span>
+                                    </div>
                                 )}
                                 <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-all duration-700 flex items-center justify-center backdrop-blur-md">
                                     <div className="w-16 h-16 rounded-full ios26-liquid flex items-center justify-center border border-white/20 shadow-2xl scale-50 group-hover:scale-100 transition-transform duration-700">
