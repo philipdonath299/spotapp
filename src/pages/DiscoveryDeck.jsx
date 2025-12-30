@@ -26,17 +26,42 @@ const DiscoveryDeck = () => {
     ];
 
     useEffect(() => {
-        // Just find the collection playlist on mount
-        findOrCreatePlaylist();
+        initDiscovery();
         return () => {
             if (audio) {
                 audio.pause();
+                audio.src = "";
                 setAudio(null);
             }
         };
     }, []);
 
-    const findOrCreatePlaylist = async () => {
+    // Auto-play preview when track changes
+    useEffect(() => {
+        if (currentTrack?.preview_url) {
+            // Stop any existing audio
+            if (audio) {
+                audio.pause();
+                audio.src = "";
+            }
+
+            const newAudio = new Audio(currentTrack.preview_url);
+            newAudio.volume = 0.5;
+            newAudio.play().catch(e => console.warn("Auto-play blocked by browser:", e));
+            newAudio.onended = () => setIsPlaying(false);
+            setAudio(newAudio);
+            setIsPlaying(true);
+        } else {
+            // If no preview, stop current audio
+            if (audio) {
+                audio.pause();
+                setAudio(null);
+                setIsPlaying(false);
+            }
+        }
+    }, [currentTrack]);
+
+    const initDiscovery = async () => {
         try {
             const me = await spotifyFetch('/me');
             if (!me || !me.id) {
@@ -137,17 +162,13 @@ const DiscoveryDeck = () => {
     };
 
     const togglePreview = () => {
-        if (!currentTrack?.preview_url) return;
+        if (!currentTrack?.preview_url || !audio) return;
 
         if (isPlaying) {
             audio.pause();
             setIsPlaying(false);
         } else {
-            const newAudio = new Audio(currentTrack.preview_url);
-            newAudio.volume = 0.5;
-            newAudio.play();
-            newAudio.onended = () => setIsPlaying(false);
-            setAudio(newAudio);
+            audio.play().catch(e => console.warn("Playback failed", e));
             setIsPlaying(true);
         }
     };
