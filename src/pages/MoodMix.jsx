@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { spotifyFetch } from '../utils/spotify';
-import { ArrowLeft, Play, Save, Loader2, RefreshCw, Zap, Smile, Music2, Sliders } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Music2, Filter, Tag, Calendar, TrendingUp } from 'lucide-react';
 
 const MoodMix = () => {
     const navigate = useNavigate();
@@ -10,12 +10,12 @@ const MoodMix = () => {
     const [tracks, setTracks] = useState([]);
     const [filteredTracks, setFilteredTracks] = useState([]);
     const [status, setStatus] = useState('');
+    const [availableGenres, setAvailableGenres] = useState([]);
 
-    // Mood State (0-100)
-    const [energy, setEnergy] = useState(50);
-    const [valence, setValence] = useState(50); // Happiness
-    const [danceability, setDanceability] = useState(50);
-    const [tolerance, setTolerance] = useState(40); // How strict the filter is (+/-)
+    // Filters
+    const [selectedGenre, setSelectedGenre] = useState('All');
+    const [yearRange, setYearRange] = useState('All'); // All, 2020s, 2010s, 2000s, Classics
+    const [popularity, setPopularity] = useState('All'); // All, Top Hits, Deep Cuts
 
     useEffect(() => {
         fetchLikedSongs();
@@ -25,17 +25,14 @@ const MoodMix = () => {
         if (tracks.length > 0) {
             applyFilters();
         }
-    }, [energy, valence, danceability, tolerance, tracks]);
+    }, [selectedGenre, yearRange, popularity, tracks]);
 
     const fetchLikedSongs = async () => {
         setLoading(true);
         setStatus('Fetching your liked songs...');
         try {
-            // 1. Fetch last 100 liked songs (can increase to 250/500 if needed)
+            // 1. Fetch last 200 liked songs
             let allTracks = [];
-            let errorCount = 0;
-
-            // Fetch 2 pages of 50
             for (let offset of [0, 50, 100, 150]) {
                 try {
                     const res = await spotifyFetch(`/me/tracks?limit=50&offset=${offset}`);
@@ -43,63 +40,76 @@ const MoodMix = () => {
                         allTracks = [...allTracks, ...res.items];
                     }
                 } catch (e) {
-                    console.warn(`Failed to fetch offset ${offset}:`, e);
-                    errorCount++;
+                    console.warn(`Failed to fetch offset ${offset}`, e);
                 }
             }
 
             if (allTracks.length === 0) {
-                throw new Error("Could not fetch any songs. Check connection.");
+                throw new Error("No songs found.");
             }
 
-            // 2. Extract IDs for Audio Features
-            // IMPORTANT: Filter out local tracks as they cause API 400 errors
-            const validTracks = allTracks.filter(t => t.track && t.track.id && !t.track.is_local);
-            const trackIds = validTracks.map(t => t.track.id);
-            const featuresMap = {};
-            let lastError = null;
+            // 2. Extract Artist IDs to fetch Genres
+            // Filter local tracks
+            const validTracks = allTracks.filter(t => t.track && !t.track.is_local && t.track.artists.length > 0);
+            const artistIds = [...new Set(validTracks.map(t => t.track.artists[0].id))]; // Primary artist only
 
-            setStatus(`Analyzing vibes of ${trackIds.length} songs (skipped ${allTracks.length - trackIds.length} local files)...`);
+            setStatus(`Fetching genres for ${artistIds.length} artists...`);
             setAnalyzing(true);
 
-            // 3. Fetch Audio Features in chunks of 50
-            for (let i = 0; i < trackIds.length; i += 50) {
+            const artistMap = {};
+
+            // Batch fetch artists (50 limit)
+            for (let i = 0; i < artistIds.length; i += 50) {
                 try {
-                    const chunk = trackIds.slice(i, i + 50);
-                    const featureRes = await spotifyFetch(`/audio-features?ids=${chunk.join(',')}`);
-                    if (featureRes?.audio_features) {
-                        featureRes.audio_features.forEach(f => {
-                            if (f) featuresMap[f.id] = f;
+                    const chunk = artistIds.slice(i, i + 50);
+                    const res = await spotifyFetch(`/artists?ids=${chunk.join(',')}`);
+                    if (res?.artists) {
+                        res.artists.forEach(a => {
+                            if (a) artistMap[a.id] = a;
                         });
-                    } else {
-                        console.warn("Chunk returned strings/nulls:", featureRes);
                     }
                 } catch (e) {
-                    console.error("Failed to fetch features chunk:", e);
-                    lastError = e.message;
-                    // Don't break, try next chunk
+                    console.error("Artist fetch failed", e);
                 }
             }
 
-            // 4. Combine Data
-            const enrichedTracks = validTracks.map(item => ({
-                ...item,
-                features: featuresMap[item.track.id]
-            })).filter(t => t.features); // Only keep tracks with features
+            // 3. Enrich Tracks with Artist Data (Genres)
+            const enrichedTracks = validTracks.map(item => {
+                const artist = artistMap[item.track.artists[0].id];
+                return {
+                    ...item,
+                    genre: artist?.genres || [],
+                    year: parseInt(item.track.album.release_date.substring(0, 4)) || 0,
+                    popularity: item.track.popularity
+                };
+            });
 
-            console.log(`Debug: Fetched ${allTracks.length}, Valid ${trackIds.length}, Enriched ${enrichedTracks.length}`);
+            // 4. Extract Top Genres
+            const genreCounts = {};
+            enrichedTracks.forEach(t => {
+                t.genre.forEach(g => {
+                    // Simplify genres (e.g., "dance pop" -> "pop")
+                    let key = g;
+                    if (g.includes('pop')) key = 'Pop';
+                    else if (g.includes('rap') || g.includes('hip hop')) key = 'Hip Hop';
+                    else if (g.includes('rock') || g.includes('metal')) key = 'Rock';
+                    else if (g.includes('house') || g.includes('edm') || g.includes('dance')) key = 'Electronic';
+                    else if (g.includes('indie')) key = 'Indie';
+                    else if (g.includes('r&b') || g.includes('soul')) key = 'R&B';
 
+                    genreCounts[key] = (genreCounts[key] || 0) + 1;
+                });
+            });
+
+            const topGenres = Object.entries(genreCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 8) // Top 8 genres
+                .map(([g]) => g);
+
+            setAvailableGenres(['All', ...topGenres]);
             setTracks(enrichedTracks);
-            if (enrichedTracks.length === 0) {
-                if (allTracks.length === 0) {
-                    setStatus('No Liked Songs found. Go like some music first!');
-                } else {
-                    // Show the specific error if we have one
-                    setStatus(lastError ? `Analysis Failed: ${lastError}` : `Found ${allTracks.length} songs but analysis failed (0 features).`);
-                }
-            } else {
-                setStatus('');
-            }
+            setStatus('');
+
         } catch (err) {
             console.error(err);
             setStatus(`Error: ${err.message}`);
@@ -110,21 +120,43 @@ const MoodMix = () => {
     };
 
     const applyFilters = () => {
-        const eTarget = energy / 100;
-        const vTarget = valence / 100;
-        const dTarget = danceability / 100;
-        const tol = tolerance / 100;
+        let filtered = tracks;
 
-        const filtered = tracks.filter(t => {
-            const f = t.features;
-            if (!f) return false;
+        // Genre Filter
+        if (selectedGenre !== 'All') {
+            filtered = filtered.filter(t => {
+                // Check if any of the artist's genres match our loose category
+                const g = t.genre.join(' ').toLowerCase();
+                const target = selectedGenre.toLowerCase();
+                if (target === 'pop') return g.includes('pop');
+                if (target === 'hip hop') return g.includes('rap') || g.includes('hip hop');
+                if (target === 'rock') return g.includes('rock') || g.includes('metal');
+                if (target === 'electronic') return g.includes('house') || g.includes('edm') || g.includes('dance') || g.includes('electronic');
+                if (target === 'indie') return g.includes('indie');
+                if (target === 'r&b') return g.includes('r&b') || g.includes('soul');
+                return g.includes(target);
+            });
+        }
 
-            const matchEnergy = Math.abs(f.energy - eTarget) <= tol;
-            const matchValence = Math.abs(f.valence - vTarget) <= tol;
-            const matchDance = Math.abs(f.danceability - dTarget) <= tol;
+        // Year Filter
+        if (yearRange !== 'All') {
+            filtered = filtered.filter(t => {
+                if (yearRange === '2020s') return t.year >= 2020;
+                if (yearRange === '2010s') return t.year >= 2010 && t.year < 2020;
+                if (yearRange === '2000s') return t.year >= 2000 && t.year < 2010;
+                if (yearRange === 'Classics') return t.year < 2000;
+                return true;
+            });
+        }
 
-            return matchEnergy && matchValence && matchDance;
-        });
+        // Popularity Filter
+        if (popularity !== 'All') {
+            filtered = filtered.filter(t => {
+                if (popularity === 'Top Hits') return t.popularity >= 70;
+                if (popularity === 'Deep Cuts') return t.popularity < 50;
+                return true;
+            });
+        }
 
         setFilteredTracks(filtered);
     };
@@ -135,11 +167,11 @@ const MoodMix = () => {
         setStatus('Creating playlist...');
         try {
             const me = await spotifyFetch('/me');
-            const name = `Mood Mix: ${getMoodName()}`;
+            const name = `Mood Mix: ${selectedGenre !== 'All' ? selectedGenre : 'My Mix'} ${yearRange !== 'All' ? yearRange : ''}`;
 
             const playlist = await spotifyFetch(`/users/${me.id}/playlists`, 'POST', {
                 name: name,
-                description: `A generated mix based on Energy: ${energy}%, Happiness: ${valence}%, Danceability: ${danceability}%.`,
+                description: `Generated mix. Genre: ${selectedGenre}, Year: ${yearRange}, Popularity: ${popularity}.`,
                 public: false
             });
 
@@ -162,15 +194,6 @@ const MoodMix = () => {
         }
     };
 
-    const getMoodName = () => {
-        if (energy > 80 && valence > 80) return "Hyper Happy 🦄";
-        if (energy > 80 && valence < 30) return "Aggressive Dark 🧛";
-        if (energy < 30 && valence < 30) return "Sad & Slow 🌧️";
-        if (energy < 40 && valence > 70) return "Chill Vibes 🍃";
-        if (danceability > 80) return "Dance Party 🕺";
-        return "Custom Vibe ✨";
-    };
-
     return (
         <div className="min-h-screen bg-black text-white p-4 md:p-8 animate-fade-in pb-32">
             <button
@@ -182,9 +205,9 @@ const MoodMix = () => {
 
             <header className="mb-12 text-center md:text-left">
                 <h1 className="text-4xl font-bold mb-4 flex items-center justify-center md:justify-start gap-3">
-                    <Sliders className="text-purple-500" /> Mood Mix Builder
+                    <Filter className="text-purple-500" /> Vibe Filter
                 </h1>
-                <p className="text-gray-400">Filter your liked songs to find the perfect vibe.</p>
+                <p className="text-gray-400">Filter your liked songs by Genre, Year, and Popularity.</p>
             </header>
 
             {loading && !tracks.length ? (
@@ -197,72 +220,64 @@ const MoodMix = () => {
 
                     {/* Controls */}
                     <div className="bg-[#181818] p-6 rounded-2xl border border-neutral-800 h-fit">
-                        <h2 className="text-xl font-bold mb-6">Dial in the Vibe</h2>
+                        <h2 className="text-xl font-bold mb-6">Filter Options</h2>
 
-                        <div className="space-y-8">
-                            {/* Energy */}
+                        <div className="space-y-6">
+
+                            {/* Genre */}
                             <div>
-                                <div className="flex justify-between mb-2">
-                                    <label className="font-bold flex items-center gap-2"><Zap size={16} className="text-yellow-500" /> Energy</label>
-                                    <span className="text-yellow-500 font-bold">{energy}%</span>
-                                </div>
-                                <input
-                                    type="range" min="0" max="100" value={energy}
-                                    onChange={(e) => setEnergy(parseInt(e.target.value))}
-                                    className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-yellow-500"
-                                />
-                                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                                    <span>Chill</span>
-                                    <span>Intense</span>
+                                <label className="font-bold flex items-center gap-2 mb-3">
+                                    <Tag size={18} className="text-pink-500" /> Genre
+                                </label>
+                                <div className="flex flex-wrap gap-2">
+                                    {availableGenres.map(g => (
+                                        <button
+                                            key={g}
+                                            onClick={() => setSelectedGenre(g)}
+                                            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${selectedGenre === g ? 'bg-pink-600 border-pink-600 text-white' : 'bg-transparent border-neutral-700 text-gray-400 hover:border-white'}`}
+                                        >
+                                            {g}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
 
-                            {/* Valence */}
+                            {/* Year */}
                             <div>
-                                <div className="flex justify-between mb-2">
-                                    <label className="font-bold flex items-center gap-2"><Smile size={16} className="text-green-500" /> Happiness</label>
-                                    <span className="text-green-500 font-bold">{valence}%</span>
-                                </div>
-                                <input
-                                    type="range" min="0" max="100" value={valence}
-                                    onChange={(e) => setValence(parseInt(e.target.value))}
-                                    className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-green-500"
-                                />
-                                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                                    <span>Sad/Angry</span>
-                                    <span>Joyful</span>
-                                </div>
+                                <label className="font-bold flex items-center gap-2 mb-3">
+                                    <Calendar size={18} className="text-blue-500" /> Release Year
+                                </label>
+                                <select
+                                    value={yearRange}
+                                    onChange={(e) => setYearRange(e.target.value)}
+                                    className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="All">Any Time</option>
+                                    <option value="2020s">2020s (New)</option>
+                                    <option value="2010s">2010s</option>
+                                    <option value="2000s">2000s</option>
+                                    <option value="Classics">Pre-2000s (Classics)</option>
+                                </select>
                             </div>
 
-                            {/* Danceability */}
+                            {/* Popularity */}
                             <div>
-                                <div className="flex justify-between mb-2">
-                                    <label className="font-bold flex items-center gap-2"><Music2 size={16} className="text-blue-500" /> Danceability</label>
-                                    <span className="text-blue-500 font-bold">{danceability}%</span>
-                                </div>
-                                <input
-                                    type="range" min="0" max="100" value={danceability}
-                                    onChange={(e) => setDanceability(parseInt(e.target.value))}
-                                    className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
-                                />
-                                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                                    <span>Static</span>
-                                    <span>Groovy</span>
+                                <label className="font-bold flex items-center gap-2 mb-3">
+                                    <TrendingUp size={18} className="text-green-500" /> Popularity
+                                </label>
+                                <div className="flex gap-2 bg-neutral-800 p-1 rounded-lg">
+                                    {['All', 'Top Hits', 'Deep Cuts'].map(p => (
+                                        <button
+                                            key={p}
+                                            onClick={() => setPopularity(p)}
+                                            className={`flex-1 py-2 rounded-md text-sm font-bold transition-all ${popularity === p ? 'bg-green-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                                        >
+                                            {p}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
 
-                            {/* Tolerance */}
-                            <div className="pt-4 border-t border-neutral-700">
-                                <div className="flex justify-between mb-2">
-                                    <label className="text-sm text-gray-400">Match Strictness</label>
-                                    <span className="text-gray-400 text-sm">{tolerance}% Range</span>
-                                </div>
-                                <input
-                                    type="range" min="5" max="50" value={tolerance}
-                                    onChange={(e) => setTolerance(parseInt(e.target.value))}
-                                    className="w-full h-1 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-gray-400"
-                                />
-                            </div>
                         </div>
 
                         <div className="mt-8">
@@ -274,10 +289,10 @@ const MoodMix = () => {
                             <button
                                 onClick={handleCreatePlaylist}
                                 disabled={loading || filteredTracks.length === 0}
-                                className="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-900/20"
+                                className="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {loading ? <Loader2 className="animate-spin" /> : <Save />}
-                                {loading ? 'Saving Vibe...' : 'Save as Playlist'}
+                                {loading ? 'Saving...' : 'Save as Playlist'}
                             </button>
                             {status && <p className="text-center mt-3 text-sm text-green-400 animate-pulse">{status}</p>}
                         </div>
@@ -286,7 +301,7 @@ const MoodMix = () => {
                     {/* Results List */}
                     <div className="lg:col-span-2">
                         <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                            {getMoodName()} Preview
+                            Filtered Collection
                         </h3>
 
                         {filteredTracks.length > 0 ? (
@@ -299,6 +314,10 @@ const MoodMix = () => {
                                         <div className="overflow-hidden">
                                             <p className="font-bold truncate">{item.track.name}</p>
                                             <p className="text-xs text-gray-400 truncate">{item.track.artists[0].name}</p>
+                                            <div className="flex gap-2 mt-1">
+                                                <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-gray-300">{item.year}</span>
+                                                {item.genre[0] && <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-gray-300 truncate max-w-[80px]">{item.genre[0]}</span>}
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -311,8 +330,8 @@ const MoodMix = () => {
                         ) : (
                             <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-neutral-800 rounded-2xl text-gray-500">
                                 <Music2 size={48} className="mb-4 opacity-50" />
-                                <p>No songs match this specific vibe.</p>
-                                <p className="text-sm">Try widening the range or adjusting the sliders.</p>
+                                <p>No songs match these filters.</p>
+                                <p className="text-sm">Try selecting "All" for some options to widen the search.</p>
                             </div>
                         )}
                     </div>

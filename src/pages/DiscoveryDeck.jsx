@@ -1,21 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { spotifyFetch } from '../utils/spotify';
-import { ArrowLeft, X, Heart, Play, Pause, Loader2, Music2, SkipForward } from 'lucide-react';
+import { ArrowLeft, X, Heart, Play, Pause, Loader2, Music2, Layers } from 'lucide-react';
 
 const DiscoveryDeck = () => {
     const navigate = useNavigate();
     const [queue, setQueue] = useState([]);
     const [currentTrack, setCurrentTrack] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [playlistId, setPlaylistId] = useState(null);
-    const [swipeDirection, setSwipeDirection] = useState(null); // 'left' | 'right'
+    const [swipeDirection, setSwipeDirection] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [audio, setAudio] = useState(null);
     const [errorMsg, setErrorMsg] = useState('');
+    const [initDone, setInitDone] = useState(false);
+
+    // Hardcoded Category Playlists (These are stable Spotify Owned playlists)
+    const PRESETS = [
+        { name: "Top 50 Global", id: "37i9dQZEVXbMDoHDwVN2tF", color: "blue" },
+        { name: "Viral 50", id: "37i9dQZEVXbLiRSafCXV9a", color: "purple" },
+        { name: "RapCaviar", id: "37i9dQZF1DX0XUsuxWHRQd", color: "red" },
+        { name: "Viva Latino", id: "37i9dQZF1DX10zKzsJ2jva", color: "orange" },
+        { name: "Mega Hit Mix", id: "37i9dQZF1DXbYM3nMM0oPk", color: "pink" },
+        { name: "All Out 2010s", id: "37i9dQZF1DX5Ejj0EkURtP", color: "teal" }
+    ];
 
     useEffect(() => {
-        initDiscovery();
+        // Just find the collection playlist on mount
+        findOrCreatePlaylist();
         return () => {
             if (audio) {
                 audio.pause();
@@ -24,66 +36,12 @@ const DiscoveryDeck = () => {
         };
     }, []);
 
-    const initDiscovery = async () => {
-        try {
-            await Promise.all([
-                fetchRecommendations(),
-                findOrCreatePlaylist()
-            ]);
-        } catch (err) {
-            console.error("Init failed:", err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchRecommendations = async (forceFallback = false) => {
-        try {
-            setErrorMsg('');
-            let url = '/recommendations?limit=50';
-            let usedFallback = forceFallback;
-
-            if (!forceFallback) {
-                try {
-                    // Seed with top artists
-                    const topArtists = await spotifyFetch('/me/top/artists?limit=3&time_range=short_term');
-                    if (topArtists?.items?.length > 0) {
-                        const seeds = topArtists.items.map(a => a.id).join(',');
-                        url += `&seed_artists=${seeds}`;
-                    } else {
-                        usedFallback = true;
-                    }
-                } catch (e) {
-                    console.warn("Top artists fetch failed, using fallback.");
-                    usedFallback = true;
-                }
-            }
-
-            if (usedFallback) {
-                // Fallback to Pop if no top artists found (new account)
-                url += `&seed_genres=pop,dance,hip-hop`;
-            }
-
-            const res = await spotifyFetch(url);
-
-            if (res?.tracks) {
-                setQueue(res.tracks);
-                setCurrentTrack(res.tracks[0]);
-            } else {
-                setErrorMsg("No recommendations returned.");
-            }
-        } catch (err) {
-            console.error("Fetch recommendations failed:", err);
-            setErrorMsg(err.message || "Failed to fetch music.");
-        }
-    };
-
     const findOrCreatePlaylist = async () => {
         try {
             const me = await spotifyFetch('/me');
             if (!me || !me.id) {
-                console.error("User profile fetch failed:", me);
-                return; // Cannot create playlist without user ID
+                setErrorMsg("Could not fetch user profile. Try re-logging in.");
+                return;
             }
 
             const playlists = await spotifyFetch('/me/playlists?limit=50');
@@ -101,13 +59,45 @@ const DiscoveryDeck = () => {
             }
         } catch (err) {
             console.error("Playlist init failed:", err);
+            setErrorMsg("Could not access your playlists.");
+        }
+    };
+
+    const loadCategory = async (presetId) => {
+        setLoading(true);
+        setErrorMsg('');
+        setInitDone(true);
+        try {
+            // Fetch tracks from the selected playlist
+            const res = await spotifyFetch(`/playlists/${presetId}/tracks?limit=50`);
+
+            if (res?.items) {
+                const tracks = res.items
+                    .map(i => i.track)
+                    .filter(t => t && t.id && !t.is_local);
+
+                // Shuffle for variety
+                for (let i = tracks.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [tracks[i], tracks[j]] = [tracks[j], tracks[i]];
+                }
+
+                setQueue(tracks);
+                setCurrentTrack(tracks[0]);
+            } else {
+                setErrorMsg("Failed to load tracks from this category.");
+            }
+        } catch (err) {
+            console.error(err);
+            setErrorMsg("Failed to connect to Spotify.");
+        } finally {
+            setLoading(false);
         }
     };
 
     const handleSwipe = async (direction) => {
         if (!currentTrack || !queue.length) return;
 
-        // Stop audio
         if (audio) {
             audio.pause();
             setIsPlaying(false);
@@ -119,15 +109,11 @@ const DiscoveryDeck = () => {
             addToPlaylist(currentTrack.uri);
         }
 
-        // Animation delay
         setTimeout(() => {
             const nextQueue = queue.slice(1);
             setQueue(nextQueue);
             setCurrentTrack(nextQueue[0] || null);
             setSwipeDirection(null);
-
-            // Auto-fetch more if running low
-            if (nextQueue.length < 5) fetchRecommendations();
         }, 300);
     };
 
@@ -158,6 +144,35 @@ const DiscoveryDeck = () => {
         }
     };
 
+    if (!initDone) {
+        return (
+            <div className="min-h-screen bg-black text-white p-6 flex flex-col items-center justify-center animate-fade-in">
+                <button
+                    onClick={() => navigate('/dashboard')}
+                    className="absolute top-6 left-6 flex items-center text-gray-400 hover:text-white transition-colors"
+                >
+                    <ArrowLeft className="mr-2" size={20} /> Exit
+                </button>
+
+                <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">
+                    <Layers className="text-blue-500" /> Choose a Vibe
+                </h1>
+                <div className="grid grid-cols-2 gap-4 w-full max-w-md">
+                    {PRESETS.map(p => (
+                        <button
+                            key={p.id}
+                            onClick={() => loadCategory(p.id)}
+                            className={`p-6 rounded-2xl bg-gradient-to-br from-neutral-800 to-neutral-900 border border-neutral-700 hover:to-${p.color}-900/50 hover:border-${p.color}-500 transition-all text-left group`}
+                        >
+                            <span className={`text-${p.color}-400 font-bold text-lg block mb-1 group-hover:text-white`}>{p.name}</span>
+                            <span className="text-xs text-gray-500">Explore</span>
+                        </button>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
     if (loading) {
         return (
             <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white">
@@ -172,31 +187,13 @@ const DiscoveryDeck = () => {
             <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-6 text-center">
                 <Music2 size={64} className="text-neutral-700 mb-6" />
                 <h2 className="text-2xl font-bold mb-2">Out of cards!</h2>
-                <p className="text-gray-400 mb-6">
-                    {errorMsg ? `Error: ${errorMsg}` : "You've swiped through all our recommendations for now."}
-                </p>
-                <div className="flex gap-4">
-                    <button
-                        onClick={async () => {
-                            setLoading(true);
-                            await fetchRecommendations();
-                            setLoading(false);
-                        }}
-                        className="px-6 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors"
-                    >
-                        Try Again
-                    </button>
-                    <button
-                        onClick={async () => {
-                            setLoading(true);
-                            await fetchRecommendations(true);
-                            setLoading(false);
-                        }}
-                        className="px-6 py-3 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-500 transition-colors"
-                    >
-                        Use Safe Mode (Pop)
-                    </button>
-                </div>
+                <p className="text-gray-400 mb-6">{errorMsg || "You've swiped through this deck."}</p>
+                <button
+                    onClick={() => setInitDone(false)}
+                    className="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors"
+                >
+                    Choose Another Vibe
+                </button>
             </div>
         );
     }
@@ -204,35 +201,26 @@ const DiscoveryDeck = () => {
     return (
         <div className="min-h-screen bg-black text-white p-4 flex flex-col animate-fade-in pb-20 overflow-hidden relative">
             <button
-                onClick={() => navigate('/dashboard')}
+                onClick={() => setInitDone(false)}
                 className="absolute top-6 left-6 z-20 flex items-center text-gray-400 hover:text-white transition-colors"
             >
-                <ArrowLeft className="mr-2" size={20} /> Exit
+                <ArrowLeft className="mr-2" size={20} /> Back
             </button>
 
             <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full relative">
 
-                {/* Card Container */}
+                {/* Card */}
                 <div className={`relative w-full aspect-[4/5] bg-[#181818] rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 ${swipeDirection === 'left' ? '-translate-x-full rotate-[-20deg] opacity-0' : ''} ${swipeDirection === 'right' ? 'translate-x-full rotate-[20deg] opacity-0' : ''}`}>
-
-                    {/* Album Art Cover */}
                     {currentTrack.album.images[0] && (
-                        <img
-                            src={currentTrack.album.images[0].url}
-                            className="absolute inset-0 w-full h-full object-cover"
-                            alt=""
-                        />
+                        <img src={currentTrack.album.images[0].url} className="absolute inset-0 w-full h-full object-cover" alt="" />
                     )}
-
-                    {/* Gradient Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
-                    {/* Preload Next Image for Smoothness */}
+                    {/* Preload Next */}
                     {queue[1]?.album?.images[0] && (
                         <link rel="preload" as="image" href={queue[1].album.images[0].url} />
                     )}
 
-                    {/* Info Section */}
                     <div className="absolute bottom-0 left-0 right-0 p-8">
                         <h2 className="text-3xl font-bold mb-2 leading-tight shadow-black drop-shadow-lg">{currentTrack.name}</h2>
                         <p className="text-xl text-gray-300 mb-6 font-medium shadow-black drop-shadow-md">{currentTrack.artists.map(a => a.name).join(', ')}</p>
@@ -244,26 +232,20 @@ const DiscoveryDeck = () => {
                                     className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/50 text-white font-bold py-3 px-6 rounded-full flex items-center justify-center gap-2 transition-all"
                                 >
                                     {isPlaying ? <Pause fill="white" size={20} /> : <Play fill="white" size={20} />}
-                                    {isPlaying ? 'Pause Preview' : 'Preview'}
+                                    {isPlaying ? 'Pause' : 'Preview'}
                                 </button>
                             ) : (
-                                <div className="flex-1 bg-black/40 backdrop-blur-md text-gray-400 py-3 px-6 rounded-full text-center text-sm font-bold border border-white/10">
-                                    No Preview
-                                </div>
+                                <div className="flex-1 bg-black/40 backdrop-blur-md text-gray-400 py-3 px-6 rounded-full text-center text-sm font-bold border border-white/10">No Preview</div>
                             )}
                         </div>
                     </div>
 
-                    {/* Overlay Icons for Swiping */}
+                    {/* Overlays */}
                     {swipeDirection === 'right' && (
-                        <div className="absolute top-10 left-10 p-4 border-4 border-green-500 rounded-lg text-green-500 font-bold text-4xl -rotate-12 bg-black/20 backdrop-blur-sm">
-                            LIKE
-                        </div>
+                        <div className="absolute top-10 left-10 p-4 border-4 border-green-500 rounded-lg text-green-500 font-bold text-4xl -rotate-12 bg-black/20 backdrop-blur-sm">LIKE</div>
                     )}
                     {swipeDirection === 'left' && (
-                        <div className="absolute top-10 right-10 p-4 border-4 border-red-500 rounded-lg text-red-500 font-bold text-4xl rotate-12 bg-black/20 backdrop-blur-sm">
-                            NOPE
-                        </div>
+                        <div className="absolute top-10 right-10 p-4 border-4 border-red-500 rounded-lg text-red-500 font-bold text-4xl rotate-12 bg-black/20 backdrop-blur-sm">NOPE</div>
                     )}
                 </div>
 
@@ -284,8 +266,6 @@ const DiscoveryDeck = () => {
                         <Heart size={32} fill="currentColor" />
                     </button>
                 </div>
-
-                <p className="mt-6 text-xs text-neutral-500">Keyboard: ← Pass | Like →</p>
             </div>
         </div>
     );
