@@ -53,13 +53,16 @@ const MoodMix = () => {
             }
 
             // 2. Extract IDs for Audio Features
-            const trackIds = allTracks.map(t => t.track.id).filter(Boolean);
+            // IMPORTANT: Filter out local tracks as they cause API 400 errors
+            const validTracks = allTracks.filter(t => t.track && t.track.id && !t.track.is_local);
+            const trackIds = validTracks.map(t => t.track.id);
             const featuresMap = {};
+            let lastError = null;
 
-            setStatus(`Analyzing vibes of ${trackIds.length} songs...`);
+            setStatus(`Analyzing vibes of ${trackIds.length} songs (skipped ${allTracks.length - trackIds.length} local files)...`);
             setAnalyzing(true);
 
-            // 3. Fetch Audio Features in chunks of 50 (Low batch size to avoid errors)
+            // 3. Fetch Audio Features in chunks of 50
             for (let i = 0; i < trackIds.length; i += 50) {
                 try {
                     const chunk = trackIds.slice(i, i + 50);
@@ -73,25 +76,26 @@ const MoodMix = () => {
                     }
                 } catch (e) {
                     console.error("Failed to fetch features chunk:", e);
-                    setStatus(`Analysis Error: ${e.message}`);
+                    lastError = e.message;
                     // Don't break, try next chunk
                 }
             }
 
             // 4. Combine Data
-            const enrichedTracks = allTracks.map(item => ({
+            const enrichedTracks = validTracks.map(item => ({
                 ...item,
                 features: featuresMap[item.track.id]
             })).filter(t => t.features); // Only keep tracks with features
 
-            console.log(`Debug: Fetched ${allTracks.length}, Enriched ${enrichedTracks.length}`);
+            console.log(`Debug: Fetched ${allTracks.length}, Valid ${trackIds.length}, Enriched ${enrichedTracks.length}`);
 
             setTracks(enrichedTracks);
             if (enrichedTracks.length === 0) {
                 if (allTracks.length === 0) {
                     setStatus('No Liked Songs found. Go like some music first!');
                 } else {
-                    setStatus(`Found ${allTracks.length} songs but analysis failed (0 features).`);
+                    // Show the specific error if we have one
+                    setStatus(lastError ? `Analysis Failed: ${lastError}` : `Found ${allTracks.length} songs but analysis failed (0 features).`);
                 }
             } else {
                 setStatus('');
