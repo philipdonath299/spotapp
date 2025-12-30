@@ -80,7 +80,7 @@ const MoodMix = () => {
                 return {
                     ...item,
                     genre: artist?.genres || [],
-                    year: parseInt(item.track.album.release_date.substring(0, 4)) || 0,
+                    year: parseInt(item.track.album?.release_date?.substring(0, 4)) || 0,
                     popularity: item.track.popularity
                 };
             });

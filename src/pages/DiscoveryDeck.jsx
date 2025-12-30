@@ -48,8 +48,8 @@ const DiscoveryDeck = () => {
             let nextUrl = '/me/playlists?limit=50';
             while (nextUrl && !foundPlaylist) {
                 const res = await spotifyFetch(nextUrl.replace('https://api.spotify.com/v1', ''));
-                foundPlaylist = res.items.find(p => p.name === "My Discovery Deck");
-                nextUrl = res.next;
+                foundPlaylist = res?.items?.find(p => p.name === "My Discovery Deck");
+                nextUrl = res?.next;
             }
 
             if (foundPlaylist) {

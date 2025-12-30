@@ -109,7 +109,7 @@ const ReceiptGenerator = () => {
                                         <span className="text-[10px] font-bold mt-0.5">{(i + 1).toString().padStart(2, '0')}</span>
                                         <div className="flex-1 overflow-hidden">
                                             <div className="truncate uppercase font-black text-xs tracking-tight">{track.name}</div>
-                                            <div className="truncate text-[10px] font-bold text-gray-500">{track.artists[0].name.toUpperCase()}</div>
+                                            <div className="truncate text-[10px] font-bold text-gray-500">{track.artists?.[0]?.name?.toUpperCase() || 'UNKNOWN'}</div>
                                         </div>
                                         <span className="whitespace-nowrap tabular-nums text-xs font-bold">{formatTime(track.duration_ms)}</span>
                                     </li>
@@ -169,7 +169,6 @@ const ReceiptGenerator = () => {
             `}</style>
         </div>
     );
-};
 };
 
 export default ReceiptGenerator;

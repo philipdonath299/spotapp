@@ -91,7 +91,8 @@ const AIGenerator = () => {
             }
 
             const data = await fetchAIResponse(apiKey, prompt);
-            const textResponse = data.candidates[0].content.parts[0].text;
+            const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!textResponse) throw new Error("AI did not return any content.");
 
             // Extract JSON from potential markdown backticks
             const jsonMatch = textResponse.match(/\[.*\]/s);

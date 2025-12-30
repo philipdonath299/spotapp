@@ -91,11 +91,11 @@ const Automation = () => {
             ]);
 
             setHealthStats({
-                followers: profile.followers.total,
-                playlists: playlists.total,
-                likedTracks: tracks.total,
+                followers: profile.followers?.total || 0,
+                playlists: playlists?.total || 0,
+                likedTracks: tracks?.total || 0,
                 explicitContent: profile.explicit_content?.filter_enabled ? 'Filtered' : 'Allowed',
-                product: profile.product // 'premium'
+                product: profile.product || 'Standard'
             });
 
         } catch (err) {

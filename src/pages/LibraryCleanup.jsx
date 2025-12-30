@@ -287,7 +287,7 @@ const LibraryCleanup = () => {
                                                 {duplicates.map((d, i) => (
                                                     <div key={i} className="flex items-center justify-between p-3 bg-black/40 rounded-lg">
                                                         <div className="flex items-center gap-3">
-                                                            <img src={d.duplicate.track.album.images[2]?.url} className="w-10 h-10 rounded" alt="" />
+                                                            <img src={d.duplicate.track.album?.images?.[2]?.url} className="w-10 h-10 rounded" alt="" />
                                                             <div>
                                                                 <div className="font-bold text-sm truncate max-w-[200px]">{d.duplicate.track.name}</div>
                                                                 <div className="text-xs text-gray-500">{d.duplicate.track.artists[0].name}</div>
@@ -366,7 +366,6 @@ const LibraryCleanup = () => {
                 </div>
             )}
         </div>
-        </div >
     );
 };
 
