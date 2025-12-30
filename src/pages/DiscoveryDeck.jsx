@@ -172,13 +172,21 @@ const DiscoveryDeck = () => {
                 </p>
                 <div className="flex gap-4">
                     <button
-                        onClick={() => { setLoading(true); fetchRecommendations(); }}
+                        onClick={async () => {
+                            setLoading(true);
+                            await fetchRecommendations();
+                            setLoading(false);
+                        }}
                         className="px-6 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors"
                     >
                         Try Again
                     </button>
                     <button
-                        onClick={() => { setLoading(true); fetchRecommendations(true); }}
+                        onClick={async () => {
+                            setLoading(true);
+                            await fetchRecommendations(true);
+                            setLoading(false);
+                        }}
                         className="px-6 py-3 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-500 transition-colors"
                     >
                         Use Safe Mode (Pop)

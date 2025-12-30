@@ -15,7 +15,7 @@ const MoodMix = () => {
     const [energy, setEnergy] = useState(50);
     const [valence, setValence] = useState(50); // Happiness
     const [danceability, setDanceability] = useState(50);
-    const [tolerance, setTolerance] = useState(20); // How strict the filter is (+/-)
+    const [tolerance, setTolerance] = useState(40); // How strict the filter is (+/-)
 
     useEffect(() => {
         fetchLikedSongs();
