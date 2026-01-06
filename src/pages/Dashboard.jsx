@@ -139,6 +139,7 @@ const Dashboard = () => {
                     <Widget title="Vault" desc="Manage" icon={Edit3} colorClass="orange" onClick={() => navigate('/playlists')} />
                     <Widget title="Stats" desc="Analytics" icon={BarChart3} colorClass="green" span onClick={() => navigate('/stats')} />
                     <Widget title="Cleanup" desc="Health" icon={Trash2} colorClass="red" onClick={() => navigate('/cleanup')} />
+                    <Widget title="Sorter" desc="AI Sorting" icon={Sliders} colorClass="blue" onClick={() => navigate('/liked-sorter')} />
                     <Widget title="Receipt" desc="Snapshot" icon={Receipt} colorClass="gray" onClick={() => navigate('/receipt')} />
                 </div>
             </div>

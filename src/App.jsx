@@ -12,6 +12,7 @@ import Automation from './pages/Automation';
 import MoodMix from './pages/MoodMix';
 import DiscoveryDeck from './pages/DiscoveryDeck';
 import ReceiptGenerator from './pages/ReceiptGenerator';
+import LikedSorter from './pages/LikedSorter';
 import Layout from './components/Layout';
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
                 <Route path="/discovery" element={<Layout><DiscoveryDeck /></Layout>} />
                 <Route path="/receipt" element={<Layout><ReceiptGenerator /></Layout>} />
                 <Route path="/stats" element={<Layout><Stats /></Layout>} />
+                <Route path="/liked-sorter" element={<Layout><LikedSorter /></Layout>} />
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>
         </BrowserRouter>
