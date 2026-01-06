@@ -21,18 +21,42 @@ const LikedSorter = () => {
         setLoading(true);
         setStatus('Initializing Frequency Channels...');
         try {
-            const [tracksRes, playlistsRes] = await Promise.all([
-                spotifyFetch('/me/tracks?limit=50'),
-                spotifyFetch('/me/playlists?limit=50')
-            ]);
+            const me = await spotifyFetch('/me');
 
-            if (tracksRes?.items) setLikedSongs(tracksRes.items.map(i => i.track));
-            if (playlistsRes?.items) {
-                // Filter for own playlists (optional, but safer)
-                const me = await spotifyFetch('/me');
-                const ownedPlaylists = playlistsRes.items.filter(p => p.owner.id === me.id);
-                setPlaylists(ownedPlaylists);
+            // 1. Fetch all liked tracks with pagination
+            let allTracks = [];
+            let nextUrl = '/me/tracks?limit=50';
+            let total = 0;
+
+            while (nextUrl) {
+                const res = await spotifyFetch(nextUrl.replace('https://api.spotify.com/v1', ''));
+                if (res?.items) {
+                    allTracks = [...allTracks, ...res.items.map(i => i.track)];
+                    total = res.total;
+                    nextUrl = res.next;
+                    setStatus(`Syncing Logic: ${allTracks.length} / ${total} Units`);
+                } else {
+                    nextUrl = null;
+                }
             }
+            setLikedSongs(allTracks);
+
+            // 2. Fetch all playlists
+            let allPlaylists = [];
+            let nextPlaylistUrl = '/me/playlists?limit=50';
+            while (nextPlaylistUrl) {
+                const res = await spotifyFetch(nextPlaylistUrl.replace('https://api.spotify.com/v1', ''));
+                if (res?.items) {
+                    allPlaylists = [...allPlaylists, ...res.items];
+                    nextPlaylistUrl = res.next;
+                } else {
+                    nextPlaylistUrl = null;
+                }
+            }
+
+            const ownedPlaylists = allPlaylists.filter(p => p.owner.id === me.id);
+            setPlaylists(ownedPlaylists);
+
             setStatus('Standing By.');
         } catch (err) {
             console.error(err);
@@ -86,30 +110,46 @@ const LikedSorter = () => {
         }
 
         try {
-            const tracksList = likedSongs.map(t => ({ id: t.uri, name: t.name, artist: t.artists[0]?.name }));
-            const playlistsList = playlists.map(p => ({ id: p.id, name: p.name, description: p.description }));
+            const batchSize = 100;
+            const allSuggestions = {};
+            const totalBatches = Math.ceil(likedSongs.length / batchSize);
 
-            const prompt = `
-                I have a list of my "Liked Songs" and a list of my "Playlists" from Spotify.
-                I want you to suggest which playlist each song should be added to based on its genre, mood, or artist.
-                Only suggest a playlist if it's a good match.
-                
-                Songs:
-                ${JSON.stringify(tracksList)}
+            for (let i = 0; i < likedSongs.length; i += batchSize) {
+                const batchNum = Math.floor(i / batchSize) + 1;
+                setStatus(`Synthesizing Logic: Batch ${batchNum} / ${totalBatches}...`);
 
-                Playlists:
-                ${JSON.stringify(playlistsList)}
+                const batch = likedSongs.slice(i, i + batchSize);
+                const tracksList = batch.map(t => ({ id: t.uri, name: t.name, artist: t.artists[0]?.name }));
+                const playlistsList = playlists.map(p => ({ id: p.id, name: p.name, description: p.description }));
 
-                Return ONLY a JSON object where the keys are Playlist IDs and the values are arrays of Song URIs.
-                Example: {"playlistId1": ["spotify:track:123", "spotify:track:456"], "playlistId2": ["spotify:track:789"]}
-                If no match, return an empty object.
-            `;
+                const prompt = `
+                    I have a list of my "Liked Songs" (subset) and a list of my "Playlists" from Spotify.
+                    I want you to suggest which playlist each song should be added to based on its genre, mood, or artist.
+                    Only suggest a playlist if it's a good match.
+                    
+                    Songs:
+                    ${JSON.stringify(tracksList)}
 
-            const response = await fetchAIResponse(apiKey, prompt);
-            const jsonStr = response.replace(/```json|```/g, '').trim();
-            const mapping = JSON.parse(jsonStr);
+                    Playlists:
+                    ${JSON.stringify(playlistsList)}
 
-            setSuggestions(mapping);
+                    Return ONLY a JSON object where the keys are Playlist IDs and the values are arrays of Song URIs.
+                    Example: {"playlistId1": ["spotify:track:123", "spotify:track:456"], "playlistId2": ["spotify:track:789"]}
+                    If no match, return an empty object.
+                `;
+
+                const response = await fetchAIResponse(apiKey, prompt);
+                const jsonStr = response.replace(/```json|```/g, '').trim();
+                const mapping = JSON.parse(jsonStr);
+
+                // Merge results
+                Object.entries(mapping).forEach(([playlistId, uris]) => {
+                    if (!allSuggestions[playlistId]) allSuggestions[playlistId] = [];
+                    allSuggestions[playlistId] = [...allSuggestions[playlistId], ...uris];
+                });
+            }
+
+            setSuggestions(allSuggestions);
             setStatus('Logic Rendered.');
         } catch (err) {
             console.error(err);
