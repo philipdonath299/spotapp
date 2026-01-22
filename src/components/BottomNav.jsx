@@ -18,7 +18,7 @@ const BottomNav = () => {
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pointer-events-none">
-            <div className="ios26-island rounded-[28px] md:rounded-[32px] px-5 md:px-8 py-2 md:py-3.5 flex items-center gap-3 md:gap-7 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.8)] animate-ios26-in pointer-events-auto border-white/5">
+            <div className="ios26-island rounded-[28px] md:rounded-[32px] px-5 md:px-8 py-2 md:py-3.5 flex items-center gap-3 md:gap-7 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.8)] pointer-events-auto border-white/5">
                 {navItems.map((item) => {
                     const active = isActive(item.path);
                     return (
