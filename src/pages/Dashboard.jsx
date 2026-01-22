@@ -60,7 +60,7 @@ const Dashboard = () => {
     ];
 
     return (
-        <div className="py-8 md:py-12 animate-ios26-in min-h-screen">
+        <div className="py-8 md:py-12 min-h-screen relative z-10">
             {/* iOS 26 Header */}
             <header className="flex justify-between items-center mb-10 px-2 relative">
                 <div className="relative z-10">
@@ -113,7 +113,7 @@ const Dashboard = () => {
             <div className="max-w-4xl mx-auto md:mx-0">
                 {/* OVERVIEW TAB */}
                 {activeTab === 'overview' && (
-                    <div className="animate-ios26-in space-y-8">
+                    <div className="space-y-8">
                         {/* Quick Stats Hero */}
                         {topArtist && (
                             <section className="relative">
@@ -152,7 +152,7 @@ const Dashboard = () => {
 
                 {/* CREATIVE TAB */}
                 {activeTab === 'creative' && (
-                    <div className="animate-ios26-in grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <DashboardWidget title="Magic Playlist" desc="AI Generator" icon={Wand2} colorClass="blue" onClick={() => navigate('/ai-generator')} />
                         <DashboardWidget title="Mood Mix" desc="Smart Filters" icon={Sliders} colorClass="purple" onClick={() => navigate('/mood-mix')} />
                         <DashboardWidget title="Liked Sorter" desc="Library Organize" icon={Lists} colorClass="pink" onClick={() => navigate('/liked-sorter')} />
@@ -161,7 +161,7 @@ const Dashboard = () => {
 
                 {/* ANALYTICS TAB */}
                 {activeTab === 'analytics' && (
-                    <div className="animate-ios26-in grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <DashboardWidget title="Deep Stats" desc="Visual Data" icon={BarChart3} colorClass="green" onClick={() => navigate('/stats')} span />
                         <DashboardWidget title="Receipt" desc="Shareable" icon={Receipt} colorClass="gray" onClick={() => navigate('/receipt')} />
                         <DashboardWidget title="Cleanup" desc="Remove Duplicates" icon={Trash2} colorClass="red" onClick={() => navigate('/cleanup')} />
@@ -170,7 +170,7 @@ const Dashboard = () => {
 
                 {/* LIBRARY TAB */}
                 {activeTab === 'discovery' && (
-                    <div className="animate-ios26-in grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <DashboardWidget title="Discovery Deck" desc="Find New Music" icon={Layers} colorClass="orange" onClick={() => navigate('/discovery')} />
                         <DashboardWidget title="Vault" desc="Playlist Manager" icon={Edit3} colorClass="blue" onClick={() => navigate('/playlists')} />
                     </div>
