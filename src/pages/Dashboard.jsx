@@ -10,7 +10,15 @@ const Dashboard = () => {
     const [topArtist, setTopArtist] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [activeTab, setActiveTab] = useState('overview');
     const navigate = useNavigate();
+
+    const tabs = [
+        { id: 'overview', label: 'Overview' },
+        { id: 'creative', label: 'Studio' },
+        { id: 'analytics', label: 'Analytics' },
+        { id: 'discovery', label: 'Library' },
+    ];
 
     const loadData = async (isRefresh = false) => {
         if (isRefresh) setRefreshing(true);
@@ -71,14 +79,7 @@ const Dashboard = () => {
 
 
 
-    const [activeTab, setActiveTab] = useState('overview');
 
-    const tabs = [
-        { id: 'overview', label: 'Overview' },
-        { id: 'creative', label: 'Studio' },
-        { id: 'analytics', label: 'Analytics' },
-        { id: 'discovery', label: 'Library' },
-    ];
 
     return (
         <div className="py-8 md:py-12 min-h-screen relative z-10">
