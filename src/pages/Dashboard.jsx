@@ -81,6 +81,13 @@ const Dashboard = () => {
 
 
 
+    const copySnapshot = () => {
+        if (!topArtist) return;
+        const stats = `🎵 My Music Snapshot\n🔥 Top Artist: ${topArtist.name}\n🎧 Playlists: ${playlists?.length || 0}\n🚀 Generated via Statsify Pro`;
+        navigator.clipboard.writeText(stats);
+        alert("Snapshot copied to clipboard!");
+    };
+
     return (
         <div className="py-8 md:py-12 min-h-screen relative z-10">
             {/* iOS 26 Header */}
