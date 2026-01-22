@@ -200,10 +200,10 @@ const DiscoveryDeck = () => {
 
     if (!initDone) {
         return (
-            <div className="py-20 animate-ios26-in max-w-6xl mx-auto px-6">
+            <div className="py-20  max-w-6xl mx-auto px-6">
                 <header className="mb-24">
                     <button onClick={() => navigate('/dashboard')} className="mb-10 flex items-center text-blue-500 font-black text-[10px] uppercase tracking-[0.3em] hover:text-blue-400 transition-colors">
-                        <ArrowLeft size={16} className="mr-2" /> Index
+                        <ArrowLeft size={16} className="mr-2" /> Dashboard
                     </button>
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
                         <div className="max-w-2xl">
@@ -265,7 +265,7 @@ const DiscoveryDeck = () => {
 
     if (!currentTrack) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center text-white px-8 text-center animate-ios26-in">
+            <div className="min-h-screen flex flex-col items-center justify-center text-white px-8 text-center ">
                 <div className="w-24 h-24 ios26-glass rounded-[32px] flex items-center justify-center mb-10 border border-white/10 shadow-2xl">
                     <Music2 size={40} className="text-white/20" />
                 </div>
@@ -284,7 +284,7 @@ const DiscoveryDeck = () => {
     }
 
     return (
-        <div className="py-12 animate-ios26-in min-h-[90vh] flex flex-col relative overflow-hidden">
+        <div className="py-12  min-h-[90vh] flex flex-col relative overflow-hidden">
             {/* Ambient background glow matching track colors */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 blur-[120px] rounded-full -z-10 animate-ios26-float" />
 

@@ -150,12 +150,12 @@ const LibraryCleanup = () => {
     };
 
     return (
-        <div className="py-20 animate-ios26-in max-w-6xl mx-auto px-6 relative overflow-hidden">
+        <div className="py-20  max-w-6xl mx-auto px-6 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-red-500/5 blur-[120px] rounded-full -z-10 animate-ios26-float" />
 
             <header className="mb-24">
                 <button onClick={() => navigate('/dashboard')} className="mb-10 flex items-center text-blue-500 font-black text-[10px] uppercase tracking-[0.3em] hover:text-blue-400 transition-colors">
-                    <ArrowLeft size={16} className="mr-2" /> Index
+                    <ArrowLeft size={16} className="mr-2" /> Dashboard
                 </button>
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
                     <div>
@@ -183,7 +183,7 @@ const LibraryCleanup = () => {
             </div>
 
             {!selectedPlaylist ? (
-                <div className="space-y-12 animate-ios26-in">
+                <div className="space-y-12 ">
                     <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-3 ml-1">Select Playlist to Scan</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {playlists.map(playlist => (
@@ -212,7 +212,7 @@ const LibraryCleanup = () => {
                     </div>
                 </div>
             ) : (
-                <div className="animate-ios26-in">
+                <div className="">
                     <button
                         onClick={() => setSelectedPlaylist(null)}
                         className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 hover:text-white mb-10 transition-colors flex items-center gap-2"
@@ -237,7 +237,7 @@ const LibraryCleanup = () => {
                         </div>
 
                         {!loading && (
-                            <div className="animate-ios26-in">
+                            <div className="">
                                 {cleanupMode === 'duplicates' && (
                                     duplicates.length > 0 ? (
                                         <div className="space-y-10">

@@ -436,12 +436,12 @@ const PlaylistManager = () => {
 
     if (view === 'list') {
         return (
-            <div className="py-20 animate-ios26-in max-w-6xl mx-auto px-6 relative overflow-hidden">
+            <div className="py-20  max-w-6xl mx-auto px-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full -z-10 animate-ios26-float" />
 
                 <header className="mb-24">
                     <button onClick={() => navigate('/dashboard')} className="mb-10 flex items-center text-blue-500 font-black text-[10px] uppercase tracking-[0.3em] hover:text-blue-400 transition-colors">
-                        <ArrowLeft size={16} className="mr-2" /> Index
+                        <ArrowLeft size={16} className="mr-2" /> Dashboard
                     </button>
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
                         <div>
@@ -475,10 +475,10 @@ const PlaylistManager = () => {
     }
 
     return (
-        <div className="py-20 animate-ios26-in max-w-5xl mx-auto px-6 relative overflow-hidden">
+        <div className="py-20  max-w-5xl mx-auto px-6 relative overflow-hidden">
             <header className="mb-16">
                 <button onClick={() => setView('list')} className="mb-10 flex items-center text-blue-500 font-black text-[10px] uppercase tracking-[0.3em] hover:text-blue-400 transition-colors">
-                    <ArrowLeft size={16} className="mr-2" /> Vault
+                    <ArrowLeft size={16} className="mr-2" /> Dashboard
                 </button>
                 <div className="flex items-center gap-10">
                     <div className="w-48 h-48 shadow-2xl rounded-[48px] overflow-hidden shrink-0 ring-1 ring-white/20">
@@ -518,7 +518,7 @@ const PlaylistManager = () => {
 
             <div className="min-h-[500px]">
                 {activeTab === 'details' && (
-                    <div className="ios26-card p-12 animate-ios26-in border-white/5 bg-white/[0.02]">
+                    <div className="ios26-card p-12  border-white/5 bg-white/[0.02]">
                         <form onSubmit={handleUpdateDetails} className="space-y-12">
                             <div className="space-y-4">
                                 <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] ml-2">Stream Identity</label>
@@ -557,7 +557,7 @@ const PlaylistManager = () => {
                 )}
 
                 {activeTab === 'tools' && (
-                    <div className="space-y-8 animate-ios26-in">
+                    <div className="space-y-8 ">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="ios26-card p-10 flex flex-col justify-between group">
                                 <div>
@@ -651,7 +651,7 @@ const PlaylistManager = () => {
                 )}
 
                 {activeTab === 'split' && (
-                    <div className="ios26-card p-12 animate-ios26-in relative overflow-hidden border-white/10 bg-white/[0.02]">
+                    <div className="ios26-card p-12  relative overflow-hidden border-white/10 bg-white/[0.02]">
                         <div className="absolute inset-0 bg-green-500/[0.01] -z-10" />
                         <div className="flex items-center gap-6 mb-12">
                             <div className="w-16 h-16 ios26-liquid rounded-[28px] flex items-center justify-center text-green-500 border border-white/20 shadow-2xl">
@@ -689,7 +689,7 @@ const PlaylistManager = () => {
                 )}
 
                 {activeTab === 'merge' && (
-                    <div className="ios26-card p-12 animate-ios26-in relative overflow-hidden border-white/10 bg-white/[0.02]">
+                    <div className="ios26-card p-12  relative overflow-hidden border-white/10 bg-white/[0.02]">
                         <div className="absolute inset-0 bg-indigo-500/[0.01] -z-10" />
                         <div className="flex items-center gap-6 mb-12">
                             <div className="w-16 h-16 ios26-liquid rounded-[28px] flex items-center justify-center text-indigo-500 border border-white/20 shadow-2xl">

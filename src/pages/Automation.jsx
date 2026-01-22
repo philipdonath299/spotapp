@@ -97,12 +97,12 @@ const Automation = () => {
     };
 
     return (
-        <div className="py-20 animate-ios26-in max-w-6xl mx-auto px-6 relative overflow-hidden">
+        <div className="py-20  max-w-6xl mx-auto px-6 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full -z-10 animate-ios26-float" />
 
             <header className="mb-24">
                 <button onClick={() => navigate('/dashboard')} className="mb-10 flex items-center text-blue-500 font-black text-[10px] uppercase tracking-[0.3em] hover:text-blue-400 transition-colors">
-                    <ArrowLeft size={16} className="mr-2" /> Index
+                    <ArrowLeft size={16} className="mr-2" /> Dashboard
                 </button>
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
                     <div>
@@ -130,7 +130,7 @@ const Automation = () => {
             </div>
 
             {activeTab === 'radar' && (
-                <div className="animate-ios26-in">
+                <div className="">
                     <div className="ios26-card p-8 md:p-16 text-center flex flex-col items-center relative overflow-hidden group mb-16">
                         <div className="absolute inset-0 bg-blue-500/[0.02] -z-10 group-hover:scale-110 transition-transform duration-1000" />
                         <div className="w-24 h-24 ios26-liquid rounded-[36px] flex items-center justify-center mb-10 border border-white/20 shadow-2xl">
@@ -186,7 +186,7 @@ const Automation = () => {
             )}
 
             {activeTab === 'health' && (
-                <div className="animate-ios26-in">
+                <div className="">
                     <div className="ios26-card p-16 text-center flex flex-col items-center relative overflow-hidden group mb-16">
                         <div className="absolute inset-0 bg-pink-500/[0.02] -z-10 group-hover:scale-110 transition-transform duration-1000" />
                         <div className="w-24 h-24 ios26-liquid rounded-[36px] flex items-center justify-center mb-10 border border-pink-500/20 shadow-2xl">

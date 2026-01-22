@@ -184,7 +184,7 @@ const Recommendations = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 animate-ios26-in relative overflow-hidden">
+            <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6  relative overflow-hidden">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 blur-[120px] rounded-full -z-10" />
                 <div className="w-32 h-32 ios26-liquid rounded-[48px] flex items-center justify-center mb-12 border border-blue-500/20 shadow-2xl relative group">
                     <RefreshCw className="text-blue-500 animate-spin" size={48} strokeWidth={1} />
@@ -196,7 +196,7 @@ const Recommendations = () => {
     }
 
     return (
-        <div className="py-20 animate-ios26-in max-w-7xl mx-auto px-6 relative overflow-hidden">
+        <div className="py-20  max-w-7xl mx-auto px-6 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-500/5 blur-[120px] rounded-full -z-10 animate-ios26-float" />
 
             <header className="mb-24">

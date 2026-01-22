@@ -164,12 +164,12 @@ const MoodMix = () => {
     };
 
     return (
-        <div className="py-20 animate-ios26-in max-w-6xl mx-auto px-6 relative overflow-hidden">
+        <div className="py-20  max-w-6xl mx-auto px-6 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-500/5 blur-[120px] rounded-full -z-10 animate-ios26-float" />
 
             <header className="mb-24">
                 <button onClick={() => navigate('/dashboard')} className="mb-10 flex items-center text-blue-500 font-black text-[10px] uppercase tracking-[0.3em] hover:text-blue-400 transition-colors">
-                    <ArrowLeft size={16} className="mr-2" /> Index
+                    <ArrowLeft size={16} className="mr-2" /> Dashboard
                 </button>
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
                     <div>
@@ -274,7 +274,7 @@ const MoodMix = () => {
                     </section>
 
                     {/* iOS 26 Results Grid */}
-                    <section className="animate-ios26-in">
+                    <section className="">
                         <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-8">
                             <div>
                                 <h3 className="text-4xl font-black tracking-tighter uppercase text-white leading-none">Logic Render</h3>
@@ -321,7 +321,7 @@ const MoodMix = () => {
             )}
 
             {loading && status.includes('Scanning') && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-3xl z-[100] flex flex-col items-center justify-center animate-ios26-in">
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-3xl z-[100] flex flex-col items-center justify-center ">
                     <div className="ios26-liquid w-24 h-24 rounded-[32px] flex items-center justify-center mb-10 border border-white/20 shadow-[0_40px_80px_-20px_rgba(0,0,0,1)]">
                         <Loader2 className="animate-spin text-blue-500" size={40} />
                     </div>

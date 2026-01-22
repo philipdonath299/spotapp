@@ -130,12 +130,12 @@ const AIGenerator = () => {
     };
 
     return (
-        <div className="py-20 animate-ios26-in max-w-6xl mx-auto px-6 relative overflow-hidden">
+        <div className="py-20  max-w-6xl mx-auto px-6 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full -z-10 animate-ios26-float" />
 
             <header className="mb-24">
                 <button onClick={() => navigate('/dashboard')} className="mb-10 flex items-center text-blue-500 font-black text-[10px] uppercase tracking-[0.3em] hover:text-blue-400 transition-colors">
-                    <ArrowLeft size={16} className="mr-2" /> Index
+                    <ArrowLeft size={16} className="mr-2" /> Dashboard
                 </button>
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
                     <div className="max-w-2xl">
@@ -190,7 +190,7 @@ const AIGenerator = () => {
                 )}
 
                 {results.length > 0 && (
-                    <div className="space-y-12 animate-ios26-in pb-32">
+                    <div className="space-y-12  pb-32">
                         <div className="flex flex-col md:flex-row justify-between items-center gap-8 border-b border-white/5 pb-12">
                             <div>
                                 <h2 className="text-4xl font-black tracking-tighter uppercase text-white leading-none">Suggested Signal</h2>

@@ -53,12 +53,12 @@ const ReceiptGenerator = () => {
     };
 
     return (
-        <div className="py-20 animate-ios26-in max-w-4xl mx-auto px-6 relative overflow-hidden pb-40">
+        <div className="py-20  max-w-4xl mx-auto px-6 relative overflow-hidden pb-40">
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 blur-[120px] rounded-full -z-10 animate-ios26-float" />
 
             <header className="mb-24 text-center md:text-left">
                 <button onClick={() => navigate('/dashboard')} className="mb-10 flex items-center justify-center md:justify-start text-blue-500 font-black text-[10px] uppercase tracking-[0.3em] hover:text-blue-400 transition-colors">
-                    <ArrowLeft size={16} className="mr-2" /> Index
+                    <ArrowLeft size={16} className="mr-2" /> Dashboard
                 </button>
                 <div>
                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3 ml-1">Your Receipt</p>
@@ -152,7 +152,7 @@ const ReceiptGenerator = () => {
                 )}
 
                 {!loading && (
-                    <div className="mt-24 flex flex-col items-center gap-8 animate-ios26-in">
+                    <div className="mt-24 flex flex-col items-center gap-8 ">
                         <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.5em]">Capture and broadcast your terminal state</p>
                         <button className="ios26-liquid px-12 py-5 rounded-[22px] flex items-center gap-4 text-[10px] font-black text-white hover:scale-110 transition-all active:scale-95 border border-white/20 shadow-2xl uppercase tracking-[0.3em]">
                             <Download size={20} /> Export Signal

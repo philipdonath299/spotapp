@@ -9,7 +9,7 @@ const Login = () => {
             <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-blue-500/10 blur-[150px] rounded-full -z-10 animate-ios26-float" />
             <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-500/10 blur-[150px] rounded-full -z-10 animate-ios26-float-slow" />
 
-            <div className="text-center max-w-xl relative z-10 animate-ios26-in">
+            <div className="text-center max-w-xl relative z-10 ">
                 <div className="ios26-card p-16 md:p-24 border-white/10 shadow-[0_64px_128px_-32px_rgba(0,0,0,0.9)] bg-white/[0.03]">
                     <div className="flex justify-center mb-16">
                         <div className="w-24 h-24 ios26-liquid rounded-[36px] flex items-center justify-center border border-white/20 shadow-2xl">

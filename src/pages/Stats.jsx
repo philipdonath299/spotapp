@@ -503,10 +503,10 @@ const Stats = () => {
 
     return (
         <div className="min-h-screen bg-[#050505] text-white p-4 md:p-8 relative">
-            <div className="py-12 animate-ios26-in max-w-6xl mx-auto px-4">
+            <div className="py-12  max-w-6xl mx-auto px-4">
                 <header className="mb-20">
                     <button onClick={() => navigate('/dashboard')} className="mb-10 flex items-center text-blue-500 font-black text-[10px] uppercase tracking-widest hover:text-blue-400 transition-colors">
-                        <ArrowLeft size={16} className="mr-2" /> Vault
+                        <ArrowLeft size={16} className="mr-2" /> Dashboard
                     </button>
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
                         <div>
@@ -608,7 +608,7 @@ const Stats = () => {
 
                 <div className="min-h-[400px]">
                     {activeTab === 'recent' && (
-                        <section className="animate-ios26-in">
+                        <section className="">
                             <div className="ios26-card p-10 mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8 relative overflow-hidden">
                                 <div className="absolute inset-0 bg-blue-500/5 blur-[100px] -z-10" />
                                 <div>
@@ -641,7 +641,7 @@ const Stats = () => {
                     )}
 
                     {activeTab === 'artists' && (
-                        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-ios26-in">
+                        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ">
                             {topArtists.map((artist) => (
                                 <div
                                     key={artist.id}
@@ -665,7 +665,7 @@ const Stats = () => {
                     )}
 
                     {activeTab === 'tracks' && (
-                        <section className="space-y-3 animate-ios26-in">
+                        <section className="space-y-3 ">
                             {topTracks.map((track) => (
                                 <div
                                     key={track.id}
@@ -686,7 +686,7 @@ const Stats = () => {
                     )}
 
                     {activeTab === 'albums' && (
-                        <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 animate-ios26-in">
+                        <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 ">
                             {topAlbums.map((album) => (
                                 <div
                                     key={album.id}
@@ -708,7 +708,7 @@ const Stats = () => {
 
                     {/* Playlists Tab */}
                     {activeTab === 'playlists' && (
-                        <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 animate-ios26-in">
+                        <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 ">
                             {playlists.map((playlist) => (
                                 <div
                                     key={playlist.id}
@@ -740,7 +740,7 @@ const Stats = () => {
 
                     {/* Insights Tab */}
                     {activeTab === 'insights' && (
-                        <section className="space-y-12 animate-ios26-in">
+                        <section className="space-y-12 ">
                             {/* Music Taste Gravity */}
                             <div className="ios26-card p-12 relative overflow-hidden">
                                 <div className="absolute -top-20 -left-20 w-96 h-96 bg-blue-500/5 blur-[120px] rounded-full -z-10" />
@@ -997,7 +997,7 @@ const Stats = () => {
 
                 {/* Rediscover Tab */}
                 {activeTab === 'rediscover' && (
-                    <section className="animate-ios26-in">
+                    <section className="">
                         <div className="ios26-card p-12 rounded-[56px] mb-10 flex flex-col items-center text-center relative overflow-hidden">
                             <div className="absolute inset-0 bg-purple-500/5 blur-[100px] -z-10" />
                             <div className="w-20 h-20 ios26-liquid rounded-[28px] flex items-center justify-center mb-8 border border-white/20 shadow-2xl">
@@ -1040,7 +1040,7 @@ const Stats = () => {
             {selectedArtist && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-3xl" onClick={() => setSelectedArtist(null)}>
                     <div
-                        className="ios26-liquid w-full max-w-2xl max-h-[90vh] rounded-[48px] border border-white/20 overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] animate-ios26-in flex flex-col relative"
+                        className="ios26-liquid w-full max-w-2xl max-h-[90vh] rounded-[48px] border border-white/20 overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,1)]  flex flex-col relative"
                         onClick={e => e.stopPropagation()}
                     >
                         <div className="relative h-80 shrink-0">
@@ -1108,7 +1108,7 @@ const Stats = () => {
             {selectedAlbum && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-3xl" onClick={() => setSelectedAlbum(null)}>
                     <div
-                        className="ios26-liquid w-full max-w-4xl max-h-[85vh] rounded-[56px] border border-white/20 overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] animate-ios26-in flex flex-col md:flex-row relative"
+                        className="ios26-liquid w-full max-w-4xl max-h-[85vh] rounded-[56px] border border-white/20 overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,1)]  flex flex-col md:flex-row relative"
                         onClick={e => e.stopPropagation()}
                     >
                         <div className="w-full md:w-[45%] relative h-80 md:h-auto overflow-hidden">
@@ -1155,7 +1155,7 @@ const Stats = () => {
             {selectedTrack && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-3xl" onClick={() => setSelectedTrack(null)}>
                     <div
-                        className="ios26-liquid w-full max-w-xl rounded-[64px] border border-white/20 overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] animate-ios26-in"
+                        className="ios26-liquid w-full max-w-xl rounded-[64px] border border-white/20 overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] "
                         onClick={e => e.stopPropagation()}
                     >
                         <div className="p-12">
