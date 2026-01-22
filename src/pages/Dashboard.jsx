@@ -42,8 +42,29 @@ const Dashboard = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-black flex items-center justify-center">
-                <Loader2 className="animate-spin text-blue-500" size={32} />
+            <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
+                <Loader2 className="animate-spin text-blue-500" size={48} />
+                <p className="text-white/50 font-mono text-sm tracking-widest uppercase animate-pulse">Loading Data...</p>
+            </div>
+        );
+    }
+
+    if (!profile) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center space-y-6 text-center px-4">
+                <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center">
+                    <Activity className="text-red-500" size={32} />
+                </div>
+                <div>
+                    <h2 className="text-2xl font-bold text-white mb-2">Connection Error</h2>
+                    <p className="text-white/50 max-w-md">Could not load your profile data. Please try again or re-login.</p>
+                </div>
+                <button
+                    onClick={() => window.location.href = '/'}
+                    className="px-8 py-3 bg-white text-black font-bold rounded-full hover:scale-105 transition-transform"
+                >
+                    Re-Login
+                </button>
             </div>
         );
     }
