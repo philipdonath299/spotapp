@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { spotifyFetch } from '../utils/spotify';
-import { Music, Play, Wand2, BarChart3, Edit3, Trash2, Activity, RefreshCw, Sliders, Layers, Receipt, Loader2 } from 'lucide-react';
+import { Music, Play, Wand2, BarChart3, Edit3, Trash2, Activity, RefreshCw, Sliders, Layers, Receipt, Loader2, Share2, List as Lists } from 'lucide-react';
+import DashboardWidget from '../components/DashboardWidget';
 
 const Dashboard = () => {
     const [playlists, setPlaylists] = useState([]);
@@ -47,36 +48,13 @@ const Dashboard = () => {
         );
     }
 
-    const widgetColors = {
-        blue: { bg: 'bg-blue-500/10', text: 'text-blue-400', blur: 'bg-blue-500/10' },
-        purple: { bg: 'bg-purple-500/10', text: 'text-purple-400', blur: 'bg-purple-500/10' },
-        pink: { bg: 'bg-pink-500/10', text: 'text-pink-400', blur: 'bg-pink-500/10' },
-        orange: { bg: 'bg-orange-500/10', text: 'text-orange-400', blur: 'bg-orange-500/10' },
-        green: { bg: 'bg-green-500/10', text: 'text-green-400', blur: 'bg-green-500/10' },
-        red: { bg: 'bg-red-500/10', text: 'text-red-400', blur: 'bg-red-500/10' },
-        gray: { bg: 'bg-gray-500/10', text: 'text-gray-400', blur: 'bg-gray-500/10' },
-    };
 
-    const Widget = ({ title, icon: Icon, colorClass, onClick, desc, span = false }) => {
-        const colors = widgetColors[colorClass] || widgetColors.blue;
 
-        return (
-            <button
-                onClick={onClick}
-                className={`ios26-card-interactive p-6 flex flex-col justify-between group relative overflow-hidden text-left ${span ? 'md:col-span-2' : ''}`}
-            >
-                <div className={`absolute -top-10 -right-10 w-32 h-32 ${colors.blur} blur-[60px] rounded-full group-hover:scale-150 transition-transform duration-1000`} />
-
-                <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-10 border border-white/5 group-hover:bg-white/10 transition-all duration-500`}>
-                    <Icon size={24} className={colors.text} strokeWidth={2} />
-                </div>
-
-                <div className="relative z-10 transition-transform duration-500 group-hover:translate-x-1">
-                    <h3 className="text-xl font-black tracking-tighter mb-1 uppercase">{title}</h3>
-                    <p className="text-[10px] text-white/30 font-black uppercase tracking-widest">{desc}</p>
-                </div>
-            </button>
-        );
+    const copySnapshot = () => {
+        if (!topArtist) return;
+        const stats = `🎵 My Music Snapshot\n🔥 Top Artist: ${topArtist.name}\n🎧 Playlists: ${playlists.length}\n🚀 Generated via Statsify Pro`;
+        navigator.clipboard.writeText(stats);
+        alert("Snapshot copied to clipboard!");
     };
 
     return (
@@ -91,6 +69,13 @@ const Dashboard = () => {
                 </div>
 
                 <div className="flex items-center gap-4 md:gap-6 relative z-10">
+                    <button
+                        onClick={copySnapshot}
+                        className="w-12 h-12 md:w-14 md:h-14 rounded-full ios26-glass flex items-center justify-center hover:bg-white/10 transition-all active:scale-90 border border-white/10 group"
+                        title="Share Snapshot"
+                    >
+                        <Share2 size={20} className="text-white/60 group-hover:text-blue-500 transition-colors" />
+                    </button>
                     <button
                         onClick={() => loadData(true)}
                         className={`w-12 h-12 md:w-14 md:h-14 rounded-full ios26-glass flex items-center justify-center hover:bg-white/10 transition-all active:scale-90 border border-white/10 group ${refreshing ? 'animate-spin' : ''}`}
@@ -108,22 +93,31 @@ const Dashboard = () => {
                 <div className="absolute -left-20 -top-20 w-80 h-80 bg-blue-500/10 blur-[120px] rounded-full -z-10" />
             </header>
 
-            {/* Spatial Hero Section */}
+            {/* Quick Stats Hero */}
             {topArtist && (
-                <section className="mb-20 relative px-1">
+                <section className="mb-24 relative px-1">
                     <div
                         onClick={() => navigate('/stats')}
-                        className="ios26-card-interactive p-12 flex flex-col md:flex-row items-center justify-between gap-12 group"
+                        className="ios26-card-interactive p-12 flex flex-col md:flex-row items-center justify-between gap-12 group cursor-pointer"
                     >
                         <div className="z-10 flex-1 text-center md:text-left">
                             <div className="flex items-center justify-center md:justify-start gap-3 mb-4 md:mb-8">
                                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_20px_rgba(10,132,255,0.8)]" />
-                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Power Rotation</p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Current Vibe</p>
                             </div>
-                            <h2 className="text-4xl md:text-8xl lg:text-9xl font-black tracking-tighter mb-4 md:mb-6 leading-none group-hover:scale-[1.02] transition-transform duration-700">
+                            <h2 className="text-5xl md:text-7xl font-black tracking-tighter mb-4 md:mb-6 leading-none group-hover:scale-[1.02] transition-transform duration-700">
                                 {topArtist.name}
                             </h2>
-                            <p className="text-white/40 font-black uppercase tracking-widest text-[9px] md:text-xs hidden md:block">Primary influence this cycle</p>
+                            <div className="flex items-center justify-center md:justify-start gap-6 text-white/40">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Top Artist</span>
+                                </div>
+                                <div className="w-px h-8 bg-white/10" />
+                                <div className="flex flex-col">
+                                    <span className="text-2xl font-black text-white leading-none">{playlists.length}</span>
+                                    <span className="text-[8px] font-black uppercase tracking-widest mt-1">Playlists</span>
+                                </div>
+                            </div>
                         </div>
 
                         {topArtist.images?.[0] && (
@@ -139,22 +133,41 @@ const Dashboard = () => {
                 </section>
             )}
 
-            {/* Grid Layout Overhaul */}
-            <div className="mb-24">
-                <div className="flex items-baseline gap-4 mb-10 px-2">
-                    <h2 className="text-4xl font-black tracking-tighter uppercase">Studio</h2>
-                    <div className="h-px flex-1 bg-white/5" />
+            {/* Section 1: Creative Studio */}
+            <div className="mb-20">
+                <div className="flex items-baseline gap-4 mb-8 px-2">
+                    <h2 className="text-2xl md:text-3xl font-black tracking-tighter uppercase text-white/90">Creative Studio</h2>
+                    <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
                 </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <DashboardWidget title="Magic Playlist" desc="AI Generator" icon={Wand2} colorClass="blue" onClick={() => navigate('/ai-generator')} />
+                    <DashboardWidget title="Mood Mix" desc="Smart Filters" icon={Sliders} colorClass="purple" onClick={() => navigate('/mood-mix')} />
+                    <DashboardWidget title="Liked Sorter" desc="Library Organize" icon={Lists} colorClass="pink" onClick={() => navigate('/liked-sorter')} />
+                </div>
+            </div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
-                    <Widget title="Magic" desc="AI Assistant" icon={Wand2} colorClass="blue" onClick={() => navigate('/ai-generator')} />
-                    <Widget title="Explore" desc="New Music" icon={Layers} colorClass="purple" onClick={() => navigate('/discovery')} />
-                    <Widget title="Mood" desc="Smart Filters" icon={Sliders} colorClass="pink" onClick={() => navigate('/mood-mix')} />
-                    <Widget title="Vault" desc="Manage" icon={Edit3} colorClass="orange" onClick={() => navigate('/playlists')} />
-                    <Widget title="Stats" desc="Analytics" icon={BarChart3} colorClass="green" span onClick={() => navigate('/stats')} />
-                    <Widget title="Cleanup" desc="Health" icon={Trash2} colorClass="red" onClick={() => navigate('/cleanup')} />
-                    <Widget title="Sorter" desc="AI Sorting" icon={Sliders} colorClass="blue" onClick={() => navigate('/liked-sorter')} />
-                    <Widget title="Receipt" desc="Snapshot" icon={Receipt} colorClass="gray" onClick={() => navigate('/receipt')} />
+            {/* Section 2: Analytics & Health */}
+            <div className="mb-20">
+                <div className="flex items-baseline gap-4 mb-8 px-2">
+                    <h2 className="text-2xl md:text-3xl font-black tracking-tighter uppercase text-white/90">Analytics</h2>
+                    <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <DashboardWidget title="Deep Stats" desc="Visual Data" icon={BarChart3} colorClass="green" onClick={() => navigate('/stats')} span />
+                    <DashboardWidget title="Receipt" desc="Shareable" icon={Receipt} colorClass="gray" onClick={() => navigate('/receipt')} />
+                    <DashboardWidget title="Cleanup" desc="Remove Duplicates" icon={Trash2} colorClass="red" onClick={() => navigate('/cleanup')} />
+                </div>
+            </div>
+
+            {/* Section 3: Exploration */}
+            <div className="mb-12">
+                <div className="flex items-baseline gap-4 mb-8 px-2">
+                    <h2 className="text-2xl md:text-3xl font-black tracking-tighter uppercase text-white/90">Discovery</h2>
+                    <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <DashboardWidget title="Discovery Deck" desc="Find New Music" icon={Layers} colorClass="orange" onClick={() => navigate('/discovery')} />
+                    <DashboardWidget title="Vault" desc="Playlist Manager" icon={Edit3} colorClass="blue" onClick={() => navigate('/playlists')} />
                 </div>
             </div>
 
