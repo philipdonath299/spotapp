@@ -23,7 +23,7 @@ const Dashboard = () => {
             setProfile(profileData);
 
             const playlistsData = await spotifyFetch('/me/playlists?limit=20');
-            if (playlistsData) setPlaylists(playlistsData.items);
+            if (playlistsData?.items) setPlaylists(playlistsData.items);
 
             const topArtistsData = await spotifyFetch('/me/top/artists?limit=1&time_range=short_term');
             if (topArtistsData?.items?.length > 0) setTopArtist(topArtistsData.items[0]);
@@ -151,7 +151,7 @@ const Dashboard = () => {
                                             {topArtist.name}
                                         </h2>
                                         <p className="text-white/40 text-xs font-mono">
-                                            {playlists.length} Playlists • Top Tier
+                                            {playlists?.length || 0} Playlists • Top Tier
                                         </p>
                                     </div>
 
