@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, BarChart3, Edit3, Trash2, Wand2, Layers } from 'lucide-react';
+import { Home, Edit3, Wand2 } from 'lucide-react';
 
 const BottomNav = () => {
     const navigate = useNavigate();
@@ -10,8 +10,6 @@ const BottomNav = () => {
 
     const navItems = [
         { path: '/dashboard', icon: Home, label: 'Home' },
-        { path: '/stats', icon: BarChart3, label: 'Stats' },
-        { path: '/discovery', icon: Layers, label: 'Explore' },
         { path: '/playlists', icon: Edit3, label: 'Manage' },
         { path: '/ai-generator', icon: Wand2, label: 'Magic' }
     ];

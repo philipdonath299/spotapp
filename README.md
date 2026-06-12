@@ -1,10 +1,10 @@
-# Statsify: Spotify Music Discovery Engine 🎵
+# Statsify: AI Playlist Manager 🎵
 
-Statsify is a specialized music discovery engine that finds genuinely new music based on your existing playlists. It uses a custom genre-and-artist discovery algorithm to bypass the deprecated Spotify Recommendations API.
+Statsify is a powerful playlist management tool and AI-driven music discovery engine. Organize your library with advanced sorting and create custom playlists using AI.
 
 ## Features
 - **AI Magic**: Brainstorms song lists based on text prompts using Gemini 2.x/2.5.
-- **Diagnostics**: Built-in tool to detect available models for any API key.
+- **Playlist Manager**: Advanced tools to sort, merge, split, and shuffle your existing playlists.
 - **Large Playlists**: Supports generating up to 80-100 songs with real-time progress tracking.
 - **Save to Library**: Effortlessly create a new Spotify playlist with all your discoveries in one click.
 - **Premium UI**: Clean, dark-mode focused experience.
@@ -28,6 +28,7 @@ Statsify is a specialized music discovery engine that finds genuinely new music 
    - Create a `.env` file:
      ```env
      VITE_SPOTIFY_CLIENT_ID=your_client_id_here
+     VITE_GEMINI_API_KEY=your_gemini_api_key_here
      ```
 
 4. **Run**:
