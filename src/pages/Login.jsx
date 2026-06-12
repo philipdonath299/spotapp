@@ -22,8 +22,8 @@ const Login = () => {
                     </h1>
 
                     <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.5em] mb-16 leading-relaxed">
-                        Authentication Required <br />
-                        <span className="opacity-50">Secure Spotify Connection</span>
+                        Playlist Management <br />
+                        <span className="opacity-50">AI Powered Generation</span>
                     </p>
 
                     <button
@@ -35,7 +35,7 @@ const Login = () => {
                 </div>
 
                 <div className="mt-16 flex flex-col items-center gap-4 opacity-30">
-                    <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white">Handcrafted for Music Lovers</p>
+                    <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white">The Ultimate Playlist Tool</p>
                     <div className="w-12 h-[1px] bg-white/20" />
                 </div>
             </div>
