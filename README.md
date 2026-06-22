@@ -1,10 +1,11 @@
 # Statsify: AI Playlist Manager 🎵
 
-Statsify is a powerful playlist management tool and AI-driven music discovery engine. Organize your library with advanced sorting and create custom playlists using AI.
+Statsify is a powerful playlist management tool and AI-driven music discovery engine. Organize your library with advanced sorting, create custom playlists using AI, and discover physical media for your favorite music.
 
 ## Features
 - **AI Magic**: Brainstorms song lists based on text prompts using Gemini 2.x/2.5.
 - **Playlist Manager**: Advanced tools to sort, merge, split, and shuffle your existing playlists.
+- **Vinyl Scanner**: Scan your liked songs to find albums you love that are available on vinyl.
 - **Large Playlists**: Supports generating up to 80-100 songs with real-time progress tracking.
 - **Save to Library**: Effortlessly create a new Spotify playlist with all your discoveries in one click.
 - **Premium UI**: Clean, dark-mode focused experience.

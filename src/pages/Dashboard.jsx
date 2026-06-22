@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { spotifyFetch } from '../utils/spotify';
-import { Wand2, Edit3, RefreshCw, Loader2 } from 'lucide-react';
+import { Wand2, Edit3, RefreshCw, Loader2, Disc } from 'lucide-react';
 import DashboardWidget from '../components/DashboardWidget';
 
 const Dashboard = () => {
@@ -107,6 +107,14 @@ const Dashboard = () => {
                             icon={Wand2}
                             colorClass="purple"
                             onClick={() => navigate('/ai-generator')}
+                        />
+                        <DashboardWidget
+                            title="Vinyl Scanner"
+                            desc="Find vinyl releases of top albums"
+                            icon={Disc}
+                            colorClass="orange"
+                            onClick={() => navigate('/vinyl-scanner')}
+                            span
                         />
                     </div>
 
