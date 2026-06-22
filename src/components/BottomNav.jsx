@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Edit3, Wand2 } from 'lucide-react';
+import { Home, Edit3, Wand2, Disc } from 'lucide-react';
 
 const BottomNav = () => {
     const navigate = useNavigate();
@@ -11,7 +11,8 @@ const BottomNav = () => {
     const navItems = [
         { path: '/dashboard', icon: Home, label: 'Home' },
         { path: '/playlists', icon: Edit3, label: 'Manage' },
-        { path: '/ai-generator', icon: Wand2, label: 'Magic' }
+        { path: '/ai-generator', icon: Wand2, label: 'Magic' },
+        { path: '/vinyl-scanner', icon: Disc, label: 'Vinyl' }
     ];
 
     return (

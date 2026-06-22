@@ -5,6 +5,7 @@ import Callback from './pages/Callback';
 import Dashboard from './pages/Dashboard';
 import AIGenerator from './pages/AIGenerator';
 import PlaylistManager from './pages/PlaylistManager';
+import VinylScanner from './pages/VinylScanner';
 import Layout from './components/Layout';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
                 <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
                 <Route path="/ai-generator" element={<Layout><AIGenerator /></Layout>} />
                 <Route path="/playlists" element={<Layout><PlaylistManager /></Layout>} />
+                <Route path="/vinyl-scanner" element={<Layout><VinylScanner /></Layout>} />
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>
         </BrowserRouter>
