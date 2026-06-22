@@ -5,14 +5,18 @@ import { Disc, ArrowLeft, Loader2, Play, Search, ExternalLink, Sparkles } from '
 
 const VinylScanner = () => {
     const [loading, setLoading] = useState(false);
+    const [hasScanned, setHasScanned] = useState(false);
     const [status, setStatus] = useState('');
     const [results, setResults] = useState([]);
+    const [candidates, setCandidates] = useState([]);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
     const fetchAIResponse = async (apiKey, prompt) => {
         const models = [
+            { version: 'v1beta', id: 'gemini-2.5-flash' },
             { version: 'v1beta', id: 'gemini-2.0-flash' },
+            { version: 'v1beta', id: 'gemini-flash-latest' },
             { version: 'v1beta', id: 'gemini-1.5-flash' },
             { version: 'v1beta', id: 'gemini-pro-latest' }
         ];
@@ -43,6 +47,7 @@ const VinylScanner = () => {
 
     const startScan = async () => {
         setLoading(true);
+        setHasScanned(true);
         setError(null);
         setResults([]);
         try {
@@ -62,8 +67,8 @@ const VinylScanner = () => {
                 } else {
                     nextUrl = null;
                 }
-                // Safety break for huge libraries in demo
-                if (allTracks.length > 500) break;
+                // Safety break for huge libraries in demo - increased for better library coverage
+                if (allTracks.length > 2000) break;
             }
 
             setStatus('Analyzing Library...');
@@ -82,38 +87,90 @@ const VinylScanner = () => {
                 albumMap[album.id].tracks.push(item.track.name);
             });
 
-            const topAlbums = Object.values(albumMap)
+            const allAlbumValues = Object.values(albumMap);
+            console.log(`Found ${allAlbumValues.length} unique albums.`);
+
+            let topAlbums = allAlbumValues
                 .filter(a => a.tracks.length >= 3)
                 .sort((a, b) => b.tracks.length - a.tracks.length);
 
+            // Fallback to 2 tracks if no albums meet the 3-track threshold
             if (topAlbums.length === 0) {
-                setStatus('No significant albums found (>=3 tracks).');
+                topAlbums = allAlbumValues
+                    .filter(a => a.tracks.length >= 2)
+                    .sort((a, b) => b.tracks.length - a.tracks.length);
+            }
+
+            // Ultimate fallback to 1 track if no albums meet the 2-track threshold
+            if (topAlbums.length === 0) {
+                topAlbums = allAlbumValues
+                    .filter(a => a.tracks.length >= 1)
+                    .sort((a, b) => Math.random() - 0.5) // Randomize if single tracks
+                    .slice(0, 50);
+            }
+
+            if (topAlbums.length === 0) {
+                setStatus('Your library appears to be empty.');
                 setLoading(false);
                 return;
             }
 
+            setCandidates(topAlbums.slice(0, 10)); // Store top 10 as potential fallbacks
+            console.log(`Verifying Vinyl for ${topAlbums.length} candidate albums.`);
             setStatus(`Verifying Vinyl for ${topAlbums.length} albums...`);
             const verifiedAlbums = [];
 
-            // Process in batches to avoid API limits/long prompts
-            for (let i = 0; i < Math.min(topAlbums.length, 20); i++) {
+            // Increase search breadth to find at least some results
+            const searchLimit = Math.min(topAlbums.length, 50);
+            for (let i = 0; i < searchLimit; i++) {
                 const album = topAlbums[i];
-                setStatus(`Checking Vinyl: ${album.name} [${i+1}/${Math.min(topAlbums.length, 20)}]`);
+                setStatus(`Verifying ${album.name} [${i + 1}/${searchLimit}]`);
 
-                const prompt = `Does the album "${album.name}" by "${album.artist}" have an official vinyl release? Return ONLY a JSON object: {"hasVinyl": boolean, "releaseYear": string}. If multiple versions exist, just confirm one exists.`;
+                const prompt = `Task: Verify if the album "${album.name}" by "${album.artist}" has ever been released on vinyl.
+                Instructions:
+                1. Research the discography for official vinyl releases (LPs, EPs).
+                2. Return ONLY a JSON object.
+                Format: {"hasVinyl": boolean, "releaseYear": "YYYY" or "Unknown"}
+                Constraint: Do NOT include any other text, markdown code blocks, or conversational filler.`;
 
                 try {
                     const aiText = await fetchAIResponse(apiKey, prompt);
-                    const jsonMatch = aiText.match(/\{.*\}/s);
+                    console.log(`AI Response for ${album.name}:`, aiText);
+
+                    // More resilient JSON parsing - handle markdown and extra text
+                    const cleanText = aiText.replace(/```json|```/g, '').trim();
+                    const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
+
                     if (jsonMatch) {
-                        const result = JSON.parse(jsonMatch[0]);
-                        if (result.hasVinyl) {
-                            verifiedAlbums.push({
-                                ...album,
-                                releaseYear: result.releaseYear
-                            });
+                        try {
+                            const result = JSON.parse(jsonMatch[0]);
+                            if (result.hasVinyl) {
+                                verifiedAlbums.push({
+                                    ...album,
+                                    releaseYear: result.releaseYear || 'Unknown'
+                                });
+                            }
+                        } catch (e) {
+                            console.error("JSON parse failed for", album.name, e);
+                            // Fallback regex search if JSON.parse fails
+                            if (/["']hasVinyl["']\s*:\s*true/i.test(jsonMatch[0])) {
+                                verifiedAlbums.push({
+                                    ...album,
+                                    releaseYear: 'Unknown'
+                                });
+                            }
                         }
+                    } else if (cleanText.toLowerCase().includes('"hasvinyl": true') || cleanText.toLowerCase().includes('"hasvinyl":true')) {
+                        // Rough fallback if JSON is slightly malformed but contains the key
+                        verifiedAlbums.push({
+                            ...album,
+                            releaseYear: 'Unknown'
+                        });
                     }
+
+                    // If we found enough, stop to save time, but keep going a bit more than before
+                    if (verifiedAlbums.length >= 15) break;
+
                 } catch (err) {
                     console.error("AI verify failed for", album.name, err);
                 }
@@ -148,7 +205,7 @@ const VinylScanner = () => {
             </header>
 
             <div className="max-w-4xl mx-auto space-y-16">
-                {!loading && results.length === 0 && (
+                {!loading && !hasScanned && (
                     <div className="ios26-card p-12 text-center space-y-8 border-white/10 bg-white/[0.02]">
                         <div className="w-20 h-20 mx-auto ios26-liquid rounded-[32px] flex items-center justify-center border border-white/20 shadow-2xl">
                             <Disc size={40} className="text-white" />
@@ -165,6 +222,62 @@ const VinylScanner = () => {
                         >
                             Initiate Scan
                         </button>
+                    </div>
+                )}
+
+                {!loading && hasScanned && results.length === 0 && (
+                    <div className="space-y-16">
+                        <div className="ios26-card p-12 text-center space-y-8 border-white/10 bg-white/[0.02]">
+                            <div className="w-20 h-20 mx-auto bg-white/5 rounded-[32px] flex items-center justify-center border border-white/10">
+                                <Search size={32} className="text-white/20" />
+                            </div>
+                            <div className="space-y-4">
+                                <h2 className="text-2xl font-black tracking-tighter uppercase text-white">No Vinyl Found</h2>
+                                <p className="text-[10px] text-white/30 font-black uppercase tracking-[0.3em] max-w-md mx-auto leading-relaxed">
+                                    {status || "We couldn't find any vinyl releases for your top albums at this time."}
+                                </p>
+                            </div>
+                            <button
+                                onClick={startScan}
+                                className="px-8 py-4 ios26-glass text-white/60 font-black rounded-[20px] hover:text-white transition-all uppercase tracking-[0.3em] text-[9px] border border-white/10"
+                            >
+                                Try Again
+                            </button>
+                        </div>
+
+                        {candidates.length > 0 && (
+                            <div className="space-y-12">
+                                <div className="text-center">
+                                    <h2 className="text-3xl font-black tracking-tighter uppercase text-white">Top Library Albums</h2>
+                                    <p className="text-[10px] text-white/30 font-black uppercase tracking-widest mt-2">Manual Discovery</p>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700">
+                                    {candidates.map((album) => (
+                                        <div key={album.id} className="ios26-card-interactive p-6 flex items-center gap-6 group">
+                                            <div className="w-20 h-20 rounded-[24px] overflow-hidden shrink-0">
+                                                {album.image ? (
+                                                    <img src={album.image} className="w-full h-full object-cover" alt="" />
+                                                ) : (
+                                                    <div className="w-full h-full bg-white/5 flex items-center justify-center"><Disc size={24} className="text-white/10" /></div>
+                                                )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="font-black truncate text-sm uppercase text-white mb-1">{album.name}</h3>
+                                                <p className="text-[9px] text-white/30 font-black truncate uppercase mb-4">{album.artist}</p>
+                                                <a
+                                                    href={`https://www.google.com/search?q=${encodeURIComponent(album.name + ' ' + album.artist + ' vinyl')}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-2 text-[8px] font-black text-blue-500 uppercase tracking-widest"
+                                                >
+                                                    Manual Check <ExternalLink size={8} />
+                                                </a>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
